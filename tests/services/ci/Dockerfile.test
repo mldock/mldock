@@ -1,0 +1,25 @@
+FROM python:3.8-slim-buster
+
+LABEL maintainer="SheldonGrant <sheldz.shakes.williams@gmail.com>"
+SHELL ["/bin/bash", "-c"]
+
+# install test libraries
+RUN python -m pip install --upgrade pip
+RUN python -m pip install pytest mock pytest-mock coverage
+
+WORKDIR /opt/base/
+
+# in development of helpers, COPY setup.py and install
+COPY ./mldock /opt/base/mldock
+COPY ./README.md /opt/base/README.md
+COPY ./setup.py /opt/base/setup.py
+COPY ./setup.cfg /opt/base/setup.cfg
+# install with a symlink for testing
+RUN python -m pip install -e .[cli]
+RUN python -m pip install -e .[gcp]
+
+# copy test dir
+COPY ./tests /opt/base/tests
+
+ENV COVERAGE_THRESHOLD=${COVERAGE_THRESHOLD:-80}
+CMD coverage run --source=mldock -m pytest tests && coverage report --fail-under=${COVERAGE_THRESHOLD}

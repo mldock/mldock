@@ -1,0 +1,35 @@
+{
+    "image_name": "iris-classifier-py38-cpu",
+    "platform": "generic",
+    "mldock_module_dir": "src",
+    "container_dir": "container",
+    "requirements_dir": "src/requirements.txt",
+    "stages": {
+        "prod": {
+            "tag": "latest"
+        },
+        "dev": {
+            "tag": "latest"
+        }
+    },
+    "data": [
+        {
+            "channel": "iris",
+            "filename": "iris.csv"
+        }
+    ],
+    "model": [
+        {
+            "channel": "iris",
+            "filename": "iris.pkl"
+        }
+    ],
+    "hyperparameters": {},
+    "environment": {
+        "headers": "false",
+        "INPUT_CHANNEL_IRIS": "gs://snapto-mldock-experiments/data/iris",
+        "MODEL_INPUT_CHANNEL_IRIS": "gs://snapto-mldock-experiments/model/iris",
+        "MODEL_OUTPUT_CHANNEL_IRIS": "gs://snapto-mldock-experiments/model/iris",
+        "OUTPUT_CHANNEL_ERRORS": "gs://snapto-mldock-experiments/output/errors"
+    }
+}

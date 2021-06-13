@@ -1,0 +1,10 @@
+[run]
+include =
+    mldock/*
+
+[report]
+omit =
+    mldock/templates/*
+
+[html]
+directory = coverage_html_report

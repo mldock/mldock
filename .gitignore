@@ -1,0 +1,8 @@
+Pipfile*
+*.env
+secrets/*
+secrets
+.coverage
+sandbox
+Pipfile
+docs/node_modules

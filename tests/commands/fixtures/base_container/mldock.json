@@ -1,0 +1,34 @@
+{
+    "image_name": "my_app",
+    "platform": "generic",
+    "mldock_module_dir": "src",
+    "container_dir": "container",
+    "requirements_dir": "requirements.txt",
+    "template_dir": null,
+    "stages": {
+        "test": {
+            "tag": "latest"
+        }
+    },
+    "data": [
+        {
+            "channel": "training",
+            "filename": "training.csv"
+        }
+    ],
+    "hyperparameters": {
+        "factors": 10,
+        "iterations": 10,
+        "regularization": 0.1
+    },
+    "environment": {
+        "experiment_id": 4,
+        "CSV_RESPONSE_HEADER": false
+    },
+    "model": [
+        {
+            "channel": "iris",
+            "filename": "model.pkl"
+        }
+    ]
+}

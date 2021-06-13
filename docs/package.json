@@ -1,0 +1,23 @@
+{
+  "name": "vuepress-example-docs-qs-site",
+  "version": "0.0.1",
+  "description": "A docker tool that helps put machine learning in places that empower ml developers",
+  "main": "index.js",
+  "authors": {
+    "name": "sheldongrant",
+    "email": "sheldon.shakes.williams@gmail.com"
+  },
+  "repository": "https://github.com/SheldonGrant/mldock/vuepress-example-docs-qs-site",
+  "scripts": {
+    "dev": "vuepress dev src",
+    "build": "vuepress build src"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vuepress": "^1.5.3"
+  },
+  "dependencies": {
+    "vuepress-plugin-container": "^2.1.5",
+    "vuepress-theme-ououe": "^1.5.3"
+  }
+}
