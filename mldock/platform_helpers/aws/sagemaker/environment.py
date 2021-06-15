@@ -169,17 +169,6 @@ def _create_code_dir():  # type: () -> None
 
 _create_code_dir()
 
-
-def _read_json(path):  # type: (str) -> dict
-    """Read a JSON file.
-    Args:
-        path (str): Path to the file.
-    Returns:
-        (dict[object, object]): A dictionary representation of the JSON file.
-    """
-    with open(path, "r") as f:
-        return json.load(f)
-
 def read_hyperparameters():  # type: () -> dict
     """Read the hyperparameters from /opt/ml/input/config/hyperparameters.json.
     For more information about hyperparameters.json:
@@ -187,7 +176,7 @@ def read_hyperparameters():  # type: () -> dict
     Returns:
          (dict[string, object]): A dictionary containing the hyperparameters.
     """
-    hyperparameters = _read_json(hyperparameters_file_dir)
+    hyperparameters = utils._read_json(hyperparameters_file_dir)
 
     deserialized_hps = {}
 
@@ -220,7 +209,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo.ht
                                       network, sorted lexicographically. For example,
                                       `['algo-1', 'algo-2', 'algo-3']` for a three-node cluster.
     """
-    return _read_json(resource_config_file_dir)
+    return utils._read_json(resource_config_file_dir)
 
 
 def read_input_data_config():  # type: () -> dict
@@ -249,7 +238,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo.ht
     Returns:
             input_data_config (dict[string, object]): Contents from /opt/ml/input/config/inputdataconfig.json.
     """
-    return _read_json(input_data_config_file_dir)
+    return utils._read_json(input_data_config_file_dir)
 
 
 def channel_path(channel):  # type: (str) -> str
@@ -513,11 +502,11 @@ class Environment(mapping.MappingMixin):  # pylint:disable=too-many-public-metho
 
     def setup_hyperparameters(self):
         """Retrieves the env vars matching hyperparameters regex and updates config"""
-        hyperparameters = _read_json(
+        hyperparameters = utils._read_json(
             hyperparameters_file_dir
         )
 
-        updated_hparams = self.environment_variables.json('MLDOCK_HYPERPARAMETERS', '{}')
+        updated_hparams = self.environment_variables.json('MLDOCK_HYPERPARAMETERS', default='{}')
 
         hyperparameters.update(
             updated_hparams

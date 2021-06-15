@@ -30,12 +30,13 @@ setuptools.setup(
         )
     },
     setup_requires=['setuptools>=39.1.0'],
-    install_requires=['future', 'environs', 'protobuf>=3.1'],
+    install_requires=['future', 'environs'],
     extras_require={
         'gcp': ['google-cloud-storage', 'google-api-python-client'],
         'aws': ['boto3'],
         'cli': ['click', 'docker', 'future', 'requests', 'boto3', 'google-auth', 'appdirs', 'halo'],
         'sagemaker': ['sagemaker-training'],
+        'testing': ['pandas', 'numpy', 'scipy', 'protobuf>=3.1']
     },
     entry_points="""
         [console_scripts]

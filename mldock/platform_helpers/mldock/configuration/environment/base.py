@@ -151,7 +151,7 @@ class BaseEnvironment(AbstractEnvironment):
     def setup_hyperparameters(self):
         """Retrieves the env vars matching hyperparameters regex and updates config"""
         hyperparameters = utils._read_json(
-            self.hyperparameters_filepath
+            self.hyperparameters_filepath.as_posix()
         )
 
         updated_hparams = self.environment_variables.json(self.hyperparamters_env_variable, '{}')
@@ -162,7 +162,7 @@ class BaseEnvironment(AbstractEnvironment):
 
         utils._write_json(
             obj=hyperparameters,
-            path=self.hyperparameters_filepath
+            path=self.hyperparameters_filepath.as_posix()
         )
 
     def get_input_channel_iter(self):

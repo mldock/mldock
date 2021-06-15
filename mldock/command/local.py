@@ -249,6 +249,7 @@ def deploy(obj, dir, params, env_vars, tag, port, stage):
     """
     Command to deploy ml container on localhost
     """
+    verbose = obj.get('verbose', False)
     mldock_manager = MLDockConfigManager(
         filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
     )
@@ -320,7 +321,8 @@ def deploy(obj, dir, params, env_vars, tag, port, stage):
             port=port,
             entrypoint="src/container/executor.sh",
             cmd="serve",
-            env=env_vars
+            env=env_vars,
+            verbose=verbose
         )
 
 @click.command()

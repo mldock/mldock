@@ -7,7 +7,7 @@ git-prune:
 
 install-requirements:
 	python -m pip install --upgrade pip;
-	pip install -e ".[aws, gcp, cli]";
+	pip install -e ".[aws, gcp, cli, testing]";
 
 build:
 	make install-requirements;

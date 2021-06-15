@@ -13,7 +13,8 @@
 # number of workers        MODEL_SERVER_WORKERS              the number of CPU cores
 # timeout                  MODEL_SERVER_TIMEOUT              60 seconds
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
+import sys;sys.path.insert(1, ".")  # Do not remove this
 import multiprocessing
 import os
 import signal
