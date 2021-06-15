@@ -2,8 +2,10 @@
 import os
 import sys
 import json
+import time
 import logging
 from pathlib import Path
+import requests
 import docker
 import traceback
 import logging
@@ -113,14 +115,14 @@ def train_model(working_dir, docker_tag, image_name, entrypoint, cmd, env=None):
         logger.error(exception)
         raise
 
-def deploy_model(working_dir, docker_tag, image_name, entrypoint, cmd, port=8080, env={}):
+def deploy_model(working_dir, docker_tag, image_name, entrypoint, cmd, port=8080, env={}, **kwargs):
     """
     Deploys ML models(s) locally
     :param working_dir: [str], source root directory
     :param docker_tag: [str], the Docker tag for the image
     :param image_name: [str], The name of the Docker image
     """
-
+    verbose = kwargs.get('verbose', False)
     process_env = {}
     if isinstance(env, dict) and len(env) > 0:
         process_env.update(env)
@@ -154,6 +156,17 @@ def deploy_model(working_dir, docker_tag, image_name, entrypoint, cmd, port=8080
                 detach=True,
                 stream=True
             )
+            if verbose:
+                logs = container.logs(follow=True).decode('utf-8')
+
+                logger.info(logs)
+
+    except requests.exceptions.ConnectionError as exception:
+        logger.info(
+            "\nWorker socket connection timed out. "
+            "\n\nThis can happen when connection pool is overloaded. "
+            "We suggest setting environment variable: DOCKER_CLIENT_TIMEOUT=120 to give the client more time."
+        )
 
     except (KeyboardInterrupt, SystemExit) as exception:
         logger.error(exception)
