@@ -47,40 +47,36 @@ class TestNumpyDecoders:
 
 
     @pytest.mark.parametrize(
-        "target, expected, dtype",
+        "target, expected",
         [
-            ("[42, 6, 9]", np.array([42, 6, 9]), int),
-            ("[42.0, 6.0, 9.0]", np.array([42.0, 6.0, 9.0]), float),
-            ('["42", "6", "9"]', np.array(["42", "6", "9"]), None),
-            (u'["42", "6", "9"]', np.array([u"42", u"6", u"9"]), None),
+            ("[42, 6, 9]", np.array([42, 6, 9])),
+            ("[42.0, 6.0, 9.0]", np.array([42.0, 6.0, 9.0])),
+            ('["42", "6", "9"]', np.array(["42", "6", "9"])),
+            (u'["42", "6", "9"]', np.array([u"42", u"6", u"9"])),
         ],
     )
     @staticmethod
-    def test_json_to_numpy(target, expected, dtype):
+    def test_json_to_numpy(target, expected):
         """test json data is correctly decoded to numpy array"""
-        actual = numpy_decoders.json_to_numpy(target, dtype=dtype)
+        actual = numpy_decoders.json_to_numpy(target)
         np.testing.assert_equal(actual, expected)
 
-        np.testing.assert_equal(numpy_decoders.json_to_numpy(target, dtype=int), expected.astype(int))
-
-        np.testing.assert_equal(numpy_decoders.json_to_numpy(target, dtype=float), expected.astype(float))
-
     @pytest.mark.parametrize(
-        "target, expected, dtype",
+        "target, expected",
         [
-            (b"42\n6\n9\n", np.array([42, 6, 9]), int),
-            (b"42.0\n6.0\n9.0\n", np.array([42.0, 6.0, 9.0]), float),
-            (b"42\n6\n9\n", np.array([42, 6, 9]), int),
-            (b'"False,"\n"True."\n"False,"\n', np.array(["False,", "True.", "False,"]), None),
-            (b'aaa\n"b""bb"\nccc\n', np.array(["aaa", 'b"bb', "ccc"]), None),
-            (b'"a\nb"\nc\n', np.array(["a\nb", "c"]), None),
+            (b"42\n6\n9\n", np.array([42, 6, 9])),
+            (b"42.0\n6.0\n9.0\n", np.array([42.0, 6.0, 9.0])),
+            (b"42\n6\n9\n", np.array([42, 6, 9])),
+            (b'"False,"\n"True."\n"False,"\n', np.array(["False,", "True.", "False,"])),
+            (b'aaa\n"b""bb"\nccc\n', np.array(["aaa", 'b"bb', "ccc"])),
+            (b'"a\nb"\nc\n', np.array(["a\nb", "c"])),
         ],
     )
     @staticmethod
-    def test_csv_to_numpy(target, expected, dtype):
+    def test_csv_to_numpy(target, expected):
         """test csv data is correctly decoded to numpy array"""
-        actual = numpy_decoders.csv_to_numpy(target, dtype=dtype)
-        print(actual)
+        actual = numpy_decoders.csv_to_numpy(target)
+
         np.testing.assert_equal(actual, expected)
 
 

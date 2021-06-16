@@ -31,36 +31,35 @@ from mldock.platform_helpers.mldock.inference.content_decoders import pandas as 
 class TestPandasDecoders:
     """Tests the pandas decoder methods"""
     @pytest.mark.parametrize(
-        "target, expected, dtype",
+        "target, expected",
         [
-            ({"col":[42, 6, 9]}, pd.DataFrame([42, 6, 9], columns=["col"]), int),
-            ({"col":[42.0, 6.0, 9.0]}, pd.DataFrame([42.0, 6.0, 9.0], columns=["col"]), float),
-            ({"col":["42", "6", "9"]}, pd.DataFrame(["42", "6", "9"], columns=["col"]), None),
-            ({"col":[u"42", u"6", u"9"]}, pd.DataFrame([u"42", u"6", u"9"], columns=["col"]), None),
+            ({"col":[42, 6, 9]}, pd.DataFrame([42, 6, 9], columns=["col"])),
+            ({"col":[42.0, 6.0, 9.0]}, pd.DataFrame([42.0, 6.0, 9.0], columns=["col"])),
+            ({"col":["42", "6", "9"]}, pd.DataFrame(["42", "6", "9"], columns=["col"])),
+            ({"col":[u"42", u"6", u"9"]}, pd.DataFrame([u"42", u"6", u"9"], columns=["col"])),
         ],
     )
     @staticmethod
-    def test_json_list_to_pandas(target, expected, dtype):
+    def test_json_list_to_pandas(target, expected):
         """test json data is correctly decoded to pandas dataframe"""
-        actual = pandas_decoders.json_list_to_pandas(json.dumps(target), dtype=dtype)
-        pd.testing.assert_frame_equal(actual, expected.astype(dtype))
+        actual = pandas_decoders.json_list_to_pandas(json.dumps(target))
+        pd.testing.assert_frame_equal(actual, expected)
 
     @pytest.mark.parametrize(
-        "target, expected, dtype",
+        "target, expected",
         [
-            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=['col']), int),
-            (b"col\n42.0\n6.0\n9.0\n", pd.DataFrame([42.0, 6.0, 9.0], columns=['col']), float),
-            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=['col']), int),
-            (b'col\n"False,"\n"True."\n"False,"\n', pd.DataFrame(["False,", "True.", "False,"], columns=['col']), str),
-            (b'col\naaa\n"b""bb"\nccc\n', pd.DataFrame(["aaa", 'b"bb', "ccc"], columns=['col']), str),
-            (b'col\n"a\nb"\nc\n', pd.DataFrame(["a\nb", "c"], columns=['col']), str)
+            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=['col'])),
+            (b"col\n42.0\n6.0\n9.0\n", pd.DataFrame([42.0, 6.0, 9.0], columns=['col'])),
+            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=['col'])),
+            (b'col\n"False,"\n"True."\n"False,"\n', pd.DataFrame(["False,", "True.", "False,"], columns=['col'])),
+            (b'col\naaa\n"b""bb"\nccc\n', pd.DataFrame(["aaa", 'b"bb', "ccc"], columns=['col'])),
+            (b'col\n"a\nb"\nc\n', pd.DataFrame(["a\nb", "c"], columns=['col']))
         ],
     )
     @staticmethod
-    def test_csv_to_pandas(target, expected, dtype):
+    def test_csv_to_pandas(target, expected):
         """test csv data is correctly decoded to pandas dataframe"""
-        actual = pandas_decoders.csv_to_pandas(target, dtype=dtype)
-        print(actual)
+        actual = pandas_decoders.csv_to_pandas(target)
         pd.testing.assert_frame_equal(actual, expected)
 
 

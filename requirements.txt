@@ -1,6 +1,0 @@
-click
-docker
-future
-google-cloud-storage
-google-api-python-client
-fsspec
