@@ -60,8 +60,6 @@ def array_to_csv(array_like, quoted=True, **kwargs):
         writer = csv.writer(
             stream, lineterminator="\n", delimiter=",", quotechar='"', doublequote=quoted, strict=True
         )
-        # (TODO) allow passing of column names list?
-        # write that row first?
         writer.writerows(array)
         return stream.getvalue()
     except csv.Error as e:

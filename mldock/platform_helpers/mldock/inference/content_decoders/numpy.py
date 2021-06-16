@@ -16,45 +16,38 @@ from mldock.platform_helpers.mldock.inference import content_types
 def npy_to_numpy(npy_array):
     """Convert an NPY array into numpy.
     Args:
-        npy_array (npy array): NPY array to be converted.
+        npy_array (npy array): NPY serialized array to be converted.
     Returns:
         (np.array): Converted numpy array.
     """
     stream = io.BytesIO(npy_array)
     return np.load(stream, allow_pickle=True)
 
-def json_to_numpy(string_like, dtype=None):
-    """Convert a JSON object to a numpy array.
-        Args:
-            string_like (str): JSON string.
-            dtype (dtype, optional):  Data type of the resulting array. If None,
-                                      the dtypes will be determined by the
-                                      contents of each column, individually.
-                                      This argument can only be used to
-                                      'upcast' the array.  For downcasting,
-                                      use the .astype(t) method.
-        Returns:
-            (np.array): Numpy array.
-        """
-    data = json.loads(string_like)
-    return np.array(data, dtype=dtype)
+def json_to_numpy(json_data):
+    """
+        Convert a JSON object to a numpy array.
 
-def csv_to_numpy(string_like, dtype=None):
-    """Convert a CSV object to a numpy array.
-    Args:
-        string_like (str): CSV string.
-        dtype (dtype, optional):  Data type of the resulting array. If None, the
-                                  dtypes will be determined by the contents of
-                                  each column, individually. This argument can
-                                  only be used to 'upcast' the array.  For
-                                  downcasting, use the .astype(t) method.
-    Returns:
-        (np.array): Numpy array.
+        Args:
+            string_like (str): JSON serialized data.
+        Returns:
+            (np.array): data as Numpy array.
+    """
+    data = json.loads(json_data)
+    return np.array(data)
+
+def csv_to_numpy(bytes_like):
+    """
+        Convert a CSV object to a numpy array.
+
+        Args:
+            bytes_like (str): bytes serialized CSV string.
+        Returns:
+            (np.array): data as Numpy array.
     """
     try:
-        stream = io.StringIO(string_like.decode())
+        stream = io.StringIO(bytes_like.decode())
         reader = csv.reader(stream, delimiter=",", quotechar='"', doublequote=True, strict=True)
-        data = np.array([row for row in reader], dtype=dtype).squeeze()
+        data = np.array([row for row in reader]).squeeze()
         return data
 
     except ValueError as e:
