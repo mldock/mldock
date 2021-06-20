@@ -6,7 +6,7 @@ import sys
 import json
 import argparse
 import pickle
-from src.container.assets import environment
+from src.container.assets import environment, logger
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
