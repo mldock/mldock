@@ -159,13 +159,6 @@ def init(obj, dir, testing_framework, service, no_prompt, container_only, templa
         # Get platform specific files
         platform = mldock_config.get("platform", None)
 
-        if platform == "sagemaker":
-            # get list of dataset names
-            mldock_data = mldock_config.get("data", None)
-            input_config_config = mldock_utils._extract_data_channels_from_mldock(mldock_data)
-            utils._write_json(input_config_config, Path(dir,'config/inputdataconfig.json'))
-            utils._write_json({"current_host": "dummy_host", "hosts": ["dummy_host", "second_dummy_host"]}, Path(dir,'config/resourceconfig.json'))
-
         init_container_project(
             dir=working_directory_manager.get_working_dir(),
             mldock_package_path=mldock_package_path,

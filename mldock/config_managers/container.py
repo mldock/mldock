@@ -47,7 +47,7 @@ class MLDockConfigManager(BaseConfigManager):
         """
 
         click.secho("Set container platform type", bg='blue', nl=True)
-        options = ['generic', 'sagemaker', 'gcp', 'aws']
+        options = ['generic', 'gcp', 'aws']
 
         platform_name = click.prompt(
             text=style_dropdown(
