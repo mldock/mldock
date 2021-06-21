@@ -31,12 +31,11 @@ def train_function():
         # Write out an error file. This will be returned as the failureReason in the
         # DescribeTrainingJob result.
         trc = traceback.format_exc()
-        with open(os.path.join('/opt/ml/output/errors', 'log.txt'), 'w') as s:
+        with open(os.path.join('/opt/ml/output/failure'), 'w') as s:
             s.write('Exception during training: ' + str(e) + '\n' + trc)
         # Printing this causes the exception to be in the training job logs, as well.
-        logger.error('Exception during training: ' + str(e) + '\n' + trc, file=sys.stderr)
-        # A non-zero exit code causes the training job to be marked as Failed.
-        sys.exit(255)
+        logger.error('Exception during training: ' + str(e) + '\n' + trc)
+        raise
 
 if __name__ == '__main__':
 

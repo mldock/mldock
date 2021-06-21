@@ -7,6 +7,7 @@ from mldock.platform_helpers.mldock.configuration.environment.gcp import GCPEnvi
 from mldock.platform_helpers.mldock.configuration.container import \
     BaseTrainingContainer, BaseServingContainer
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mldock')
 
 # Instantiate Environment here
