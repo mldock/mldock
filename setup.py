@@ -35,7 +35,7 @@ setuptools.setup(
         'gcp': ['google-cloud-storage', 'google-api-python-client'],
         'aws': ['boto3'],
         'cli': ['click', 'docker', 'future', 'requests', 'boto3', 'google-auth', 'appdirs', 'halo'],
-        'sagemaker': ['sagemaker-training'],
+        'sagemaker': ['sagemaker[local]'],
         'testing': ['pandas', 'numpy', 'scipy', 'protobuf>=3.1']
     },
     entry_points="""
