@@ -4,6 +4,7 @@ import logging
 import click
 
 from mldock.command.cloud.sagemaker import sagemaker
+from mldock.command.cloud.vertex_ai import vertex_ai
 from mldock.config_managers.container import \
     MLDockConfigManager
 from mldock.terminal import ProgressLogger
@@ -20,3 +21,4 @@ def cloud():
     pass
 
 cloud.add_command(sagemaker)
+cloud.add_command(vertex_ai)
