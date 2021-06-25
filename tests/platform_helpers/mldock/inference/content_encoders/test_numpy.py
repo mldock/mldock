@@ -29,6 +29,8 @@ from mldock.platform_helpers.mldock.inference.recordio import _read_recordio
 
 class TestNumpyEncoders:
     """Tests the numpy encoder methods"""
+
+    @staticmethod
     @pytest.mark.parametrize(
         "target",
         [
@@ -39,7 +41,6 @@ class TestNumpyEncoders:
             {42: {"6": 9.0}}
         ],
     )
-    @staticmethod
     def test_array_to_npy(target):
         """test numpy arrays are correctly encoded as .npy"""
         input_data = np.array(target)
@@ -52,6 +53,7 @@ class TestNumpyEncoders:
 
         np.testing.assert_equal(np.load(BytesIO(actual), allow_pickle=True), np.array(target))
 
+    @staticmethod
     @pytest.mark.parametrize(
         "target, expected",
         [
@@ -61,7 +63,6 @@ class TestNumpyEncoders:
             ({42: {"6": 9.0}}, '{"42": {"6": 9.0}}'),
         ],
     )
-    @staticmethod
     def test_array_to_json(target, expected):
         """test numpy arrays are correctly encoded as json"""
         actual = numpy_encoders.array_to_json(target)
@@ -70,6 +71,7 @@ class TestNumpyEncoders:
         actual = numpy_encoders.array_to_json(np.array(target))
         np.testing.assert_equal(actual, expected)
 
+    @staticmethod
     @pytest.mark.parametrize(
         "target, expected",
         [
@@ -81,7 +83,6 @@ class TestNumpyEncoders:
             (["a\nb", "c"], '"a\nb"\nc\n'),
         ],
     )
-    @staticmethod
     def test_array_to_csv(target, expected):
         """test numpy arrays are correctly encoded as csv"""
         actual = numpy_encoders.array_to_csv(target)
@@ -90,9 +91,8 @@ class TestNumpyEncoders:
         actual = numpy_encoders.array_to_csv(np.array(target))
         np.testing.assert_equal(actual, expected)
 
-
-    @pytest.mark.parametrize("content_type", [content_types.JSON, content_types.CSV, content_types.NPY])
     @staticmethod
+    @pytest.mark.parametrize("content_type", [content_types.JSON, content_types.CSV, content_types.NPY])
     def test_encode(content_type):
         """test numpy encode that encodes to a set of content-types"""
         encoder = Mock()
@@ -101,13 +101,13 @@ class TestNumpyEncoders:
 
             encoder.assert_called_once_with(42)
 
+    @staticmethod
     @pytest.mark.parametrize(
         "array_data",
         [
             [[1.0, 2.0, 3.0], [10.0, 20.0, 30.0]]
         ],
     )
-    @staticmethod
     def test_array_to_recordio_dense(array_data):
         """test numpy arrays are correctly encoded as dense recordio"""
         buf = numpy_encoders.array_to_recordio_protobuf(np.array(array_data))
@@ -118,6 +118,7 @@ class TestNumpyEncoders:
             record.ParseFromString(record_data)
             assert record.features["values"].float64_tensor.values == expected
 
+    @staticmethod
     @pytest.mark.parametrize(
         "array_data, keys_data",
         [
@@ -126,7 +127,6 @@ class TestNumpyEncoders:
             )
         ],
     )
-    @staticmethod
     def test_sparse_int_write_spmatrix_to_sparse_tensor(array_data, keys_data):
         """test numpy arrays are correctly encoded to int sparse tensor spmatrix encoding"""
         n = 4
@@ -149,6 +149,7 @@ class TestNumpyEncoders:
             assert record.features["values"].int32_tensor.keys == expected_keys
             assert record.features["values"].int32_tensor.shape == [n]
 
+    @staticmethod
     @pytest.mark.parametrize(
         "array_data, keys_data",
         [
@@ -157,7 +158,6 @@ class TestNumpyEncoders:
             )
         ],
     )
-    @staticmethod
     def test_sparse_float32_write_spmatrix_to_sparse_tensor(array_data, keys_data):
         """test numpy arrays are correctly encoded to float32 sparse tensor spmatrix"""
         n = 4
