@@ -73,22 +73,24 @@ class TestNumpyEncoders:
 
     @staticmethod
     @pytest.mark.parametrize(
-        "target, expected",
+        "target, expected, quoted",
         [
-            ([42, 6, 9], "42\n6\n9\n"),
-            ([42.0, 6.0, 9.0], "42.0\n6.0\n9.0\n"),
-            (["42", "6", "9"], "42\n6\n9\n"),
-            (["False,", "True.", "False,"], '"False,"\nTrue.\n"False,"\n'),
-            (["aaa", 'b"bb', "ccc"], 'aaa\n"b""bb"\nccc\n'),
-            (["a\nb", "c"], '"a\nb"\nc\n'),
+            ([42.0, 6.0, 9.0], '42.0\n6.0\n9.0\n', False),
+            (["42", "6", "9"], '42\n6\n9\n', False),
+            ([42, 6, 9], '"42"\n"6"\n"9"\n', True),
+            ([42.0, 6.0, 9.0], '"42.0"\n"6.0"\n"9.0"\n', True),
+            (["42", "6", "9"], '"42"\n"6"\n"9"\n', True),
+            (["False,", "True.", "False,"], '"False,"\n"True."\n"False,"\n', True),
+            (["aaa", 'b"bb', "ccc"], '"aaa"\n"b"bb"\n"ccc"\n', True),
+            (["a\nb", "c"], '"a\nb"\n"c"\n', True),
         ],
     )
-    def test_array_to_csv(target, expected):
+    def test_array_to_csv(target, expected, quoted):
         """test numpy arrays are correctly encoded as csv"""
-        actual = numpy_encoders.array_to_csv(target)
+        actual = numpy_encoders.array_to_csv(target, quoted=quoted)
         np.testing.assert_equal(actual, expected)
 
-        actual = numpy_encoders.array_to_csv(np.array(target))
+        actual = numpy_encoders.array_to_csv(np.array(target).astype(str), quoted=quoted)
         np.testing.assert_equal(actual, expected)
 
     @staticmethod
