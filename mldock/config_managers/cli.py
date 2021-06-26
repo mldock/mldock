@@ -5,6 +5,7 @@
 """
 import os
 import json
+import yaml
 import click
 import logging
 from pathlib import Path
@@ -29,22 +30,36 @@ class CliConfigureManager(BaseConfigManager):
         filepath: str = user_config_dir(
             appname=APP_NAME, appauthor=APP_AUTHOR
         ),
-        type: str = 'local',
         create: bool = False
     ):
         self.filepath = filepath
-        self.config_type = type
 
         self.config = self.load_config(self.filepath, create=create)
 
-    def setup_config(self):
-        click.secho("Setup CLI configuration", bg='blue')
-        if self.config.get(self.config_type) is None:
-            self.config[self.config_type] = {}
-        self.ask_for_auth_type()
-        self.ask_for_environment()
+    def reset(self, config_type):
+        click.secho("Dropping {} configuration".format(config_type), bg='blue')
+        self.config.pop(config_type, None)
 
-    def ask_for_auth_type(self):
+    def setup_local_config(self):
+        click.secho("Setup CLI configuration", bg='blue')
+        if self.config.get('local') is None:
+            self.config['local'] = {}
+        self.ask_for_container_auth_type()
+        self.ask_for_environment(config_type='local')
+
+    def setup_templates_config(self):
+        click.secho("Setup CLI configuration", bg='blue')
+        if self.config.get('templates') is None:
+            self.config['templates'] = {}
+        self.ask_for_template_server()
+
+    def setup_workspace_config(self):
+        click.secho("Setup CLI configuration", bg='blue')
+        if self.config.get('workspace') is None:
+            self.config['workspace'] = {}
+        self.ask_for_environment(config_type='workspace')
+
+    def ask_for_container_auth_type(self):
         """prompt user for platform name
         """
 
@@ -63,36 +78,63 @@ class CliConfigureManager(BaseConfigManager):
             show_choices=False
         )
         
-        self.config[self.config_type].update({
+        self.config['local'].update({
             'auth_type': auth_type
         })
 
-    def ask_for_environment(self):
+    def ask_for_environment(self, config_type):
         
-        config = self.config[self.config_type].get('environment', {})
+        config = self.config[config_type].get('environment', {})
         environment_config_manager = EnvironmentConfigManager(config=config)
         environment_config_manager.ask_for_env_vars()
-        self.config[self.config_type].update({
+        self.config[config_type].update({
             'environment': environment_config_manager.get_config()
+        })
+    
+    def ask_for_template_server(self):
+        """prompt user to set template server tracking
+        """
+
+        click.secho("Set template server type", bg='blue', nl=True)
+        options = ['local', 'github']
+
+        server_type = click.prompt(
+            text=style_dropdown(
+                group_name="template server type",
+                options=options,
+                default=self.config.get('server_type', None)
+            ),
+            type=ChoiceWithNumbers(options, case_sensitive=False),
+            show_default=True,
+            default=self.config.get('server_type', None),
+            show_choices=False
+        )
+        
+        self.config['templates'].update({
+            'server_type': server_type
         })
 
     @staticmethod
     def _format_nodes(config):
 
         output = []
-        
-        for key_, value_ in config.items():
-            output.append("\t{} : {}".format(key_, value_))
 
-        return "\n".join(output)
+        for key_ in sorted(config):
+            value_ = config[key_]
+            if isinstance(value_, dict):
+                value_ = yaml.dump(value_, indent=4, sort_keys=True)
+            output.append({
+                "name": key_, "message": value_
+            })
+
+        return output
 
     def get_state(self):
         """pretty prints a json config to terminal
         """
         config = self.config.copy()
 
-        states = []
-        states.append({"name": "Local", "message": self._format_nodes(config)})
+        states = self._format_nodes(config)
 
         return states
 

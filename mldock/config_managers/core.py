@@ -144,7 +144,7 @@ class BaseConfigManager:
         """
         logger.info(self.filepath)
         with open(self.filepath, 'w') as config_file:
-            json.dump(self.config, config_file, indent=4)
+            json.dump(self.config, config_file, indent=4, sort_keys=True)
 
     def get_config(self) -> dict:
         """get config object
