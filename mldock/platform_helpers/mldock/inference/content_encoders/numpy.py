@@ -15,7 +15,7 @@
 # distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import csv
+# import csv
 import io
 import json
 
@@ -53,17 +53,38 @@ def array_to_csv(array_like, quoted=True, **kwargs):
     """
     array = np.array(array_like)
     if len(array.shape) == 1:
-        array = np.reshape(array, (array.shape[0], 1))  # pylint: disable=unsubscriptable-object
+        array = np.reshape(array, (array.shape[0], 1))
 
-    try:
-        stream = StringIO()
-        writer = csv.writer(
-            stream, lineterminator="\n", delimiter=",", quotechar='"', doublequote=quoted, strict=True
-        )
-        writer.writerows(array)
-        return stream.getvalue()
-    except csv.Error as e:
-        raise errors.ClientError("Error while encoding csv: {}".format(e))
+    stream = io.StringIO()
+
+    if quoted:
+        np.savetxt(stream, array_like, delimiter=",", fmt='"%s"')
+    else:
+        np.savetxt(stream, array_like, delimiter=",", fmt='%s')
+    return stream.getvalue()
+
+# def array_to_csv(array_like, quoted=True, **kwargs):
+#     """Convert an array like object to CSV.
+#     To understand what an array-like object is, please see:
+#     https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
+#     Args:
+#         array_like (np.array or Iterable or int or float): Array-like object to be converted to CSV.
+#     Returns:
+#         (str): Object serialized to CSV.
+#     """
+#     array = np.array(array_like)
+#     if len(array.shape) == 1:
+#         array = np.reshape(array, (array.shape[0], 1))  # pylint: disable=unsubscriptable-object
+
+#     try:
+#         stream = StringIO()
+#         writer = csv.writer(
+#             stream, lineterminator="\n", delimiter=",", quotechar='"', doublequote=quoted, strict=True
+#         )
+#         writer.writerows(array)
+#         return stream.getvalue()
+#     except csv.Error as e:
+#         raise errors.ClientError("Error while encoding csv: {}".format(e))
 
 def array_to_json(array_like, **kwargs):
     """

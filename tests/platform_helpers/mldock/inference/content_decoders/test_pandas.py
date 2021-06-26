@@ -30,6 +30,8 @@ from mldock.platform_helpers.mldock.inference.content_decoders import pandas as 
 
 class TestPandasDecoders:
     """Tests the pandas decoder methods"""
+
+    @staticmethod
     @pytest.mark.parametrize(
         "target, expected",
         [
@@ -39,12 +41,12 @@ class TestPandasDecoders:
             ({"col":[u"42", u"6", u"9"]}, pd.DataFrame([u"42", u"6", u"9"], columns=["col"])),
         ],
     )
-    @staticmethod
     def test_json_list_to_pandas(target, expected):
         """test json data is correctly decoded to pandas dataframe"""
         actual = pandas_decoders.json_list_to_pandas(json.dumps(target))
         pd.testing.assert_frame_equal(actual, expected)
 
+    @staticmethod
     @pytest.mark.parametrize(
         "target, expected",
         [
@@ -56,13 +58,12 @@ class TestPandasDecoders:
             (b'col\n"a\nb"\nc\n', pd.DataFrame(["a\nb", "c"], columns=['col']))
         ],
     )
-    @staticmethod
     def test_csv_to_pandas(target, expected):
         """test csv data is correctly decoded to pandas dataframe"""
         actual = pandas_decoders.csv_to_pandas(target)
         pd.testing.assert_frame_equal(actual, expected)
 
-
+    @staticmethod
     @pytest.mark.parametrize(
         "payload, content_type",
         [
@@ -70,7 +71,6 @@ class TestPandasDecoders:
             (42, content_types.CSV)
         ],
     )
-    @staticmethod
     def test_decode(payload, content_type):
         """test pandas decode method that decodes from a set of content-types"""
         decoder = Mock()
