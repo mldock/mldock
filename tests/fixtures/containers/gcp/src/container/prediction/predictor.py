@@ -5,6 +5,7 @@
 """
 import json
 import flask
+import numpy as np
 import src.prediction as model_serving
 from mldock.platform_helpers.mldock.inference.content_decoders import \
     numpy as content_decoders
@@ -26,13 +27,10 @@ def transformation():
         data = flask.request.get_json()
 
         results = model_serving.handler(
-            content_decoders.decode(json.dumps(data).encode(), content_type='application/json')
+            np.array(data)
         )
         return flask.Response(
-            response=content_encoders.encode(
-                array_like=results,
-                content_type="application/json"
-            ),
+            response=content_encoders.array_to_json(results),
             status=200,
             mimetype='application/json'
         )
@@ -40,14 +38,11 @@ def transformation():
         data = flask.request.data
 
         results = model_serving.handler(
-            content_decoders.decode(data, content_type='text/csv'),
+            content_decoders.csv_to_numpy(data),
         )
 
         return flask.Response(
-            response=content_encoders.encode(
-                array_like=results,
-                content_type='text/csv'
-            ),
+            response=content_encoders.array_to_csv(results, quoted=False),
             status=200,
             mimetype='text/csv'
         )

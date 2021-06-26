@@ -58,28 +58,3 @@ def csv_to_numpy(bytes_like):
         raise
     except Exception as e:
         raise Exception("Error while decoding csv: {}".format(e))
-
-_decoders_map = {
-    content_types.NPY: npy_to_numpy,
-    content_types.CSV: csv_to_numpy,
-    content_types.JSON: json_to_numpy,
-}
-
-def decode(obj, content_type: str):
-    """Decode an object of one of the default content types to a numpy array.
-    Args:
-        obj (object): Object to be decoded.
-        content_type (str): Content type to be used.
-    Returns:
-        np.array: Decoded object.
-    """
-    try:
-        decoder = _decoders_map[content_type]
-        return decoder(obj)
-    except KeyError:
-        raise TypeError(
-            "{content_type} is not "
-            "supported for numpy decode.".format(
-                content_type=content_type
-            )
-        )
