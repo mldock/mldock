@@ -51,42 +51,20 @@ def array_to_csv(array_like, quoted=True, **kwargs):
     Returns:
         (str): Object serialized to CSV.
     """
-    array = np.array(array_like)
-    if len(array.shape) == 1:
-        array = np.reshape(array, (array.shape[0], 1))
+    data = np.array(array_like)
+    if len(data.shape) == 1:
+        data = np.reshape(data, (data.shape[0], 1))
 
     stream = io.StringIO()
 
+    print(data)
     if quoted:
-        np.savetxt(stream, array_like, delimiter=",", fmt='"%s"')
+        np.savetxt(stream, data, delimiter=",", fmt='"%s"')
     else:
-        np.savetxt(stream, array_like, delimiter=",", fmt='%s')
+        np.savetxt(stream, data, delimiter=",", fmt='%s')
     return stream.getvalue()
 
-# def array_to_csv(array_like, quoted=True, **kwargs):
-#     """Convert an array like object to CSV.
-#     To understand what an array-like object is, please see:
-#     https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
-#     Args:
-#         array_like (np.array or Iterable or int or float): Array-like object to be converted to CSV.
-#     Returns:
-#         (str): Object serialized to CSV.
-#     """
-#     array = np.array(array_like)
-#     if len(array.shape) == 1:
-#         array = np.reshape(array, (array.shape[0], 1))  # pylint: disable=unsubscriptable-object
-
-#     try:
-#         stream = StringIO()
-#         writer = csv.writer(
-#             stream, lineterminator="\n", delimiter=",", quotechar='"', doublequote=quoted, strict=True
-#         )
-#         writer.writerows(array)
-#         return stream.getvalue()
-#     except csv.Error as e:
-#         raise errors.ClientError("Error while encoding csv: {}".format(e))
-
-def array_to_json(array_like, **kwargs):
+def array_to_json(array_like):
     """
         Convert an array-like object to JSON.
 
@@ -131,30 +109,3 @@ def array_to_recordio_protobuf(array_like, labels=None):
         _write_numpy_to_dense_tensor(buffer, array_like, labels)
     buffer.seek(0)
     return buffer.getvalue()
-
-_encoders_map = {
-    content_types.NPY: array_to_npy,
-    content_types.CSV: array_to_csv,
-    content_types.JSON: array_to_json,
-}
-
-def encode(array_like, content_type, **kwargs):
-    """Encode an array-like object in a specific content_type to a numpy array.
-    To understand what an array-like object is, please see:
-    https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
-    Args:
-        array_like (np.array or Iterable or int or float): Array-like object to be
-            converted to numpy.
-        content_type (str): Content type to be used.
-    Returns:
-        (np.array): Object converted as numpy array.
-    """
-
-    try:
-        encoder = _encoders_map[content_type]
-        return encoder(array_like, **kwargs)
-    except KeyError:
-        raise TypeError(
-            "{} is not supported "
-            "for encoding from numpy.".format(content_type)
-        )

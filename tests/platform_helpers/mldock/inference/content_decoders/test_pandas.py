@@ -62,19 +62,3 @@ class TestPandasDecoders:
         """test csv data is correctly decoded to pandas dataframe"""
         actual = pandas_decoders.csv_to_pandas(target)
         pd.testing.assert_frame_equal(actual, expected)
-
-    @staticmethod
-    @pytest.mark.parametrize(
-        "payload, content_type",
-        [
-            (42, content_types.JSON),
-            (42, content_types.CSV)
-        ],
-    )
-    def test_decode(payload, content_type):
-        """test pandas decode method that decodes from a set of content-types"""
-        decoder = Mock()
-        with patch.dict(pandas_decoders._decoders_map, {content_type: decoder}, clear=True):
-            pandas_decoders.decode(payload, content_type)
-
-            decoder.assert_called_once_with(42)

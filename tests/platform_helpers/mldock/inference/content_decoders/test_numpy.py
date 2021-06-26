@@ -78,20 +78,3 @@ class TestNumpyDecoders:
 
         np.testing.assert_equal(actual, expected)
 
-    @staticmethod
-    @pytest.mark.parametrize(
-        "payload, content_type",
-        [
-            (42, content_types.JSON),
-            (42, content_types.CSV),
-            (42, content_types.NPY)
-        ],
-    )
-    def test_decode(payload, content_type):
-        """test numpy decode that decodes from a set of content-types"""
-        decoder = Mock()
-        with patch.dict(numpy_decoders._decoders_map, {content_type: decoder}, clear=True):
-            numpy_decoders.decode(payload, content_type)
-
-            decoder.assert_called_once_with(42)
-

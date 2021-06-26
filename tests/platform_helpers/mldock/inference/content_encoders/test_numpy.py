@@ -94,16 +94,6 @@ class TestNumpyEncoders:
         np.testing.assert_equal(actual, expected)
 
     @staticmethod
-    @pytest.mark.parametrize("content_type", [content_types.JSON, content_types.CSV, content_types.NPY])
-    def test_encode(content_type):
-        """test numpy encode that encodes to a set of content-types"""
-        encoder = Mock()
-        with patch.dict(numpy_encoders._encoders_map, {content_type: encoder}, clear=True):
-            numpy_encoders.encode(42, content_type)
-
-            encoder.assert_called_once_with(42)
-
-    @staticmethod
     @pytest.mark.parametrize(
         "array_data",
         [
