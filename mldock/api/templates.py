@@ -23,12 +23,12 @@ def init_from_template(template_name, templates_root, src_directory, container_o
     elif template_server == 'github':
 
         # set up in either ENV or configure local
-        GITHUB_TOKEN = env("MLDOCK_GITHUB_TOKEN", default=None)
-        org = env("MLDOCK_GITHUB_ORG", default=None)
-        repo = env("MLDOCK_GITHUB_REPO", default=None)
-        branch = env("MLDOCK_GITHUB_REPO_BRANCH", default=None)
+        github_token = env("MLDOCK_GITHUB_TOKEN", default=None)
+        github_org = env("MLDOCK_GITHUB_ORG", default=None)
+        github_repo = env("MLDOCK_GITHUB_REPO", default=None)
+        github_branch = env("MLDOCK_GITHUB_REPO_BRANCH", default=None)
 
-        if GITHUB_TOKEN is None:
+        if github_token is None:
             raise KeyError(
                 "Template server == 'github' requires the "
                 "following environment variables: "
@@ -36,8 +36,15 @@ def init_from_template(template_name, templates_root, src_directory, container_o
                 "MLDOCK_GITHUB_REPO, MLDOCK_GITHUB_REPO_BRANCH"
             )
 
-        github = Github(GITHUB_TOKEN)
-        template_dir = utils.download_from_git(github, template_name, org, repo, branch, root=templates_root)
+        github = Github(github_token)
+        template_dir = utils.download_from_git(
+            github,
+            template_name,
+            github_org,
+            github_repo,
+            github_branch,
+            root=templates_root
+        )
 
     logger.debug("Initializing template based on = {}".format(template_name))
     logger.debug("Template directory = {}".format(template_dir))
