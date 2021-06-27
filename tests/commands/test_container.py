@@ -2,6 +2,7 @@ from mock import patch
 from click.testing import CliRunner
 
 import logging
+import tempfile
 from mldock.__main__ import cli
 from mldock.platform_helpers import utils
 
@@ -20,10 +21,11 @@ class TestContainerCommands:
                 'future.moves.subprocess.check_output',
                 return_value=None
         ):
-            utils._copy_boilerplate_to_dst(src='tests/commands/fixtures/base_container', dst='my_app', remove_first=True)
 
-            result = runner.invoke(cli=cli, args=['container', 'init', '--dir', 'my_app', '--no-prompt'])
-            logger.info(result.exit_code)
+            with tempfile.TemporaryDirectory('my_app') as tmp_dir:
+                utils._copy_boilerplate_to_dst(src='tests/commands/fixtures/base_container', dst=tmp_dir, remove_first=True)
+
+                result = runner.invoke(cli=cli, args=['container', 'init', '--dir', tmp_dir, '--no-prompt'])
 
         assert result.exit_code == 0, result.output
 
@@ -38,11 +40,12 @@ class TestContainerCommands:
                 'future.moves.subprocess.check_output',
                 return_value=None
         ):
-            utils._copy_boilerplate_to_dst(src='tests/commands/fixtures/base_container', dst='my_app', remove_first=True)
-            result = runner.invoke(
-                cli=cli,
-                args=['container','init','--dir','my_app'],
-                input='my_app\ngeneric\nsrc\ncontainer\nrequirements.txt\n\n\n\n\n'
-            )
+            with tempfile.TemporaryDirectory('my_app') as tmp_dir:
+                utils._copy_boilerplate_to_dst(src='tests/commands/fixtures/base_container', dst=tmp_dir, remove_first=True)
+                result = runner.invoke(
+                    cli=cli,
+                    args=['container', 'init', '--dir', tmp_dir],
+                    input='my_app\ngeneric\nsrc\ncontainer\nrequirements.txt\n\n\n\n\n'
+                )
 
         assert result.exit_code == 0, result.output
