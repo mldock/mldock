@@ -1,3 +1,4 @@
+import sys
 import os
 import contextlib
 import json
@@ -11,7 +12,13 @@ import re
 from distutils.dir_util import copy_tree, remove_tree
 from distutils.dir_util import mkpath
 from distutils.file_util import write_file
+import tempfile
+import base64
 
+from github import GithubException
+from github.GithubException import UnknownObjectException
+
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mldock')
 
 def _mkdir(dir_path: str):
@@ -234,3 +241,88 @@ def get_sdk_credentials_volume_mount(
     host_volume = Path(os.path.expanduser(host_path)).absolute().as_posix()
     container_bind = {'bind': container_path, 'mode': 'rw'}
     return {host_volume: container_bind}
+
+def get_sha_for_tag(repository, tag):
+    """
+    Returns a commit PyGithub object for the specified repository and tag.
+    """
+    branches = repository.get_branches()
+    matched_branches = [match for match in branches if match.name == tag]
+    if matched_branches:
+        return matched_branches[0].commit.sha
+
+    tags = repository.get_tags()
+    matched_tags = [match for match in tags if match.name == tag]
+    if not matched_tags:
+        raise ValueError('No Tag or Branch exists with that name')
+    return matched_tags[0].commit.sha
+
+def download_directory(repository, sha, server_path, local_prefix, relative_to):
+    """
+    Download all contents at server_path with commit tag sha in
+    the repository.
+    """
+    try:
+        contents = repository.get_contents(server_path, ref=sha)
+
+        for content in contents:
+            logger.info("Downloading {}".format(content.path))
+            local_path = Path(local_prefix, Path(content.path).relative_to(relative_to))
+            if content.type == 'dir':
+                local_path.mkdir(parents=True, exist_ok=True)
+                download_directory(
+                    repository=repository,
+                    sha=sha,
+                    server_path=content.path,
+                    local_prefix=local_prefix,
+                    relative_to=relative_to
+                )
+            else:
+                file_content = repository.get_contents(content.path, ref=sha)
+                file_data = base64.b64decode(file_content.content)
+
+                # set executables with chmod +x
+                # given that mldock containers always have the "executor.sh"
+                if local_path.name == 'executor.sh':
+                    local_path.touch(0o777)
+                else:
+                    local_path.touch()
+
+                with open(local_path, "w+") as file_out:
+                    file_out.write(file_data.decode())
+                    file_out.write("\n")
+    except (GithubException, IOError) as exc:
+
+        # get exc info
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+
+        # if Unknown Object, inform user path is missing.
+        if exc_type == UnknownObjectException:
+            new_error = (
+                "Server path = '{SERVER_PATH}' was "
+                "not found in repository = '{REPOSITORY_NAME}'.".format(
+                    SERVER_PATH=server_path,
+                    REPOSITORY_NAME=repository.name
+                )
+            )
+            logger.error(new_error)
+            sys.exit(-1)
+        raise
+
+def download_from_git(github, start_dir, org, repo, branch, root: str = '.'):
+    """Download the server path from git remote directory"""
+    organization = github.get_organization(org)
+    repository = organization.get_repo(repo)
+    sha = get_sha_for_tag(repository, branch)
+
+    tmp_dir = tempfile.mkdtemp()
+    ## download to tmp
+    download_directory(
+        repository,
+        sha,
+        server_path=Path(root, start_dir).as_posix(),
+        local_prefix=tmp_dir,
+        relative_to=root
+    )
+
+    return tmp_dir
