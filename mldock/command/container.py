@@ -35,32 +35,6 @@ def container():
     pass
 
 @click.command()
-@click.option('--name', help='Container name, used to name directories,etc.', required=True, type=str)
-@click.option('--dir', help='Relative name of MLDOCK project', required=True, type=str)
-@click.option('--out', help='Destination of template should be stored once created.', required=True, type=str)
-@click.pass_obj
-def create_template(obj, name, dir, out):
-    """
-    Command to create a mldock enabled container template
-    """
-
-    try:
-        if not Path(dir, MLDOCK_CONFIG_NAME).exists():
-            raise Exception("Path '{}' was not an mldock project. Confirm this directory is correct, otherwise create one.".format(dir))
-
-        mldock_src_path = Path(dir, 'src')
-
-        destination_path = Path(out, name)
-        destination_path.mkdir(parents=False, exist_ok=True)
-
-        destination_src_path = Path(destination_path, 'src')
-
-        utils._copy_boilerplate_to_dst(mldock_src_path, destination_src_path)
-    except Exception as exception:
-        logger.error(exception)
-        raise
-
-@click.command()
 @click.option('--dir', help='Set the working directory for your sagify container.', required=True)
 @click.option('--no-prompt', is_flag=True, help='Do not prompt user, instead use the mldock config to initialize the container.')
 @click.option('--container-only', is_flag=True, help='Only inject new container assets.')
@@ -320,7 +294,6 @@ def add_commands(cli):
     """add cli commands to group"""
     cli.add_command(init)
     cli.add_command(update)
-    cli.add_command(create_template)
     cli.add_command(summary)
 
 add_commands(container)
