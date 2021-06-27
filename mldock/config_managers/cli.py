@@ -10,7 +10,6 @@ import click
 import logging
 from pathlib import Path
 from appdirs import user_config_dir
-
 from mldock.terminal import ChoiceWithNumbers, style_dropdown
 from mldock.config_managers.core import BaseConfigManager
 
@@ -33,7 +32,6 @@ class CliConfigureManager(BaseConfigManager):
         create: bool = False
     ):
         self.filepath = filepath
-
         self.config = self.load_config(self.filepath, create=create)
 
     def reset(self, config_type):
@@ -41,20 +39,21 @@ class CliConfigureManager(BaseConfigManager):
         self.config.pop(config_type, None)
 
     def setup_local_config(self):
-        click.secho("Setup CLI configuration", bg='blue')
+        click.secho("Setup local CLI configuration", bg='blue')
         if self.config.get('local') is None:
             self.config['local'] = {}
         self.ask_for_container_auth_type()
         self.ask_for_environment(config_type='local')
 
     def setup_templates_config(self):
-        click.secho("Setup CLI configuration", bg='blue')
+        click.secho("Setup templates CLI configuration", bg='blue')
         if self.config.get('templates') is None:
             self.config['templates'] = {}
         self.ask_for_template_server()
+        self.ask_for_template_root()
 
     def setup_workspace_config(self):
-        click.secho("Setup CLI configuration", bg='blue')
+        click.secho("Setup workspace CLI configuration", bg='blue')
         if self.config.get('workspace') is None:
             self.config['workspace'] = {}
         self.ask_for_environment(config_type='workspace')
@@ -114,6 +113,21 @@ class CliConfigureManager(BaseConfigManager):
             'server_type': server_type
         })
 
+    def ask_for_template_root(self):
+        """prompt user to set template root
+        """
+
+        click.secho("Set template root", bg='blue', nl=True)
+
+        templates_root_dir = click.prompt(
+            text=click.style("Set path to template root dir: ", fg='bright_blue'),
+            default=self.config['templates'].get('templates_root', None)
+        )
+        
+        self.config['templates'].update({
+            'templates_root': templates_root_dir
+        })
+
     @staticmethod
     def _format_nodes(config):
 
@@ -146,6 +160,24 @@ class CliConfigureManager(BaseConfigManager):
             dict: config
         """
         return self.config.get('local', {})
+
+    @property
+    def workspace(self) -> dict:
+        """get config object
+
+        Returns:
+            dict: config
+        """
+        return self.config.get('workspace', {})
+
+    @property
+    def templates(self) -> dict:
+        """get config object
+
+        Returns:
+            dict: config
+        """
+        return self.config.get('templates', {})
 
 class ResourceConfigManager(BaseConfigManager):
     """Resource Config Manager for mldock
