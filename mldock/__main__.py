@@ -11,6 +11,7 @@ from mldock.command.container import container
 from mldock.command.configure import configure
 from mldock.command.local import local
 from mldock.command.registry import registry
+from mldock.command.templates import templates
 from mldock.log import configure_logger
 
 click.disable_unicode_literals_warning = True
@@ -37,6 +38,7 @@ def add_commands(cli):
     cli.add_command(container)
     cli.add_command(local)
     cli.add_command(registry)
+    cli.add_command(templates)
 
 add_commands(cli)
 

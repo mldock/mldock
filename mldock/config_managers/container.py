@@ -22,13 +22,17 @@ class MLDockConfigManager(BaseConfigManager):
 
     config = {}
 
-    def setup_config(self):
+    def setup_config(self, **kwargs):
         click.secho("Base Setup", bg='blue')
         self.ask_for_image_name()
-        self.ask_for_platform_name()
+        self.ask_for_template_name()
         self.ask_for_mldock_module_dir()
         self.ask_for_container_dir_name()
         self.ask_for_requirements_file_name()
+    
+    def update_config(self, **kwargs):
+        print(kwargs)
+        self.config.update(kwargs)
 
     def ask_for_image_name(self):
         """prompt user for image name
@@ -42,27 +46,27 @@ class MLDockConfigManager(BaseConfigManager):
             'image_name':image_name
         })
 
-    def ask_for_platform_name(self):
-        """prompt user for platform name
+    def ask_for_template_name(self):
+        """prompt user for container template name
         """
 
-        click.secho("Set container platform type", bg='blue', nl=True)
+        click.secho("Set container template name", bg='blue', nl=True)
         options = ['generic', 'gcp', 'aws']
 
-        platform_name = click.prompt(
+        template_name = click.prompt(
             text=style_dropdown(
-                group_name="platform name",
+                group_name="template name",
                 options=options,
-                default=self.config.get('platform', 'generic')
+                default=self.config.get('template', 'generic')
             ),
             type=ChoiceWithNumbers(options, case_sensitive=False),
             show_default=True,
-            default=self.config.get('platform', 'generic'),
+            default=self.config.get('template', 'generic'),
             show_choices=False
         )
         
         self.config.update({
-            'platform': platform_name
+            'template': template_name
         })
 
     def ask_for_container_dir_name(self):

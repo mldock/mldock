@@ -9,6 +9,10 @@ from mldock.config_managers.cli import \
 click.disable_unicode_literals_warning = True
 logger=logging.getLogger('mldock')
 
+def reset_terminal():
+
+    click.clear()
+
 @click.group()
 def configure():
     """
@@ -17,14 +21,81 @@ def configure():
     pass
 
 @click.command()
+@click.option(
+    '-c', '--config-name',
+    help='Configuration name you wish to reset',
+    required=True,
+    type=click.Choice(
+        ['local', 'workspace', 'templates', 'all'],
+        case_sensitive=False
+    )
+)
+@click.pass_obj
+def reset(obj, config_name):
+    """reset configurations"""
+    
+    config_manager = CliConfigureManager()
+    if config_name == 'all':
+        for config in ['local', 'workspace', 'templates']:
+            config_manager.reset(config)
+    else:
+        config_manager.reset(config_name)
+    config_manager.write_file()
+
+    reset_terminal()
+    logger.info(obj['logo'])
+    states = config_manager.get_state()
+
+    for state in states:
+        click.echo(click.style(state["name"], bg='blue'), nl=True)
+        click.echo(click.style(state["message"], fg='white'), nl=True)
+
+
+@click.command()
+@click.pass_obj
+def workspace(obj):
+    """Configure for local development tools"""
+    
+    config_manager = CliConfigureManager(create=True)
+    config_manager.setup_workspace_config()
+    config_manager.write_file()
+
+    reset_terminal()
+    logger.info(obj['logo'])
+    states = config_manager.get_state()
+
+    for state in states:
+        click.echo(click.style(state["name"], bg='blue'), nl=True)
+        click.echo(click.style(state["message"], fg='white'), nl=True)
+
+@click.command()
 @click.pass_obj
 def local(obj):
     """Configure for local development tools"""
     
-    config_manager = CliConfigureManager(type='local', create=True)
-    config_manager.setup_config()
+    config_manager = CliConfigureManager(create=True)
+    config_manager.setup_local_config()
     config_manager.write_file()
 
+    reset_terminal()
+    logger.info(obj['logo'])
+    states = config_manager.get_state()
+
+    for state in states:
+        click.echo(click.style(state["name"], bg='blue'), nl=True)
+        click.echo(click.style(state["message"], fg='white'), nl=True)
+
+@click.command()
+@click.pass_obj
+def templates(obj):
+    """Configure for local development tools"""
+    
+    config_manager = CliConfigureManager(create=True)
+    config_manager.setup_templates_config()
+    config_manager.write_file()
+
+    reset_terminal()
+    logger.info(obj['logo'])
     states = config_manager.get_state()
 
     for state in states:
@@ -49,5 +120,8 @@ def show(obj):
         else:
             raise
 
+configure.add_command(workspace)
 configure.add_command(local)
+configure.add_command(templates)
 configure.add_command(show)
+configure.add_command(reset)

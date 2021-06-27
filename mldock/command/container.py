@@ -8,13 +8,15 @@ from future.moves import subprocess
 
 from mldock.config_managers.core import WorkingDirectoryManager
 from mldock.config_managers.container import MLDockConfigManager
+
 from mldock.config_managers.cli import \
     ResourceConfigManager, PackageConfigManager, \
         HyperparameterConfigManager, InputDataConfigManager, StageConfigManager, \
-            ModelConfigManager, EnvironmentConfigManager
+            ModelConfigManager, EnvironmentConfigManager, CliConfigureManager
+
 from mldock.platform_helpers import utils
 from mldock.platform_helpers.mldock import utils as mldock_utils
-from mldock.api.container import init_container_project
+from mldock.api.templates import init_from_template
 
 click.disable_unicode_literals_warning = True
 logger=logging.getLogger('mldock')
@@ -33,51 +35,27 @@ def container():
     pass
 
 @click.command()
-@click.option('--name', help='Container name, used to name directories,etc.', required=True, type=str)
-@click.option('--dir', help='Relative name of MLDOCK project', required=True, type=str)
-@click.option('--out', help='Destination of template should be stored once created.', required=True, type=str)
-@click.pass_obj
-def create_template(obj, name, dir, out):
-    """
-    Command to create a mldock enabled container template
-    """
-
-    try:
-        if not Path(dir, MLDOCK_CONFIG_NAME).exists():
-            raise Exception("Path '{}' was not an mldock project. Confirm this directory is correct, otherwise create one.".format(dir))
-
-        mldock_src_path = Path(dir, 'src')
-
-        destination_path = Path(out, name)
-        destination_path.mkdir(parents=False, exist_ok=True)
-
-        destination_src_path = Path(destination_path, 'src')
-
-        utils._copy_boilerplate_to_dst(mldock_src_path, destination_src_path)
-    except Exception as exception:
-        logger.error(exception)
-        raise
-
-@click.command()
 @click.option('--dir', help='Set the working directory for your sagify container.', required=True)
-@click.option('--testing-framework', default=None, help='(Optional) Pytest framework. This creates a few health-check tests')
-@click.option('--service', default=None, help='(Optional) Docker Compose. This seeds a service config.')
 @click.option('--no-prompt', is_flag=True, help='Do not prompt user, instead use the mldock config to initialize the container.')
 @click.option('--container-only', is_flag=True, help='Only inject new container assets.')
 @click.option('--template', default=None, help='Directory containing mldock supported container to use to initialize the container.')
 @click.pass_obj
-def init(obj, dir, testing_framework, service, no_prompt, container_only, template):
+def init(obj, dir, no_prompt, container_only, template):
     """
     Command to initialize mldock enabled container project
     """
     reset_terminal()
-    mldock_package_path=obj['mldock_package_path']
+    mldock_package_path = obj['mldock_package_path']
     try:
         click.secho("Initializing MLDock project configuration", bg='blue', nl=True)
         mldock_manager = MLDockConfigManager(
             filepath=os.path.join(dir, MLDOCK_CONFIG_NAME),
             create=True
         )
+
+        if template is not None:
+            mldock_manager.update_config(template=template)
+
         if not no_prompt:
             mldock_manager.setup_config()
 
@@ -157,20 +135,28 @@ def init(obj, dir, testing_framework, service, no_prompt, container_only, templa
         mldock_manager.write_file()
 
         # Get platform specific files
-        platform = mldock_config.get("platform", None)
+        if template is None:
+            template = mldock_config.get("platform", None)
 
-        init_container_project(
-            dir=working_directory_manager.get_working_dir(),
-            mldock_package_path=mldock_package_path,
-            mldock_config=mldock_config,
-            testing_framework=testing_framework,
-            service=service,
+        config_manager = CliConfigureManager()
+        templates = config_manager.templates
+
+        # get configured template server metadata
+        # if not set, default to package default templates
+        templates_root = templates.get('templates_root', Path(mldock_package_path, 'templates'))
+        # if not set, default to local
+        template_server = templates.get('server_type', 'local')
+
+        init_from_template(
+            template_name=template,
+            templates_root=templates_root,
+            src_directory=src_directory,
             container_only=container_only,
-            template_dir=template
+            template_server=template_server
         )
 
-        reset_terminal()
-        logger.info(obj["logo"])
+        # reset_terminal()
+        # logger.info(obj["logo"])
         states = mldock_manager.get_state()
 
         for state in states:
@@ -264,15 +250,6 @@ def update(obj, dir):
 
         mldock_manager.write_file()
 
-        # Get platform specific files
-        platform = mldock_config.get("platform", None)
-
-        if platform == "sagemaker":
-            # get list of dataset names
-            mldock_data = mldock_config.get("data", None)
-            input_config_config = mldock_utils._extract_data_channels_from_mldock(mldock_data)
-            utils._write_json(input_config_config, Path(dir,'config/inputdataconfig.json'))
-
         click.clear()
         logger.info(obj["logo"])
         states = mldock_manager.get_state()
@@ -317,7 +294,6 @@ def add_commands(cli):
     """add cli commands to group"""
     cli.add_command(init)
     cli.add_command(update)
-    cli.add_command(create_template)
     cli.add_command(summary)
 
 add_commands(container)
