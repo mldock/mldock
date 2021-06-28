@@ -1,14 +1,14 @@
-# MLDock
+# MLDOCK
 A docker tool that helps put machine learning in places that empower ml developers
 
 <p align="center">
  <img src="https://github.com/SheldonGrant/mldock/blob/main/images/mldock-hero-image.jpg" width="250" alt="mldock hero image">
 </p>
 
-## What is MLDock?
-MLDock builds in conveniences and the power of docker and frames it around the core machine learning tasks related to production.
+## What is MLDOCK?
+MLDOCK builds in conveniences and the power of docker and frames it around the core machine learning tasks related to production.
 
-As a tool this means MLDock's goals are:
+As a tool this means MLDOCK's goals are:
 - Provide tooling to improve the ML development workflow. ✅
 - Enable portability of ml code betwen platforms and vendors (Sagemaker, AI Platform, Kubernetes, other container services). ✅
 - Lower the barrier to entry by developing containers from templates. ✅
@@ -33,7 +33,7 @@ Inspired by [Sagify](https://github.com/Kenza-AI/sagify), [Sagemaker Training To
 ```
 pip install --user python-dotenv[cli]
 ```
-note: dotenv allows configuring of environment through the `.env` file. MLDock uses ENVIRONMENT VARIABLES in the environment to find your `DOCKER_HOST`, `DOCKERHUB` credentials and even `AWS/GCP` credentials.
+note: dotenv allows configuring of environment through the `.env` file. MLDOCK uses ENVIRONMENT VARIABLES in the environment to find your `DOCKER_HOST`, `DOCKERHUB` credentials and even `AWS/GCP` credentials.
 
 2. Create an .env with the following:
 
@@ -54,21 +54,21 @@ note: Now to switch environments just use dotenv as follows:
 dotenv -f "/path/to/.env" run mldock local build --dir <my-project-path>
 ```
 
-## Overview of MLDock command line
+## Overview of MLDOCK command line
 
-The mldock command line utility provides a set of commands to streamline the machine learning container image development process.
+The MLDOCK command line utility provides a set of commands to streamline the machine learning container image development process.
 The commands are grouped in to 3 functionality sets, namely:
 
 | Command Group        | Description           |
 | ------------- |:-------------:|
-| container    | A set of commands that support creating new containers, initialize and update containers. Also, provides commands for created new mldock supported templates from previously built container images. |
+| container    | A set of commands that support creating new containers, initialize and update containers. Also, provides commands for created new MLDOCK supported templates from previously built container images. |
 | local | A set of commands to use during the development phase. Creating your trainer, prediction scripts and debugging the execution of scripts.|
 | registry | A set of tools to help you push, pull and interact with image registries.|
 
 
 
 ## Create your first container image project
-1. Install MLDock
+1. Install MLDOCK
 
 The pip install is the only supported package manager at present. It is recommended that you use an environment manager, either virtualenv or conda will work.
 
@@ -130,7 +130,7 @@ mldock registry push --dir my_ml_container --provider dockerhub --build
 ```
 
 note: The flags allow you to stipulate configuration changes in the command.
-`--build` says build the image before pushing. This is required initially since the dockerhub registry will prefix your container name. `--provider` tells mldock to authenticate to dockerhub and push the container there. 
+`--build` says build the image before pushing. This is required initially since the dockerhub registry will prefix your container name. `--provider` tells MLDOCK to authenticate to dockerhub and push the container there. 
 
 **hint** In addition to `DockerHub`, both `AWS ECR` & `GCP GCR` are also supported. 
 
