@@ -30,11 +30,11 @@ setuptools.setup(
         )
     },
     setup_requires=['setuptools>=39.1.0'],
-    install_requires=['future', 'environs'],
+    install_requires=['future', 'environs', 'PyGithub'],
     extras_require={
         'gcp': ['google-cloud-storage', 'google-api-python-client'],
         'aws': ['boto3'],
-        'cli': ['click', 'docker', 'future', 'requests', 'boto3', 'google-auth', 'appdirs', 'halo', 'PyGithub', 'PyYAML'],
+        'cli': ['click', 'docker', 'future', 'requests', 'boto3', 'google-auth', 'appdirs', 'halo', 'PyYAML'],
         'sagemaker': ['sagemaker-training'],
         'testing': ['pandas', 'numpy', 'scipy', 'protobuf>=3.1']
     },
