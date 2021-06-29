@@ -134,9 +134,8 @@ def init(obj, dir, no_prompt, container_only, template):
 
         mldock_manager.write_file()
 
-        # Get platform specific files
-        if template is None:
-            template = mldock_config.get("platform", None)
+        # Get template specific files
+        template = mldock_config["template"] if template is None else templates
 
         config_manager = CliConfigureManager()
         templates = config_manager.templates
