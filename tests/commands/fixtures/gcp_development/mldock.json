@@ -1,6 +1,6 @@
 {
     "image_name": "iris-classifier-py38-cpu",
-    "platform": "generic",
+    "platform": "template",
     "mldock_module_dir": "src",
     "container_dir": "container",
     "requirements_dir": "src/requirements.txt",

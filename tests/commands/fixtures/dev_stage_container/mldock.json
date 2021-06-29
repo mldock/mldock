@@ -1,6 +1,6 @@
 {
     "image_name": "my_app",
-    "platform": "generic",
+    "template": "generic",
     "mldock_module_dir": "src",
     "container_dir": "container",
     "requirements_dir": "requirements.txt",
