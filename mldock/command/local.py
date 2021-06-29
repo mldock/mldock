@@ -43,7 +43,7 @@ def build(obj, dir, no_cache, tag, stage):
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
     image_name = mldock_config.get("image_name", None)
-    platform_name = mldock_config.get("platform", None)
+    template_name = mldock_config.get("template", None)
     container_dir = mldock_config.get("container_dir", None)
     module_path = os.path.join(
         dir,
@@ -83,7 +83,7 @@ def build(obj, dir, no_cache, tag, stage):
                 requirements_file_path=requirements_file_path,
                 no_cache=no_cache,
                 docker_tag=tag,
-                container_platform=platform_name
+                container_platform=template_name
             )
             for line in logs:
 
@@ -153,7 +153,6 @@ def train(obj, dir, params, env_vars, tag, stage):
         mldock_config.get("mldock_module_dir", "src"),
     )
     image_name = mldock_config.get("image_name", None)
-    platform = mldock_config.get("platform", None)
     container_dir = mldock_config.get("container_dir", None)
 
     with ProgressLogger(
@@ -260,7 +259,6 @@ def deploy(obj, dir, params, env_vars, tag, port, stage):
         mldock_config.get("mldock_module_dir", "src"),
     )
     image_name = mldock_config.get("image_name", None)
-    platform = mldock_config.get("platform", None)
     container_dir = mldock_config.get("container_dir", None)
 
     with ProgressLogger(
