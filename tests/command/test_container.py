@@ -23,7 +23,7 @@ class TestContainerCommands:
         ):
 
             with tempfile.TemporaryDirectory('my_app') as tmp_dir:
-                utils._copy_boilerplate_to_dst(src='tests/commands/fixtures/base_container', dst=tmp_dir, remove_first=True)
+                utils._copy_boilerplate_to_dst(src='tests/command/fixtures/base_container', dst=tmp_dir, remove_first=True)
 
                 result = runner.invoke(cli=cli, args=['container', 'init', '--dir', tmp_dir, '--no-prompt'])
 
@@ -41,7 +41,7 @@ class TestContainerCommands:
                 return_value=None
         ):
             with tempfile.TemporaryDirectory('my_app') as tmp_dir:
-                utils._copy_boilerplate_to_dst(src='tests/commands/fixtures/base_container', dst=tmp_dir, remove_first=True)
+                utils._copy_boilerplate_to_dst(src='tests/command/fixtures/base_container', dst=tmp_dir, remove_first=True)
                 result = runner.invoke(
                     cli=cli,
                     args=['container', 'init', '--dir', tmp_dir],
