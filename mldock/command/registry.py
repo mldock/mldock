@@ -90,7 +90,7 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
     )
     requirements_file_path = os.path.join(
         dir,
-        mldock_config.get("requirements", "requirements.txt")
+        mldock_config.get("requirements_dir", "requirements.txt")
     )
 
     # retrieve stages
