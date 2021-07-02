@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 TIMESTAMP := $(shell date +%Y-%m-%d_%H-%M-%S)
-COVERAGE_THRESHOLD ?= 80
+COVERAGE_THRESHOLD ?= 50
 
 git-prune:
 	git fetch --prune
