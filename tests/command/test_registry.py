@@ -35,7 +35,7 @@ class TestRegistryCommands:
             result = runner.invoke(
                 cli=cli,
                 args=['configure', 'local'],
-                input='\n\n\n'
+                input='2\n\n'
             )
 
             _ = runner.invoke(cli=cli, args=['container', 'init', '--dir', tmp_dir, '--no-prompt'])
