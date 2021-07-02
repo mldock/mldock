@@ -23,8 +23,21 @@ class TestRegistryCommands:
         runner = CliRunner()
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-            utils._copy_boilerplate_to_dst(src='tests/command/fixtures/base_container', dst=tmp_dir, remove_first=True)
+
+            utils._copy_boilerplate_to_dst(
+                src='tests/command/fixtures/base_container',
+                dst=tmp_dir,
+                remove_first=True
+            )
+
             mldock_config = utils._read_json("tests/command/fixtures/base_container/mldock.json")
+
+            result = runner.invoke(
+                cli=cli,
+                args=['configure', 'local'],
+                input='\n\n\n'
+            )
+
             _ = runner.invoke(cli=cli, args=['container', 'init', '--dir', tmp_dir, '--no-prompt'])
 
             _ = runner.invoke(
