@@ -1,6 +1,8 @@
 # MLDOCK
 A docker tool that helps put machine learning in places that empower ml developers
 
+[![Tests](https://github.com/mldock/mldock/actions/workflows/tests.yml/badge.svg)](https://github.com/mldock/mldock/actions/workflows/tests.yml)
+
 <p align="center">
  <img src="https://github.com/SheldonGrant/mldock/blob/main/images/mldock-hero-image.jpg" width="250" alt="mldock hero image">
 </p>
