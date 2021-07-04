@@ -32,14 +32,13 @@ def download_folder(
     bucket = storage_client.get_bucket(bucket_name)
     blobs = bucket.list_blobs(prefix=prefix)  # Get list of files
     for blob in blobs:
-        filename = Path(blob).name
+        filename = Path(blob.name).name
 
         if len(filename) > 0:
             
             fullpath = os.path.join(bucket_name, prefix, filename)
             dst_filepath = os.path.join(target, os.path.basename(prefix))
             file_destination = os.path.join(dst_filepath, filename)
-
             logger.info("Download {} to local at {}".format(filename, file_destination))
             # make directory
             _mkdir(dst_filepath)

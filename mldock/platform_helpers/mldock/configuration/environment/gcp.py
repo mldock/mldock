@@ -18,8 +18,14 @@ class GCPEnvironment(base.BaseEnvironment):
     def setup_inputs(self):
         """ Iterates and downloads assets remoate -> input channels
         """
-        logger.info("getting input assets")
-        for channel in self.get_input_channel_iter():
+        logger.info("Setup assets in {}".format(self.input_data_dir))
+        # only fetch channels of environment prefix MLDOCK_INPUT_CHANNEL_
+        channels = self.get_input_channel_iter()
+
+        if len(channels) == 0:
+            logger.info("No input channels were found in ENV VARS.")
+
+        for channel in channels:
 
             try:
                 download_input_assets(
@@ -34,8 +40,14 @@ class GCPEnvironment(base.BaseEnvironment):
     def cleanup_outputs(self):
         """ Iterates and uploads output channel -> remote
         """
-        logger.info("pushing outputs to remote")
-        for channel in self.get_output_channel_iter():
+        logger.info("Cleanup assets in {}".format(self.output_data_dir))
+        # only fetch channels of environment prefix MLDOCK_OUTPUT_CHANNEL_
+        channels = self.get_output_channel_iter()
+
+        if len(channels) == 0:
+            logger.info("No output channels were found in ENV VARS.")
+
+        for channel in channels:
             # only fetch channels with output
             channel_path = channel['key'].replace("MLDOCK_OUTPUT_CHANNEL_", "").lower()
             local_channel_path = Path(self.output_data_dir, channel_path)
@@ -56,8 +68,14 @@ class GCPEnvironment(base.BaseEnvironment):
     def setup_model_artifacts(self):
         """ Iterates and downloads assets remoate -> model channel
         """
-        logger.info("getting model assets")
-        for channel in self.get_model_input_channel_iter():
+        logger.info("Setup model assets in {}".format(self.model_dir))
+        # only fetch channels of environment prefix MLDOCK_MODEL_INPUT_CHANNEL_
+        channels = self.get_model_input_channel_iter()
+
+        if len(channels) == 0:
+            logger.info("No input channels were found in ENV VARS.")
+
+        for channel in channels:
             try:
                 download_input_assets(
                     storage_dir_path=channel['value'],
@@ -71,10 +89,15 @@ class GCPEnvironment(base.BaseEnvironment):
     def cleanup_model_artifacts(self):
         """ Iterates and uploads from model channel -> remote
         """
-        logger.info("Cleanup Model: {}".format(self.model_dir))
+        logger.info("Cleanup model assets in {}".format(self.model_dir))
 
-        # only fetch channels with output
-        for channel in self.get_model_output_channel_iter():
+        # only fetch channels of environment prefix MLDOCK_MODEL_OUTPUT_CHANNEL_
+        channels = self.get_model_output_channel_iter()
+
+        if len(channels) == 0:
+            logger.info("No model channels were found in ENV VARS.")
+
+        for channel in channels:
             channel_path = channel['key'].replace("MLDOCK_MODEL_OUTPUT_CHANNEL_", "").lower()
             local_channel_path = Path(self.model_dir, channel_path)
 
