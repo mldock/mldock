@@ -44,9 +44,7 @@ def download_folder(
     bucket = storage_client.get_bucket(bucket_name)
     blobs = bucket.list_blobs(prefix=prefix)  # Get list of files
     for blob in blobs:
-        print(blob)
         filename = Path(blob.name).name
-        print(filename)
         if len(filename) > 0:
             download_blob_to_filename(blob, prefix, filename, target)
 
