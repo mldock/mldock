@@ -2,7 +2,7 @@
     AWS Boto3 mock module
 """
 from tests.mocks.aws.boto3.ecr import ECR
-
+from tests.mocks.aws.boto3.s3 import S3Resource
 
 def client(service: str, **kwargs):
     """
@@ -20,3 +20,20 @@ def client(service: str, **kwargs):
     }
 
     return services.get(service)
+
+def resource(resource: str, **kwargs):
+    """
+        Mock of the client function
+
+        args:
+            resource (str): The Boto3 resource requested
+
+        returns:
+            resource: The Boto3 resource class
+
+    """
+    resources = {
+        's3': S3()
+    }
+
+    return resources.get(resource)

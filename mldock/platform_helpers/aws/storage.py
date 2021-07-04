@@ -16,6 +16,19 @@ from mldock.platform_helpers.utils import \
 
 logger = logging.getLogger('mldock')
 
+def download_file_from_bucket(bucket, blob, prefix, filename, target):
+
+    bucket_name = blob.bucket_name
+    fullpath = os.path.join(bucket_name, prefix, filename)
+    dst_filepath = os.path.join(target, os.path.basename(prefix))
+    file_destination = os.path.join(dst_filepath, filename)
+
+    logger.info("Download {} to local at {}".format(filename, file_destination))
+    # make directory
+    _mkdir(dst_filepath)
+    # download
+    bucket.download_file(blob.key, file_destination)
+
 def download_folder(
     bucket_name: str,
     prefix: str,
@@ -35,16 +48,12 @@ def download_folder(
         filename = Path(blob.key).name
 
         if len(filename) > 0:
-            
-            fullpath = os.path.join(bucket_name, prefix, filename)
-            dst_filepath = os.path.join(target, os.path.basename(prefix))
-            file_destination = os.path.join(dst_filepath, filename)
+            download_file_from_bucket(bucket, blob, prefix, filename, target)
 
-            logger.info("Download {} to local at {}".format(filename, file_destination))
-            # make directory
-            _mkdir(dst_filepath)
-            # download
-            bucket.download_file(blob.key, file_destination)
+def upload_file_to_bucket(bucket, path, storage_destination):
+
+    logger.info("Upload {} to cloud at {}".format(path, storage_destination))
+    bucket.upload_file(path.as_posix(), storage_destination)
 
 def upload_folder(local_path: str, bucket_name: str, prefix: str):
     """Upload folder and contents to cloud storage
@@ -65,8 +74,7 @@ def upload_folder(local_path: str, bucket_name: str, prefix: str):
         filepath = path.relative_to(local_path)
         storage_destination = os.path.join(prefix, filepath)
         if path.is_file():
-            logger.info("Upload {} to cloud at {}".format(path, storage_destination))
-            bucket.upload_file(path.as_posix(), storage_destination)
+            upload_file_to_bucket(bucket, path, storage_destination)
 
 def download_input_assets(storage_dir_path: str, local_path: str, scheme: str):
     """download input asset folder from path, given that path is cloud storage path.
