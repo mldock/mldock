@@ -44,6 +44,7 @@ def download_folder(
     logger.info("Starting Folder download from s3 storage")
     s3_resource = boto3.resource('s3')
     bucket = s3_resource.Bucket(bucket_name)
+
     for blob in bucket.objects.filter(Prefix = prefix):
         filename = Path(blob.key).name
 

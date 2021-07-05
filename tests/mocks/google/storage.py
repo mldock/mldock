@@ -2,7 +2,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 @dataclass
-class GSBucketObjectBlob:
+class GSBucketObject:
     """Class for mocking the google storage bucket object blob."""
     name: str
     bucket: str
@@ -16,20 +16,20 @@ class GSBucketObjectBlob:
         print("upload_to_filename: {}".format(local_path))
 
 @dataclass
-class GSBucketObject:
+class GSBucket:
     """Class for mocking the google storage bucket object."""
     name: str
     objects: list
 
-    def list_blobs(self, prefix) -> GSBucketObjectBlob:
+    def list_blobs(self, prefix) -> list:
         print("listing these blobs")
         return [
-            GSBucketObjectBlob(bucket=self, name=Path(prefix, item).as_posix())
+            GSBucketObject(bucket=self, name=Path(prefix, item).as_posix())
             for item in self.objects
         ]
 
     def blob(self, prefix):
         print("running this blob")
-        return GSBucketObjectBlob(bucket=self, name=prefix)
+        return GSBucketObject(bucket=self, name=prefix)
 
 

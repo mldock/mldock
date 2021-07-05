@@ -1,26 +1,49 @@
-"""Test GS storage helpers"""
+"""Test AWS s3 storage helpers"""
 from pathlib import Path
 import tempfile
 from mock import patch
 from mldock.platform_helpers.aws import storage
-from tests.mocks.google.storage import GSBucketObject, GSBucketObjectBlob
+from tests.mocks.aws.boto3.s3 import AWSBucket, Objects, S3Resource, AWSBucketObject
 
-class TestGSStorage:
-    """Test google storage helpers"""
+class TestAWSStorage:
+    """Test aws s3 storage helpers"""
+
     @staticmethod
-    @patch('mldock.platform_helpers.gcp.storage.StorageClient')
-    @patch('mldock.platform_helpers.gcp.storage.download_blob_to_filename')
-    def test_download_blob_to_filename_recieved_correct_args(mock_download_blob_to_filename, MockStorageClient):
+    def setup_storage_mocks(bucket_name, prefix_path, filename, storage_destination, mock_boto3):
         """
-            - test that it get's the correct arguments eventually in download_from_filename accordind to what is passed.
-            - test that each API get's the correct thing
+            setup up storage mocks for S3 storage
+
+            returns:
+                (bucket: AWSBucket, blob: AWSBucketObject)
+        """
+        aws_bucket_objects = Objects(bucket_name=bucket_name, files=[filename])
+        bucket = AWSBucket(name=bucket_name, objects=aws_bucket_objects)
+        bucket_object = AWSBucketObject(
+            key=Path(prefix_path, filename).as_posix(),
+            bucket_name=bucket_name
+        )
+        s3_resource = S3Resource(resource='s3', bucket=bucket)
+
+        mock_boto3.resource.return_value = s3_resource
+
+        return bucket, bucket_object
+
+    @patch('mldock.platform_helpers.aws.storage.boto3')
+    @patch('mldock.platform_helpers.aws.storage.download_file_from_bucket')
+    def test_download_file_from_bucket_recieved_correct_args(self, mock_download_file_from_bucket, mock_boto3):
+        """
+            test that download_file_from_bucket recieves the correct arguments
+            during download_folder.
         """
         bucket_name = 'some-bucket'
         prefix_path = 'some/prefix'
+        filename = 'file.txt'
+        local_path = 'tmp/local/path'
         storage_destination = Path(prefix_path, 'file.txt').as_posix()
-        bucket = GSBucketObject(name=bucket_name, objects=['file.txt'])
-        blob = GSBucketObjectBlob(name=storage_destination, bucket=bucket)
-        MockStorageClient().get_bucket.return_value = bucket
+
+        bucket, bucket_object = self.setup_storage_mocks(
+            bucket_name, prefix_path, filename, storage_destination, mock_boto3
+        )
 
         storage.download_folder(
             bucket_name=bucket_name,
@@ -28,24 +51,24 @@ class TestGSStorage:
             target='tmp/local/path'
         )
 
-        args, kwargs = mock_download_blob_to_filename.call_args
-
+        args, kwargs = mock_download_file_from_bucket.call_args
+        print(args, kwargs)
         # maybe get args given?
-        assert args == (blob, prefix_path, 'file.txt', 'tmp/local/path'), (
-            "Failed. download_blob_to_filename recieved the wrong arguments"
+        assert args ==(bucket, bucket_object, 'some/prefix', 'file.txt', 'tmp/local/path'), (
+            "Failed. download_file_from_bucket recieved the wrong arguments"
         )
 
-    @staticmethod
-    @patch('mldock.platform_helpers.gcp.storage._iter_nested_dir')
-    @patch('mldock.platform_helpers.gcp.storage.StorageClient')
-    @patch('mldock.platform_helpers.gcp.storage.upload_blob_from_filename')
-    def test_upload_blob_from_filename_recieved_correct_args(mock_upload_blob_from_filename, MockStorageClient, mock__iter_nested_dir):
+    @patch('mldock.platform_helpers.aws.storage._iter_nested_dir')
+    @patch('mldock.platform_helpers.aws.storage.boto3')
+    @patch('mldock.platform_helpers.aws.storage.upload_file_to_bucket')
+    def test_upload_file_to_bucket_recieved_correct_args(self, mock_upload_file_to_bucket, mock_boto3, mock__iter_nested_dir):
         """
-            - test that it get's the correct arguments eventually in download_from_filename accordind to what is passed.
-            - test that each API get's the correct thing
+            test that upload_file_to_bucket recieves the correct arguments
+            during upload_folder.
         """
         bucket_name = 'some-bucket'
         prefix_path = 'some/prefix'
+        filename = 'file.txt'
         storage_destination = Path(prefix_path, 'file.txt').as_posix()
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -53,8 +76,10 @@ class TestGSStorage:
             path = Path(local_path, 'file.txt')
             path.touch()
 
-            bucket = GSBucketObject(name=bucket_name, objects=['file.txt'])
-            MockStorageClient().get_bucket.return_value = bucket
+            bucket, bucket_object = self.setup_storage_mocks(
+                bucket_name, prefix_path, filename, storage_destination, mock_boto3
+            )
+
             mock__iter_nested_dir.return_value = [path]
 
             storage.upload_folder(
@@ -62,9 +87,9 @@ class TestGSStorage:
                 bucket_name=bucket_name,
                 prefix=prefix_path
             )
-            args, kwargs = mock_upload_blob_from_filename.call_args
+            args, kwargs = mock_upload_file_to_bucket.call_args
 
         # maybe get args given?
         assert args == (bucket, path, storage_destination), (
-            "Failed. upload_blob_from_filename recieved the wrong arguments"
+            "Failed. upload_file_to_bucket recieved the wrong arguments"
         )

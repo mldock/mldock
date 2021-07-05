@@ -33,7 +33,7 @@ def resource(resource: str, **kwargs):
 
     """
     resources = {
-        's3': S3()
+        's3': S3Resource()
     }
 
     return resources.get(resource)
