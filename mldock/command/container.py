@@ -51,6 +51,8 @@ def init(obj, dir, no_prompt, container_only, template):
 
         if not Path(dir).is_dir():
             create_new = click.prompt('No MLDOCK project found. Create?', type=bool)
+        else:
+            create_new = False
 
         mldock_manager = MLDockConfigManager(
             filepath=os.path.join(dir, MLDOCK_CONFIG_NAME),
