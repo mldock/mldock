@@ -3,6 +3,7 @@
 
     Config managers that are reused across mldock cli tool.
 """
+import sys
 import os
 import json
 import click
@@ -105,13 +106,17 @@ class BaseConfigManager:
         """
         return os.path.exists(filename)
 
-    def check_if_exists_else_create(self,file_name: str, create: bool):
+    def check_if_exists_else_create(self, file_name: str, create: bool):
+        """check that mldock fileexists"""
         if not self.file_exists(file_name):
             if create:
                 # deal with possiblity of nested directory
                 utils._mkdir(Path(file_name).parents[0])
                 # create file
                 self.touch(file_name)
+            else:
+                logger.error("No MLDOCK container project found with dir = '{}/'. Confirm 'yes' to create.".format(Path(file_name).parents[0]))
+                sys.exit(1)
 
     def load_config(self, file_name: str, create: bool) -> dict:
         """loads config from file

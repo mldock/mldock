@@ -31,7 +31,6 @@ class MLDockConfigManager(BaseConfigManager):
         self.ask_for_requirements_file_name()
     
     def update_config(self, **kwargs):
-        print(kwargs)
         self.config.update(kwargs)
 
     def ask_for_image_name(self):
