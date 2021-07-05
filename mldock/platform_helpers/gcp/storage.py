@@ -6,7 +6,7 @@
 import os
 from pathlib import Path
 import logging
-from google.cloud import storage
+from google.cloud.storage import Client as StorageClient
 
 from mldock.platform_helpers.utils import \
     _delete_file, _mkdir, _iter_nested_dir, _check_if_cloud_scheme, \
@@ -14,6 +14,18 @@ from mldock.platform_helpers.utils import \
          unzip_file_from_tarfile, unzip_file
 
 logger = logging.getLogger('mldock')
+
+def download_blob_to_filename(blob, prefix, filename, target):
+    """download blob from google storage to filename"""
+    bucket_name = blob.bucket.name
+    fullpath = os.path.join(bucket_name, prefix, filename)
+    dst_filepath = os.path.join(target, os.path.basename(prefix))
+    file_destination = os.path.join(dst_filepath, filename)
+    logger.info("Download {} to local at {}".format(filename, file_destination))
+    # make directory
+    _mkdir(dst_filepath)
+    # download
+    blob.download_to_filename(file_destination)
 
 def download_folder(
     bucket_name: str,
@@ -28,23 +40,19 @@ def download_folder(
         target (str): [description]
     """
     logger.info("Starting Folder download from cloud storage")
-    storage_client = storage.Client()
+    storage_client = StorageClient()
     bucket = storage_client.get_bucket(bucket_name)
     blobs = bucket.list_blobs(prefix=prefix)  # Get list of files
     for blob in blobs:
-        filename = Path(blob).name
-
+        filename = Path(blob.name).name
         if len(filename) > 0:
-            
-            fullpath = os.path.join(bucket_name, prefix, filename)
-            dst_filepath = os.path.join(target, os.path.basename(prefix))
-            file_destination = os.path.join(dst_filepath, filename)
+            download_blob_to_filename(blob, prefix, filename, target)
 
-            logger.info("Download {} to local at {}".format(filename, file_destination))
-            # make directory
-            _mkdir(dst_filepath)
-            # download
-            blob.download_to_filename(file_destination)
+def upload_blob_from_filename(bucket, path, storage_destination):
+    """upload blob to google storage from local filename"""
+    logger.info("Upload {} to cloud at {}".format(path, storage_destination))
+    blob = bucket.blob(storage_destination)
+    blob.upload_from_filename(path)
 
 def upload_folder(local_path: str, bucket_name: str, prefix: str):
     """Upload folder and contents to cloud storage
@@ -56,18 +64,15 @@ def upload_folder(local_path: str, bucket_name: str, prefix: str):
     """
     logger.info("Starting Folder Upload to cloud storage")
     # get bucket
-    storage_client = storage.Client()
+    storage_client = StorageClient()
     bucket = storage_client.get_bucket(bucket_name)
-
     assert os.path.isdir(local_path), "'{}' is not a directory".format(local_path)
 
     for path in _iter_nested_dir(local_path):
         filepath = path.relative_to(local_path)
         storage_destination = os.path.join(prefix, filepath)
         if path.is_file():
-            logger.info("Upload {} to cloud at {}".format(path, storage_destination))
-            blob = bucket.blob(storage_destination)
-            blob.upload_from_filename(path)
+            upload_blob_from_filename(bucket, path, storage_destination)
 
 def download_input_assets(storage_dir_path: str, local_path: str, scheme: str = 'gs'):
     """download input asset folder from path, given that path is cloud storage path.
