@@ -48,9 +48,15 @@ def init(obj, dir, no_prompt, container_only, template):
     mldock_package_path = obj['mldock_package_path']
     try:
         click.secho("Initializing MLDock project configuration", bg='blue', nl=True)
+
+        if not Path(dir).is_dir():
+            create_new = click.prompt('No MLDOCK project found. Create?', type=bool)
+        else:
+            create_new = False
+
         mldock_manager = MLDockConfigManager(
             filepath=os.path.join(dir, MLDOCK_CONFIG_NAME),
-            create=True
+            create=create_new
         )
 
         if template is not None:
