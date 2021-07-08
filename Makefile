@@ -4,6 +4,7 @@ COVERAGE_THRESHOLD ?= 50
 
 git-prune:
 	git fetch --prune
+	git branch --merged | egrep -v "(^\*|master|main|dev)" | xargs git branch -d
 
 install-requirements:
 	python -m pip install --upgrade pip;

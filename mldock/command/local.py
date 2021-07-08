@@ -100,7 +100,7 @@ def build(obj, dir, no_cache, tag, stage):
 
 @click.command()
 @click.option('--payload', default=None, help='path to payload file', required=True)
-@click.option('--content-type', default='json', help='format of payload', type=click.Choice(['json', 'csv'], case_sensitive=False))
+@click.option('--content-type', default='json', help='format of payload', type=click.Choice(['application/json', 'text/csv', 'image/jpeg'], case_sensitive=False))
 @click.option('--host', help='host url at which model is served', type=str, default='http://127.0.0.1:8080/invocations')
 def predict(payload, content_type, host):
     """
@@ -110,10 +110,12 @@ def predict(payload, content_type, host):
         if payload is None:
             logger.info("\nPayload cannot be None. Please provide path to payload file.")
         else:
-            if content_type in ['application/json', 'json']:
+            if content_type in ['application/json']:
                 pretty_output = predict_request.send_json(filepath=payload, host=host)
-            elif content_type in ['text/csv', 'csv']:
+            elif content_type in ['text/csv']:
                 pretty_output = predict_request.send_csv(filepath=payload, host=host)
+            elif content_type in ['image/jpeg']:
+                pretty_output = predict_request.send_image_jpeg(filepath=payload, host=host)
             else:
                 raise Exception("Content-type is not supported.")
             logger.info(pretty_output)
