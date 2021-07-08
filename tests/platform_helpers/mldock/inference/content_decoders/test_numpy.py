@@ -21,15 +21,33 @@ import numpy as np
 import pytest
 from scipy import sparse
 from six import BytesIO
+import numpy as np
+from PIL import Image
 
 from mldock.platform_helpers.mldock.inference import content_types
 from mldock.platform_helpers.mldock.inference.content_decoders import numpy as numpy_decoders
 from mldock.platform_helpers.mldock.inference.record_pb2 import Record
 from mldock.platform_helpers.mldock.inference.recordio import _read_recordio
 
+@pytest.fixture
+def image_bytes():
+    """reads image as bytes string"""
+    with open('tests/api/fixtures/eight.png', 'rb') as file_:
+        return io.BytesIO(file_.read())
+
+@pytest.fixture
+def image_array():
+    """reads image as bytes string"""
+    return numpy.asarray(Image.open('tests/api/fixtures/eight.png'))
 
 class TestNumpyDecoders:
     """Tests the numpy decoder methods"""
+
+    def test_csv_to_numpy(image_bytes, image_array):
+        """test csv data is correctly decoded to numpy array"""
+        actual = numpy_decoders.image_to_numpy(image_bytes)
+
+        np.testing.assert_equal(actual, image_array)
 
     @staticmethod
     @pytest.mark.parametrize(
