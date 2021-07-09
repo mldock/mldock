@@ -100,7 +100,7 @@ def build(obj, dir, no_cache, tag, stage):
 
 @click.command()
 @click.option('--payload', default=None, help='path to payload file', required=True)
-@click.option('--content-type', default='json', help='format of payload', type=click.Choice(['application/json', 'text/csv', 'image/jpeg'], case_sensitive=False))
+@click.option('--content-type', default='application/json', help='format of payload', type=click.Choice(['application/json', 'text/csv', 'image/jpeg'], case_sensitive=False))
 @click.option('--host', help='host url at which model is served', type=str, default='http://127.0.0.1:8080/invocations')
 def predict(payload, content_type, host):
     """
