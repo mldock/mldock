@@ -46,10 +46,6 @@ def sigterm_handler(nginx_pid, gunicorn_pid):
 def start_server():
     logger.info('Starting the inference server with {} workers.'.format(model_server_workers))
 
-    # link the log streams to stdout/err so they will be logged to the container logs
-    subprocess.check_call(['ln', '-sf', '/dev/stdout', '/var/log/nginx/access.log'])
-    subprocess.check_call(['ln', '-sf', '/dev/stderr', '/var/log/nginx/error.log'])
-
     nginx = subprocess.Popen(['nginx', '-c', os.path.join(_DIR_TO_FILE, 'nginx.conf')])
     gunicorn = subprocess.Popen(['gunicorn',
                                  '--timeout', str(model_server_timeout),
