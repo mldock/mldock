@@ -133,7 +133,7 @@ def predict(payload, content_type, host):
 @click.option(
     '--env_vars',
     '-e',
-    help='(Optional) Hyperparameter override when running container.',
+    help='(Optional) Environment Variables override when running container.',
     nargs=2,
     type=click.Tuple([str, str]),
     multiple=True
@@ -237,7 +237,7 @@ def train(obj, dir, params, env_vars, tag, stage):
 @click.option(
     '--env_vars',
     '-e',
-    help='(Optional) Hyperparameter override when running container.',
+    help='(Optional) Environment Variables override when running container.',
     nargs=2,
     type=click.Tuple([str, str]),
     multiple=True
