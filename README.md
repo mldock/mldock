@@ -5,7 +5,7 @@ A docker tool that helps put machine learning in places that empower ml develope
 [![Tests](https://github.com/mldock/mldock/actions/workflows/tests.yml/badge.svg)](https://github.com/mldock/mldock/actions/workflows/tests.yml)
 [![Upload Python Package](https://github.com/mldock/mldock/actions/workflows/python-publish.yml/badge.svg)](https://github.com/mldock/mldock/actions/workflows/python-publish.yml)
 
-![mldock header](https://github.com/mldock/mldock/blob/main/images/mldock-twitter-header.png)
+![mldock header](https://raw.githubusercontent.com/mldock/mldock/main/images/mldock-twitter-header.png)
 
 ## What is MLDOCK?
 MLDOCK builds in conveniences and the power of docker and frames it around the core machine learning tasks related to production.
