@@ -4,7 +4,6 @@
     "mldock_module_dir": "src",
     "container_dir": "container",
     "requirements_dir": "requirements.txt",
-    "template_dir": null,
     "stages": {
         "test": {
             "tag": "latest"

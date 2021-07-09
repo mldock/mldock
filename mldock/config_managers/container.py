@@ -20,7 +20,26 @@ class MLDockConfigManager(BaseConfigManager):
     """Hyperparameter Config Manager for mldock
     """
 
-    config = {}
+    config = {
+        "image_name": None,
+        "template": "generic",
+        "requirements_dir": "src/requirements.txt",
+        "mldock_module_dir": "src",
+        "container_dir": "container",
+        "data": list(),
+        "environment": dict(),
+        "hyperparameters": dict(),
+        "model": list(),
+        "stages": dict(),
+    }
+
+    def __init__(self, filepath: str, create: bool = False):
+        self.filepath = filepath
+        self.image_name_default = Path(filepath).parents[0].name
+
+        config = self.load_config(self.filepath, create=create)
+        self.config.update(config)
+        self.config["image_name"] = self.image_name_default
 
     def setup_config(self, **kwargs):
         click.secho("Base Setup", bg='blue')
@@ -38,7 +57,7 @@ class MLDockConfigManager(BaseConfigManager):
         """
         image_name = click.prompt(
             text=click.style("Set your image name: ", fg='bright_blue'),
-            default=self.config.get('image_name', 'my_ml_container')
+            default=self.config.get('image_name', self.image_name_default)
         )
 
         self.config.update({

@@ -24,7 +24,7 @@ MLDOCK_CONFIG_NAME='mldock.json'
 
 
 def reset_terminal():
-    # os.system("clear")
+    """clears the terminal view frame"""
     click.clear()
 
 @click.group()
@@ -39,8 +39,24 @@ def container():
 @click.option('--no-prompt', is_flag=True, help='Do not prompt user, instead use the mldock config to initialize the container.')
 @click.option('--container-only', is_flag=True, help='Only inject new container assets.')
 @click.option('--template', default=None, help='Directory containing mldock supported container to use to initialize the container.')
+@click.option(
+    '--params',
+    '-p',
+    help='(Optional) Hyperparameter to be added in config.',
+    nargs=2,
+    type=click.Tuple([str, str]),
+    multiple=True
+)
+@click.option(
+    '--env_vars',
+    '-e',
+    help='(Optional) Environment Variables to be added in config.',
+    nargs=2,
+    type=click.Tuple([str, str]),
+    multiple=True
+)
 @click.pass_obj
-def init(obj, dir, no_prompt, container_only, template):
+def init(obj, dir, no_prompt, container_only, template, params, env_vars):
     """
     Command to initialize mldock enabled container project
     """
@@ -62,11 +78,30 @@ def init(obj, dir, no_prompt, container_only, template):
         if template is not None:
             mldock_manager.update_config(template=template)
 
+        if params is not None:
+            hyperparameters = {}
+            for param in params:
+                key_, value_ = param
+                hyperparameters.update(
+                    {key_: value_}
+                )
+            mldock_manager.update_config(hyperparameters=hyperparameters)
+
+        if env_vars is not None:
+            environment = {}
+            for env_var in env_vars:
+                key_, value_ = env_var
+                environment.update(
+                    {key_: value_}
+                )
+            mldock_manager.update_config(environment=environment)
+
         if not no_prompt:
             mldock_manager.setup_config()
 
+        package_dir = mldock_manager.get_config().get('requirements', dir)
         package_manager = PackageConfigManager(
-            filepath=os.path.join(dir, "requirements.txt"),
+            filepath=os.path.join(package_dir, "requirements.txt"),
             create=True
         )
         # write to package manager
@@ -84,14 +119,8 @@ def init(obj, dir, no_prompt, container_only, template):
             dir,
             mldock_config.get("mldock_module_dir", "src")
         )
-        mldock_module_path = os.path.join(
-            src_directory,
-            'container'
-        )
 
-        working_directory_manager = WorkingDirectoryManager(base_dir=dir)
-        # sagemaker
-        config_path = working_directory_manager.input_config_dir
+        _ = WorkingDirectoryManager(base_dir=dir)
 
         # create stages config
         stage_config_manager = StageConfigManager(
@@ -141,7 +170,7 @@ def init(obj, dir, no_prompt, container_only, template):
         mldock_manager.write_file()
 
         # Get template specific files
-        template = mldock_config["template"] if template is None else templates
+        template = mldock_config["template"]
 
         config_manager = CliConfigureManager()
         templates = config_manager.templates
@@ -160,8 +189,6 @@ def init(obj, dir, no_prompt, container_only, template):
             template_server=template_server
         )
 
-        # reset_terminal()
-        # logger.info(obj["logo"])
         states = mldock_manager.get_state()
 
         for state in states:
@@ -201,14 +228,8 @@ def update(obj, dir):
             dir,
             mldock_config.get("mldock_module_dir", "src")
         )
-        mldock_module_path = os.path.join(
-            src_directory,
-            'container'
-        )
 
-        working_directory_manager = WorkingDirectoryManager(base_dir=dir)
-        # sagemaker
-        config_path = working_directory_manager.input_config_dir
+        _ = WorkingDirectoryManager(base_dir=dir)
 
         # create stages config
         stage_config_manager = StageConfigManager(
