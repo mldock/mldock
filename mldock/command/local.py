@@ -1,10 +1,6 @@
 import os
-import sys
-import json
 import logging
 import click
-from pathlib import Path
-from future.moves import subprocess
 
 from mldock.config_managers.cli import \
     CliConfigureManager
@@ -29,7 +25,21 @@ def local():
     pass
 
 @click.command()
-@click.option('--dir', help='Set the working directory for your mldock container.', required=True)
+@click.option(
+    '--dir',
+    help='Set the working directory for your mldock container.',
+    required=True,
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
 @click.option('--no-cache', help='builds container from scratch', is_flag=True)
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
@@ -91,15 +101,26 @@ def build(obj, dir, no_cache, tag, stage):
 
                 spinner.start()
 
-    except subprocess.CalledProcessError as exception:
-        logger.error(exception)
-        raise
     except Exception as exception:
         logger.error(exception)
         raise
 
 @click.command()
-@click.option('--payload', default=None, help='path to payload file', required=True)
+@click.option(
+    '--dir',
+    help='Set the working directory for your mldock container.',
+    required=True,
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
 @click.option('--content-type', default='application/json', help='format of payload', type=click.Choice(['application/json', 'text/csv', 'image/jpeg'], case_sensitive=False))
 @click.option('--host', help='host url at which model is served', type=str, default='http://127.0.0.1:8080/invocations')
 def predict(payload, content_type, host):
@@ -225,7 +246,21 @@ def train(obj, dir, params, env_vars, tag, stage):
 
 
 @click.command()
-@click.option('--dir', help='Set the working directory for your mldock container.', required=True)
+@click.option(
+    '--dir',
+    help='Set the working directory for your mldock container.',
+    required=True,
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
 @click.option(
     '--params',
     '-p',
@@ -367,9 +402,6 @@ def stop():
 
     except ValueError:
         logger.error("This is not a mldock directory: {}".format(dir))
-        raise
-    except subprocess.CalledProcessError as exception:
-        logger.error(exception)
         raise
     except Exception as exception:
         logger.error(exception)

@@ -7,7 +7,9 @@ def _format_key_as_mldock_env_var(key, prefix=None):
         and lastly transforms to uppercase
     """
     if prefix is not None:
-        key = "{}_{}".format(prefix, key)
+        if not key.lower().startswith(prefix.lower()):
+            key = "{}_{}".format(prefix, key)
+
     key = key.replace(" ", "_").replace("-", "_")
     key = key.upper()
     return key
