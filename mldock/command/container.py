@@ -1,20 +1,17 @@
 import os
-import sys
 import json
 import logging
 import click
 from pathlib import Path
-from future.moves import subprocess
 
 from mldock.config_managers.core import WorkingDirectoryManager
 from mldock.config_managers.container import MLDockConfigManager
 
 from mldock.config_managers.cli import \
-    ResourceConfigManager, PackageConfigManager, \
-        HyperparameterConfigManager, InputDataConfigManager, StageConfigManager, \
+    PackageConfigManager, HyperparameterConfigManager, \
+        InputDataConfigManager, StageConfigManager, \
             ModelConfigManager, EnvironmentConfigManager, CliConfigureManager
 
-from mldock.platform_helpers import utils
 from mldock.platform_helpers.mldock import utils as mldock_utils
 from mldock.api.templates import init_from_template
 
@@ -35,7 +32,21 @@ def container():
     pass
 
 @click.command()
-@click.option('--dir', help='Set the working directory for your sagify container.', required=True)
+@click.option(
+    '--dir',
+    help='Set the working directory for your mldock container.',
+    required=True,
+    type=click.Path(
+        exists=False,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
 @click.option('--no-prompt', is_flag=True, help='Do not prompt user, instead use the mldock config to initialize the container.')
 @click.option('--container-only', is_flag=True, help='Only inject new container assets.')
 @click.option('--template', default=None, help='Directory containing mldock supported container to use to initialize the container.')
@@ -71,7 +82,7 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
             create_new = False
 
         mldock_manager = MLDockConfigManager(
-            filepath=os.path.join(dir, MLDOCK_CONFIG_NAME),
+            filepath=Path(dir, MLDOCK_CONFIG_NAME),
             create=create_new
         )
 
@@ -196,15 +207,26 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
             click.echo(click.style(state["message"], fg='white'), nl=True)
 
         logger.info("\nlocal container volume is ready! ヽ(´▽`)/")
-    except subprocess.CalledProcessError as exception:
-        logger.error(exception)
-        raise
     except Exception as exception:
         logger.error(exception)
         raise
 
 @click.command()
-@click.option('--dir', help='Set the working directory for your sagify container.', required=True)
+@click.option(
+    '--dir',
+    help='Set the working directory for your mldock container.',
+    required=True,
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
 @click.pass_obj
 def update(obj, dir):
     """
@@ -285,22 +307,31 @@ def update(obj, dir):
             click.echo(click.style(state["message"], fg='white'), nl=True)
 
         logger.info("\nlocal container was updated! ヽ(´▽`)/")
-    except subprocess.CalledProcessError as exception:
-        logger.error(exception)
-        raise
     except Exception as exception:
         logger.error(exception)
         raise
 
 @click.command()
-@click.option('--dir', help='Set the working directory for your sagify container.', required=True)
-@click.pass_obj
-def summary(obj, dir):
+@click.option(
+    '--dir',
+    help='Set the working directory for your mldock container.',
+    required=True,
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
+def summary(dir):
     """
     Command to show summary for mldock container
     """
     try:
-        logger.info("Loading MLDock config")
         mldock_manager = MLDockConfigManager(
             filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
         )
@@ -311,7 +342,6 @@ def summary(obj, dir):
             click.echo(click.style(state["name"], bg='blue'), nl=True)
             click.echo(click.style(state["message"], fg='white'), nl=True)
 
-        logger.info("\nlocal container was updated! ヽ(´▽`)/")
     except Exception as exception:
         logger.error(exception)
         raise

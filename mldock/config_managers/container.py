@@ -13,6 +13,7 @@ from pathlib import Path
 
 from mldock.terminal import ChoiceWithNumbers, style_dropdown
 from mldock.config_managers.core import BaseConfigManager
+from mldock.platform_helpers.mldock import utils as mldock_utils
 
 logger=logging.getLogger('mldock')
 
@@ -34,6 +35,7 @@ class MLDockConfigManager(BaseConfigManager):
     }
 
     def __init__(self, filepath: str, create: bool = False):
+        # dealing with weird os related path formats
         self.filepath = filepath
         self.image_name_default = Path(filepath).parents[0].name
 
@@ -169,7 +171,12 @@ class MLDockConfigManager(BaseConfigManager):
         formatted_data_node = self._format_data_node()
         config.pop("model")
         formatted_model_node = self._format_model_node()
-        environment = config.pop("environment")
+        environment = {}
+        for key_, value_ in config.pop("environment").items():
+            mldock_key = mldock_utils._format_key_as_mldock_env_var(key_, prefix='mldock')
+            environment.update(
+                {mldock_key: value_}
+            )
 
         states = []
 

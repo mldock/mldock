@@ -20,7 +20,9 @@ class TestUtils:
     sample_hyperparameter_validation = {'MLDOCK_HYPERPARAMETERS': '{"factors": 10, "Alpha criterion": "gini", "weighting": {"A": 10, "C": 2}}'}
 
     sample_collected_mldock_env_vars = {'MLDOCK_ENVIRONMENT': '{"run_id": 2, "A_DUMMY_CONDITIONAL": true}', 'MLDOCK_HYPERPARAMETERS': '{"factors": 10, "Alpha criterion": "gini", "weighting": {"A": 10, "C": 2}}', 'MLDOCK_STAGE': 'dev'}
-    def test_format_key_as_mldock_env_var(self):
+
+    @staticmethod
+    def test_format_key_as_mldock_env_var():
         """test format key for environment vars"""
 
         result = _format_key_as_mldock_env_var(
@@ -32,6 +34,31 @@ class TestUtils:
             "Failed, Keys were not in MLDOCK format"
         )
 
+    @staticmethod
+    def test_format_key_as_mldock_env_var_skips_where_already_prefixed():
+        """test format key for environment vars"""
+
+        result = _format_key_as_mldock_env_var(
+            key='mldock_run_id',
+            prefix='mldock'
+        )
+
+        assert result == 'MLDOCK_RUN_ID', (
+            "Failed, Keys were not in MLDOCK format"
+        )
+
+    @staticmethod
+    def test_format_key_as_mldock_env_var_handles_none_correctly():
+        """test format key for environment vars"""
+
+        result = _format_key_as_mldock_env_var(
+            key='run_id',
+            prefix=None
+        )
+
+        assert result == 'RUN_ID', (
+            "Failed, Keys were not in MLDOCK format"
+        )
 
     def test_format_dictionary_as_env_vars(self):
         """test format key for environment vars"""
