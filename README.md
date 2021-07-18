@@ -37,7 +37,7 @@ pip install --user python-dotenv[cli]
 ```
 note: dotenv allows configuring of environment through the `.env` file. MLDOCK uses ENVIRONMENT VARIABLES in the environment to find your `DOCKER_HOST`, `DOCKERHUB` credentials and even `AWS/GCP` credentials.
 
-2. Create an .env with the following:
+3. Create an .env with the following:
 
 ``` .env
 
@@ -78,13 +78,15 @@ The pip install is the only supported package manager at present. It is recommen
 pip install mldock[cli]
 ```
 
-2. Create an empty directory
+2. Setup local config for the mldock cli
 
-```bash
-mkdir my_ml_container
+This command sets up mldock cli with some nice to have defaults. It may even prompt you for some set up.
+
+``` bash
+mldock configure init
 ```
 
-2. Initialize or create your first container
+3. Initialize or create your first container
 
 You will see a some of prompts to set up container.
 
@@ -94,19 +96,19 @@ mldock container init --dir my_ml_container
 note:
 - Just hit Return/Enter to accept all the defaults.
 
-3. Build your container image locally
+4. Build your container image locally
 
 ```bash
 mldock local build --dir my_ml_container
 ```
 
-4. Run your training locally
+5. Run your training locally
 
 ```bash
 mldock local train --dir my_ml_container
 ```
 
-5. Run your training locally
+6. Run your training locally
 
 ```bash
 mldock local deploy --dir my_ml_container

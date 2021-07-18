@@ -107,14 +107,14 @@ def build(obj, dir, no_cache, tag, stage):
 
 @click.command()
 @click.option(
-    '--dir',
-    help='Set the working directory for your mldock container.',
+    '--payload',
+    help='Path to payload',
     required=True,
     type=click.Path(
         exists=True,
-        file_okay=False,
-        dir_okay=True,
-        writable=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
         readable=True,
         resolve_path=False,
         allow_dash=False,
@@ -199,7 +199,6 @@ def train(obj, dir, params, env_vars, tag, stage):
         on_success='Environment Ready'
     ) as spinner:
         project_env_vars = mldock_config.get('environment', {})
-
         for env_var in env_vars:
             key_, value_ = env_var
             project_env_vars.update(
@@ -223,7 +222,7 @@ def train(obj, dir, params, env_vars, tag, stage):
 
         config_manager = CliConfigureManager()
         env_vars.update(
-            config_manager.local.get('environment')
+            config_manager.local.get('environment', {})
         )
 
     with ProgressLogger(
@@ -338,7 +337,7 @@ def deploy(obj, dir, params, env_vars, tag, port, stage):
 
     config_manager = CliConfigureManager()
     env_vars.update(
-        config_manager.local.get('environment')
+        config_manager.local.get('environment', {})
     )
 
     with ProgressLogger(

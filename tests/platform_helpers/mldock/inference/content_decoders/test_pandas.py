@@ -13,18 +13,11 @@
 #
 # Disclaimer: This code can be found here: https://github.com/aws/sagemaker-training-toolkit/blob/master/test/unit/test_encoder.py
 #
-import io
-import itertools
 import json
-
-from mock import Mock, patch
 # import numpy as np
 import pandas as pd
 import pytest
-from scipy import sparse
-from six import BytesIO
 
-from mldock.platform_helpers.mldock.inference import content_types
 from mldock.platform_helpers.mldock.inference.content_decoders import pandas as pandas_decoders
 
 

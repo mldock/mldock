@@ -3,7 +3,7 @@
 
     Config managers used in command/configure
 """
-import os
+import sys
 import json
 import yaml
 import click
@@ -12,11 +12,10 @@ from pathlib import Path
 from appdirs import user_config_dir
 from mldock.terminal import ChoiceWithNumbers, style_dropdown
 from mldock.config_managers.core import BaseConfigManager
-
-APP_NAME = 'mldock'
-APP_AUTHOR = 'mldock'
+from mldock.platform_helpers import utils
 
 logger = logging.getLogger('mldock')
+MLDOCK_CLI_CONFIG="./.mldock/config"
 
 class CliConfigureManager(BaseConfigManager):
     """CLI Configure Manager for mldock
@@ -26,9 +25,7 @@ class CliConfigureManager(BaseConfigManager):
 
     def __init__(
         self,
-        filepath: str = user_config_dir(
-            appname=APP_NAME, appauthor=APP_AUTHOR
-        ),
+        filepath: str = MLDOCK_CLI_CONFIG,
         create: bool = False
     ):
         self.filepath = filepath
@@ -37,6 +34,18 @@ class CliConfigureManager(BaseConfigManager):
     def reset(self, config_type):
         click.secho("Dropping {} configuration".format(config_type), bg='blue')
         self.config.pop(config_type, None)
+
+    def check_if_exists_else_create(self, file_name: str, create: bool):
+        """check that mldock fileexists"""
+        if not self.file_exists(file_name):
+            if create:
+                # deal with possiblity of nested directory
+                utils._mkdir(Path(file_name).parents[0])
+                # create file
+                self.touch(file_name)
+            else:
+                logger.error("No MLDOCK CLI config found at '{}/'. To create run: 'mldock configure init'".format(Path(file_name).parents[0]))
+                sys.exit(1)
 
     def setup_local_config(self):
         click.secho("Setup local CLI configuration", bg='blue')

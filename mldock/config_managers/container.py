@@ -6,7 +6,7 @@
         - mldock
 """
 import os
-import json
+import sys
 import click
 import logging
 from pathlib import Path
@@ -14,6 +14,7 @@ from pathlib import Path
 from mldock.terminal import ChoiceWithNumbers, style_dropdown
 from mldock.config_managers.core import BaseConfigManager
 from mldock.platform_helpers.mldock import utils as mldock_utils
+from mldock.platform_helpers import utils
 
 logger=logging.getLogger('mldock')
 
@@ -42,6 +43,18 @@ class MLDockConfigManager(BaseConfigManager):
         config = self.load_config(self.filepath, create=create)
         self.config.update(config)
         self.config["image_name"] = self.image_name_default
+
+    def check_if_exists_else_create(self, file_name: str, create: bool):
+        """check that mldock fileexists"""
+        if not self.file_exists(file_name):
+            if create:
+                # deal with possiblity of nested directory
+                utils._mkdir(Path(file_name).parents[0])
+                # create file
+                self.touch(file_name)
+            else:
+                logger.error("No MLDOCK container project found with dir = '{}/'. Re-run `mldock container init` and Confirm 'yes' to create.".format(Path(file_name).parents[0]))
+                sys.exit(1)
 
     def setup_config(self, **kwargs):
         click.secho("Base Setup", bg='blue')

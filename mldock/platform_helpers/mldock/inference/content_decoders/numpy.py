@@ -9,22 +9,7 @@
 import csv
 import io
 import json
-from PIL import Image
 import numpy as np
-
-from mldock.platform_helpers.mldock.inference import content_types
-
-def image_to_numpy(image_bytes):
-    """Convert an image bytes string into numpy through PIL.
-    Args:
-        bytes_like (str): bytes serialized image string.
-    Returns:
-        (np.array): Converted numpy array.
-    """
-    pillow_image =  Image.open(
-        io.BytesIO(image_bytes)
-    ).convert('L')
-    return np.asarray(pillow_image)
 
 def npy_to_numpy(npy_array):
     """Convert an NPY array into numpy.
