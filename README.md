@@ -86,13 +86,7 @@ This command sets up mldock cli with some nice to have defaults. It may even pro
 mldock configure init
 ```
 
-2. Create an empty directory
-
-```bash
-mkdir my_ml_container
-```
-
-2. Initialize or create your first container
+3. Initialize or create your first container
 
 You will see a some of prompts to set up container.
 
@@ -102,19 +96,19 @@ mldock container init --dir my_ml_container
 note:
 - Just hit Return/Enter to accept all the defaults.
 
-3. Build your container image locally
+4. Build your container image locally
 
 ```bash
 mldock local build --dir my_ml_container
 ```
 
-4. Run your training locally
+5. Run your training locally
 
 ```bash
 mldock local train --dir my_ml_container
 ```
 
-5. Run your training locally
+6. Run your training locally
 
 ```bash
 mldock local deploy --dir my_ml_container
