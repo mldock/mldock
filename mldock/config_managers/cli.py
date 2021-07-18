@@ -13,10 +13,8 @@ from appdirs import user_config_dir
 from mldock.terminal import ChoiceWithNumbers, style_dropdown
 from mldock.config_managers.core import BaseConfigManager
 
-APP_NAME = 'mldock'
-APP_AUTHOR = 'mldock'
-
 logger = logging.getLogger('mldock')
+MLDOCK_CLI_CONFIG="./.mldock/config"
 
 class CliConfigureManager(BaseConfigManager):
     """CLI Configure Manager for mldock
@@ -26,9 +24,7 @@ class CliConfigureManager(BaseConfigManager):
 
     def __init__(
         self,
-        filepath: str = user_config_dir(
-            appname=APP_NAME, appauthor=APP_AUTHOR
-        ),
+        filepath: str = MLDOCK_CLI_CONFIG,
         create: bool = False
     ):
         self.filepath = filepath
