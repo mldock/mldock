@@ -115,7 +115,7 @@ class BaseConfigManager:
                 # create file
                 self.touch(file_name)
             else:
-                logger.error("No MLDOCK container project found with dir = '{}/'. Confirm 'yes' to create.".format(Path(file_name).parents[0]))
+                logger.error("file not found: '{}/'. Please create.".format(Path(file_name).parents[0]))
                 sys.exit(1)
 
     def load_config(self, file_name: str, create: bool) -> dict:
