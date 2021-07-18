@@ -21,7 +21,7 @@ setuptools.setup(
     description="A docker tool that helps put machine learning in places that empower ml developers",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/SheldonGrant/mldock",
+    url="https://github.com/mldock/mldock",
     packages=setuptools.find_packages(where='.'),
     package_data={
         'mldock': get_package_data(
