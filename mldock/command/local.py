@@ -199,7 +199,6 @@ def train(obj, dir, params, env_vars, tag, stage):
         on_success='Environment Ready'
     ) as spinner:
         project_env_vars = mldock_config.get('environment', {})
-
         for env_var in env_vars:
             key_, value_ = env_var
             project_env_vars.update(
@@ -223,7 +222,7 @@ def train(obj, dir, params, env_vars, tag, stage):
 
         config_manager = CliConfigureManager()
         env_vars.update(
-            config_manager.local.get('environment')
+            config_manager.local.get('environment', {})
         )
 
     with ProgressLogger(
@@ -338,7 +337,7 @@ def deploy(obj, dir, params, env_vars, tag, port, stage):
 
     config_manager = CliConfigureManager()
     env_vars.update(
-        config_manager.local.get('environment')
+        config_manager.local.get('environment', {})
     )
 
     with ProgressLogger(
