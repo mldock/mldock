@@ -21,6 +21,13 @@ def configure():
     pass
 
 @click.command()
+@click.pass_obj
+def init(obj):
+    """Configure  development tools"""
+    config_manager = CliConfigureManager(create=True)
+    config_manager.write_file()
+
+@click.command()
 @click.option(
     '-c', '--config-name',
     help='Configuration name you wish to reset',
@@ -120,6 +127,7 @@ def show(obj):
         else:
             raise
 
+configure.add_command(init)
 configure.add_command(workspace)
 configure.add_command(local)
 configure.add_command(templates)
