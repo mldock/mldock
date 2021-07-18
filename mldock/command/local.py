@@ -107,14 +107,14 @@ def build(obj, dir, no_cache, tag, stage):
 
 @click.command()
 @click.option(
-    '--dir',
-    help='Set the working directory for your mldock container.',
+    '--payload',
+    help='Path to payload',
     required=True,
     type=click.Path(
         exists=True,
-        file_okay=False,
-        dir_okay=True,
-        writable=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
         readable=True,
         resolve_path=False,
         allow_dash=False,

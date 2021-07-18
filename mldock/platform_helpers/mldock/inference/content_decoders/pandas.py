@@ -10,8 +10,6 @@ import io
 import json
 import pandas as pd
 
-from mldock.platform_helpers.mldock.inference import content_types
-
 def csv_to_pandas(bytes_like: bytes):
     """
         Decodes byte encoded csv to pandas dataframe.

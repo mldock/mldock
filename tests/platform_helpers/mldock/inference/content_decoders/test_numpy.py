@@ -14,20 +14,11 @@
 # Disclaimer: This code can be found here: https://github.com/aws/sagemaker-training-toolkit/blob/master/test/unit/test_encoder.py
 #
 import io
-import itertools
-
-from mock import Mock, patch
-import numpy as np
 import pytest
-from scipy import sparse
-from six import BytesIO
 import numpy as np
 from PIL import Image
 
-from mldock.platform_helpers.mldock.inference import content_types
 from mldock.platform_helpers.mldock.inference.content_decoders import numpy as numpy_decoders
-from mldock.platform_helpers.mldock.inference.record_pb2 import Record
-from mldock.platform_helpers.mldock.inference.recordio import _read_recordio
 
 @pytest.fixture
 def image_bytes():
@@ -38,7 +29,7 @@ def image_bytes():
 @pytest.fixture
 def image_array():
     """reads image as bytes string"""
-    return numpy.asarray(Image.open('tests/api/fixtures/eight.png'))
+    return np.asarray(Image.open('tests/api/fixtures/eight.png'))
 
 class TestNumpyDecoders:
     """Tests the numpy decoder methods"""
@@ -55,7 +46,7 @@ class TestNumpyDecoders:
         ([42, 6, 9], [42.0, 6.0, 9.0], ["42", "6", "9"], [u"42", u"6", u"9"], {42: {"6": 9.0}}),
     )
     def test_npy_to_numpy(target):
-        buffer = BytesIO()
+        buffer = io.BytesIO()
         np.save(buffer, target)
         input_data = buffer.getvalue()
 
@@ -95,4 +86,3 @@ class TestNumpyDecoders:
         actual = numpy_decoders.csv_to_numpy(target)
 
         np.testing.assert_equal(actual, expected)
-
