@@ -2,7 +2,7 @@
 A docker tool that helps put machine learning in places that empower ml developers
 
 ![PyPI](https://img.shields.io/pypi/v/mldock)
-[![Tests](https://github.com/mldock/mldock/actions/workflows/tests.yml/badge.svg)](https://github.com/mldock/mldock/actions/workflows/tests.yml)
+[![Tests](https://github.com/mldock/mldock/actions/workflows/tests.yml/badge.svg)](https://github.com/mldock/mldock/actions/workflows/tests.yml#tests)
 [![Upload Python Package](https://github.com/mldock/mldock/actions/workflows/python-publish.yml/badge.svg)](https://github.com/mldock/mldock/actions/workflows/python-publish.yml)
 
 ![mldock header](https://raw.githubusercontent.com/mldock/mldock/main/images/mldock-twitter-header.png)
