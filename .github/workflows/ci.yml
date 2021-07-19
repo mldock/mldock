@@ -33,4 +33,4 @@ jobs:
           python-version: 3.8
       - name: Run linting
         run: |
-          make lint package_name=python_package
+          make lint python_package=mldock
