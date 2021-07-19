@@ -90,7 +90,6 @@ class BaseConfigManager:
         Args:
             path (str): path to file
         """
-        logger.info(path)
         with open(path, 'a') as file_:
             json.dump({}, file_)
 
@@ -147,7 +146,6 @@ class BaseConfigManager:
         :param docker_tag: [str], the Docker tag for the image
         :param image_name: [str], The name of the Docker image
         """
-        logger.info(self.filepath)
         with open(self.filepath, 'w') as config_file:
             json.dump(self.config, config_file, indent=4, sort_keys=True)
 
