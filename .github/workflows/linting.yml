@@ -1,4 +1,4 @@
-name: CI Tests
+name: CI Linting
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
       - 'images/*'
 
 jobs:
-  tests:
+  linting:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,6 +19,6 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
-      - name: Run tests
+      - name: Run linting
         run: |
-          make test
+          make lint
