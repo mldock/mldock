@@ -1,8 +1,8 @@
+"""MLDOCK CLI MAIN ENTRYPOINT SCIPT"""
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
 import os
-import sys
 import click
 
 from mldock.__version__ import __version__
@@ -32,15 +32,20 @@ def cli(ctx, verbose):
     logger.info(CLI_VERSION)
     ctx.obj = {'verbose': verbose, 'mldock_package_path': mldock_package_path, 'logo': MLDOCK_LOGO}
 
-def add_commands(cli):
-
-    cli.add_command(configure)
-    cli.add_command(container)
-    cli.add_command(local)
-    cli.add_command(registry)
-    cli.add_command(templates)
+def add_commands(cli_group: click.group):
+    """
+        add commands to cli group
+        args:
+            cli (click.group)
+    """
+    cli_group.add_command(configure)
+    cli_group.add_command(container)
+    cli_group.add_command(local)
+    cli_group.add_command(registry)
+    cli_group.add_command(templates)
 
 add_commands(cli)
 
 if __name__ == '__main__':
+    # pylint: disable=no-value-for-parameter
     cli()

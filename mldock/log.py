@@ -1,3 +1,4 @@
+"""Logger formatter"""
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
@@ -7,12 +8,8 @@ import click
 
 PY2 = sys.version_info[0] == 2
 
-if PY2:
-    text_type = unicode  # noqa
-else:
-    text_type = str
-
 class ColorFormatter(logging.Formatter):
+    """ColorFormatter for logging.Logger"""
     colors = {
         'error': dict(fg='red'),
         'exception': dict(fg='red'),
@@ -22,6 +19,7 @@ class ColorFormatter(logging.Formatter):
     }
 
     def format(self, record):
+        """format record method"""
         if not record.exc_info:
             level = record.levelname.lower()
             msg = record.msg
@@ -31,14 +29,17 @@ class ColorFormatter(logging.Formatter):
                 if not PY2 and isinstance(msg, bytes):
                     msg = msg.decode(sys.getfilesystemencoding(),
                                      'replace')
-                elif not isinstance(msg, (text_type, bytes)):
+                elif not isinstance(msg, (str, bytes)):
                     msg = str(msg)
                 msg = '\n'.join(prefix + x for x in msg.splitlines())
             return msg
         return logging.Formatter.format(self, record)
 
 class ClickHandler(logging.Handler):
+    """Click log format handler based on logging.Handler"""
     def emit(self, record):
+        """log record emitter"""
+        # pylint: disable=broad-except
         try:
             msg = self.format(record)
             level = record.levelname.lower()
@@ -48,6 +49,7 @@ class ClickHandler(logging.Handler):
             self.handleError(record)
 
 def _normalize_logger(logger, log_level):
+    """normalize logger based on log_level."""
     if not isinstance(logger, logging.Logger):
         logger = logging.getLogger(logger)
 
@@ -55,6 +57,7 @@ def _normalize_logger(logger, log_level):
     return logger
 
 def configure_logger(logger, verbose=False):
+    """configure a new logger in either DEBUG or INFO based on verbose flag."""
     log_level = logging.DEBUG if verbose else logging.INFO
 
     logger = _normalize_logger(logger, log_level)

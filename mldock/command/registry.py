@@ -17,7 +17,7 @@ logger = logging.getLogger('mldock')
 MLDOCK_CONFIG_NAME = 'mldock.json'
 
 def reset_terminal():
-    # os.system("clear")
+    """clears the terminal view frame"""
     click.clear()
 
 @click.group()
@@ -25,15 +25,16 @@ def registry():
     """
     Commands to interact with docker image registries.
     """
-    pass
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=False,
         dir_okay=True,
         writable=True,
@@ -67,29 +68,29 @@ def registry():
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def push(obj, dir, region, build, provider, no_cache, stage, tag):
+def push(obj, project_directory, region, build, provider, no_cache, stage, tag):
     """
     Command to push docker container image to Image Registry
     """
     reset_terminal()
     mldock_manager = MLDockConfigManager(
-        filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+        filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
     image_name = mldock_config.get("image_name", None)
     container_dir = mldock_config.get("container_dir", None)
     module_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
     )
     dockerfile_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
         container_dir
     )
     requirements_file_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("requirements_dir", "requirements.txt")
     )
 
@@ -160,11 +161,13 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=False,
         dir_okay=True,
         writable=True,
@@ -192,12 +195,12 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def pull(obj, dir, region, provider, no_cache, stage, tag):
+def pull(obj, project_directory, region, provider, no_cache, stage, tag):
     """
     Command to pull docker container image from Image Registry
     """
     mldock_manager = MLDockConfigManager(
-        filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+        filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
 
     # get mldock_module_dir name
@@ -205,11 +208,11 @@ def pull(obj, dir, region, provider, no_cache, stage, tag):
     image_name = mldock_config.get("image_name", None)
     container_dir = mldock_config.get("container_dir", None)
     module_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
     )
     dockerfile_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
         container_dir
     )
@@ -259,5 +262,13 @@ def pull(obj, dir, region, provider, no_cache, stage, tag):
         logger.info(obj["logo"])
         spinner.start()
 
-registry.add_command(push)
-registry.add_command(pull)
+def add_commands(cli_group: click.group):
+    """
+        add commands to cli group
+        args:
+            cli (click.group)
+    """
+    cli_group.add_command(push)
+    cli_group.add_command(pull)
+
+add_commands(registry)

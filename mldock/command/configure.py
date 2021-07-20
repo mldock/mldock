@@ -10,7 +10,7 @@ click.disable_unicode_literals_warning = True
 logger=logging.getLogger('mldock')
 
 def reset_terminal():
-
+    """clears the terminal view frame"""
     click.clear()
 
 @click.group()
@@ -18,7 +18,6 @@ def configure():
     """
     Commands to configure mldock cli.
     """
-    pass
 
 @click.command()
 @click.pass_obj
@@ -127,9 +126,17 @@ def show(obj):
         else:
             raise
 
-configure.add_command(init)
-configure.add_command(workspace)
-configure.add_command(local)
-configure.add_command(templates)
-configure.add_command(show)
-configure.add_command(reset)
+def add_commands(cli_group: click.group):
+    """
+        add commands to cli group
+        args:
+            cli (click.group)
+    """
+    cli_group.add_command(init)
+    cli_group.add_command(workspace)
+    cli_group.add_command(local)
+    cli_group.add_command(templates)
+    cli_group.add_command(show)
+    cli_group.add_command(reset)
+
+add_commands(configure)

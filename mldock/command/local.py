@@ -22,12 +22,13 @@ def local():
     """
     Commands for local development
     """
-    pass
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
         exists=True,
@@ -44,11 +45,11 @@ def local():
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def build(obj, dir, no_cache, tag, stage):
+def build(obj, project_directory, no_cache, tag, stage):
     """Command to build container locally
     """
     mldock_manager = MLDockConfigManager(
-        filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+        filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
@@ -56,16 +57,16 @@ def build(obj, dir, no_cache, tag, stage):
     template_name = mldock_config.get("template", None)
     container_dir = mldock_config.get("container_dir", None)
     module_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
     )
     dockerfile_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
         container_dir
     )
     requirements_file_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("requirements_dir", "requirements.txt")
     )
 
@@ -142,7 +143,23 @@ def predict(payload, content_type, host):
             logger.info(pretty_output)
 
 @click.command()
-@click.option('--dir', help='Set the working directory for your mldock container.', required=True)
+@click.option(
+    '--project_directory',
+    '--dir',
+    '-d',
+    help='mldock container project.',
+    required=True,
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
 @click.option(
     '--params',
     '-p',
@@ -162,17 +179,17 @@ def predict(payload, content_type, host):
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def train(obj, dir, params, env_vars, tag, stage):
+def train(obj, project_directory, params, env_vars, tag, stage):
     """
     Command to run training locally on localhost
     """
     mldock_manager = MLDockConfigManager(
-        filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+        filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
     # get mldock_module_path name
     mldock_config = mldock_manager.get_config()
     module_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
     )
     image_name = mldock_config.get("image_name", None)
@@ -235,7 +252,7 @@ def train(obj, dir, params, env_vars, tag, stage):
         spinner.start()
 
         train_model(
-            working_dir=dir,
+            working_dir=project_directory,
             docker_tag=tag,
             image_name=image_name,
             entrypoint="src/container/executor.sh",
@@ -246,8 +263,10 @@ def train(obj, dir, params, env_vars, tag, stage):
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
         exists=True,
@@ -280,18 +299,18 @@ def train(obj, dir, params, env_vars, tag, stage):
 @click.option('--port', help='host url at which model is served', type=str, default='8080')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def deploy(obj, dir, params, env_vars, tag, port, stage):
+def deploy(obj, project_directory, params, env_vars, tag, port, stage):
     """
     Command to deploy ml container on localhost
     """
     verbose = obj.get('verbose', False)
     mldock_manager = MLDockConfigManager(
-        filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+        filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
     # get mldock_module_path name
     mldock_config = mldock_manager.get_config()
     module_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
     )
     image_name = mldock_config.get("image_name", None)
@@ -349,7 +368,7 @@ def deploy(obj, dir, params, env_vars, tag, port, stage):
         spinner.info("Deployment Environment = {}".format(env_vars))
         spinner.start()
         deploy_model(
-            working_dir=dir,
+            working_dir=project_directory,
             docker_tag=tag,
             image_name=image_name,
             port=port,
@@ -400,14 +419,23 @@ def stop():
                     break
 
     except ValueError:
-        logger.error("This is not a mldock directory: {}".format(dir))
+        logger.error("This is not a mldock directory: {}".format(project_directory))
         raise
     except Exception as exception:
         logger.error(exception)
         raise
 
-local.add_command(build)
-local.add_command(predict)
-local.add_command(train)
-local.add_command(deploy)
-local.add_command(stop)
+
+def add_commands(cli_group: click.group):
+    """
+        add commands to cli group
+        args:
+            cli (click.group)
+    """
+    cli_group.add_command(build)
+    cli_group.add_command(predict)
+    cli_group.add_command(train)
+    cli_group.add_command(deploy)
+    cli_group.add_command(stop)
+
+add_commands(local)
