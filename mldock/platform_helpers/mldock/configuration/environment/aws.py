@@ -18,7 +18,7 @@ class AWSEnvironment(base.BaseEnvironment):
     def setup_inputs(self):
         """ Iterates and downloads assets remoate -> input channels
         """
-        logger.info("Setup assets in {}".format(self.input_data_dir))
+        logger.info("Setup assets in {INPUT_DATA_DIR}".format(INPUT_DATA_DIR=self.input_data_dir))
         # only fetch channels of environment prefix MLDOCK_INPUT_CHANNEL_
         channels = self.get_input_channel_iter()
 
@@ -34,13 +34,13 @@ class AWSEnvironment(base.BaseEnvironment):
                     scheme='s3'
                 )
 
-            except FileExistsError as exception:
-                logger.info("{} Channel skipped. Already exists".format(channel['key']))
+            except FileExistsError:
+                logger.info("{CHANNEL_KEY} Channel skipped. Already exists".format(CHANNEL_KEY=channel['key']))
 
     def cleanup_outputs(self):
         """ Iterates and uploads output channel -> remote
         """
-        logger.info("Cleanup assets in {}".format(self.output_data_dir))
+        logger.info("Cleanup assets in {OUTPUT_DATA_DIR}".format(OUTPUT_DATA_DIR=self.output_data_dir))
         # only fetch channels of environment prefix MLDOCK_OUTPUT_CHANNEL_
         channels = self.get_output_channel_iter()
 
@@ -59,9 +59,9 @@ class AWSEnvironment(base.BaseEnvironment):
                 )
             except AssertionError as exception:
                 logger.info(
-                     "Skipping channel. {} is not a "
-                     "directory or could not be found".format(
-                         local_channel_path
+                    "Skipping channel. {LOCAL_CHANNEL_PATH} is not a "
+                    "directory or could not be found".format(
+                        LOCAL_CHANNEL_PATH=local_channel_path
                     )
                 )
 

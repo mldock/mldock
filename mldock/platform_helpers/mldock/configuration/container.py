@@ -16,6 +16,7 @@ class BaseTrainingContainer:
         self.environment = environment
 
     def startup(self):
+        """start up tasks executed on a container task setup"""
         logger.info("\n\n --- Running Startup Script ---")
         if self.environment.environment_variables('MLDOCK_STAGE', default=None) == "prod":
             logger.info("Env == Prod")
@@ -43,8 +44,9 @@ class BaseServingContainer:
         self.environment = environment
 
     def startup(self):
+        """start up tasks executed on a container task setup"""
         logger.info("\n\n --- Running Startup Script ---")
-        
+
         if self.environment.environment_variables('MLDOCK_STAGE', default=None) == "prod":
             logger.info("Env == Prod")
             self.environment.setup_model_artifacts()

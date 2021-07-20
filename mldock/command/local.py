@@ -1,3 +1,4 @@
+"""LOCAL COMMANDS"""
 import os
 import logging
 import click
@@ -44,8 +45,7 @@ def local():
 @click.option('--no-cache', help='builds container from scratch', is_flag=True)
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
-@click.pass_obj
-def build(obj, project_directory, no_cache, tag, stage):
+def build(project_directory, no_cache, tag, stage):
     """Command to build container locally
     """
     mldock_manager = MLDockConfigManager(
@@ -122,13 +122,26 @@ def build(obj, project_directory, no_cache, tag, stage):
         path_type=None
     )
 )
-@click.option('--content-type', default='application/json', help='format of payload', type=click.Choice(['application/json', 'text/csv', 'image/jpeg'], case_sensitive=False))
-@click.option('--host', help='host url at which model is served', type=str, default='http://127.0.0.1:8080/invocations')
+@click.option(
+    '--content-type',
+    default='application/json',
+    help='format of payload',
+    type=click.Choice(
+        ['application/json', 'text/csv', 'image/jpeg'],
+        case_sensitive=False
+    )
+)
+@click.option(
+    '--host',
+    help='host url at which model is served',
+    type=str,
+    default='http://127.0.0.1:8080/invocations'
+)
 def predict(payload, content_type, host):
     """
     Command to execute prediction request against ml endpoint
     """
-    with ProgressLogger(group='Predict', text='Running Request', spinner='dots') as spinner:
+    with ProgressLogger(group='Predict', text='Running Request', spinner='dots'):
         if payload is None:
             logger.info("\nPayload cannot be None. Please provide path to payload file.")
         else:
@@ -178,8 +191,7 @@ def predict(payload, content_type, host):
 )
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
-@click.pass_obj
-def train(obj, project_directory, params, env_vars, tag, stage):
+def train(project_directory, params, env_vars, tag, stage):
     """
     Command to run training locally on localhost
     """
@@ -188,12 +200,7 @@ def train(obj, project_directory, params, env_vars, tag, stage):
     )
     # get mldock_module_path name
     mldock_config = mldock_manager.get_config()
-    module_path = os.path.join(
-        project_directory,
-        mldock_config.get("mldock_module_dir", "src"),
-    )
     image_name = mldock_config.get("image_name", None)
-    container_dir = mldock_config.get("container_dir", None)
 
     with ProgressLogger(
         group='Stages',
@@ -299,22 +306,23 @@ def train(obj, project_directory, params, env_vars, tag, stage):
 @click.option('--port', help='host url at which model is served', type=str, default='8080')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def deploy(obj, project_directory, params, env_vars, tag, port, stage):
+def deploy(obj, project_directory, **kwargs):
     """
     Command to deploy ml container on localhost
     """
+    params = kwargs.get('params', None)
+    env_vars = kwargs.get('env_vars', None)
+    tag = kwargs.get('tag', None)
+    port = kwargs.get('port', None)
+    stage = kwargs.get('stage', None)
+
     verbose = obj.get('verbose', False)
     mldock_manager = MLDockConfigManager(
         filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
     # get mldock_module_path name
     mldock_config = mldock_manager.get_config()
-    module_path = os.path.join(
-        project_directory,
-        mldock_config.get("mldock_module_dir", "src"),
-    )
     image_name = mldock_config.get("image_name", None)
-    container_dir = mldock_config.get("container_dir", None)
 
     with ProgressLogger(
         group='Stages',
@@ -337,7 +345,8 @@ def deploy(obj, project_directory, params, env_vars, tag, port, stage):
         print(key_, value_)
         project_env_vars.update(
             {key_: value_}
-        )  
+        )
+
     hyperparameters = mldock_config.get('hyperparameters', {})
 
     # override hyperparameters
@@ -403,24 +412,21 @@ def stop():
             default='abort',
             show_choices=False
         )
-        project_container = None
-        for c in containers:
-            for image_tag in c.image.tags:
+
+        for container in containers:
+            for image_tag in container.image.tags:
                 if image_tag in container_tag:
                     # make newline
                     click.echo("")
                     project_container_tag = click.style(container_tag, fg='bright_blue')
                     if click.confirm(
                         "Stop the running container = {}?".format(
-                            project_container_tag) 
+                            project_container_tag)
                     ):
-                        c.kill()
+                        container.kill()
 
                     break
 
-    except ValueError:
-        logger.error("This is not a mldock directory: {}".format(project_directory))
-        raise
     except Exception as exception:
         logger.error(exception)
         raise

@@ -21,7 +21,6 @@ import json
 
 import numpy as np
 from scipy.sparse import issparse
-from six import BytesIO, StringIO
 
 from mldock.platform_helpers.mldock.inference import content_types
 from mldock.platform_helpers.mldock.inference.recordio import (
@@ -29,7 +28,7 @@ from mldock.platform_helpers.mldock.inference.recordio import (
     _write_spmatrix_to_sparse_tensor,
 )
 
-def array_to_npy(array_like, **kwargs):
+def array_to_npy(array_like):
     """Convert an array-like object to the NPY format.
     To understand what an array-like object is, please see:
     https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
@@ -38,11 +37,11 @@ def array_to_npy(array_like, **kwargs):
     Returns:
         (obj): NPY array.
     """
-    buffer = BytesIO()
+    buffer = io.BytesIO()
     np.save(buffer, array_like)
     return buffer.getvalue()
 
-def array_to_csv(array_like, quoted=True, **kwargs):
+def array_to_csv(array_like, quoted=True):
     """Convert an array like object to CSV.
     To understand what an array-like object is, please see:
     https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays

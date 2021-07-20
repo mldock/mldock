@@ -6,7 +6,6 @@
     e.g. 
         list of lists -> np.array.
 """
-import csv
 import io
 from PIL import Image
 import numpy as np

@@ -1,8 +1,9 @@
+"""CONTAINER PROJECT MANAGEMENT COMMANDS"""
 import os
 import json
+from pathlib import Path
 import logging
 import click
-from pathlib import Path
 
 from mldock.config_managers.core import WorkingDirectoryManager
 from mldock.config_managers.container import MLDockConfigManager
@@ -12,7 +13,6 @@ from mldock.config_managers.cli import \
         InputDataConfigManager, StageConfigManager, \
             ModelConfigManager, EnvironmentConfigManager, CliConfigureManager
 
-from mldock.platform_helpers.mldock import utils as mldock_utils
 from mldock.api.templates import init_from_template
 
 click.disable_unicode_literals_warning = True
@@ -48,9 +48,21 @@ def container():
         path_type=None
     )
 )
-@click.option('--no-prompt', is_flag=True, help='Do not prompt user, instead use the mldock config to initialize the container.')
-@click.option('--container-only', is_flag=True, help='Only inject new container assets.')
-@click.option('--template', default=None, help='Directory containing mldock supported container to use to initialize the container.')
+@click.option(
+    '--no-prompt',
+    is_flag=True,
+    help='Do not prompt user, instead use the mldock config to initialize the container.'
+)
+@click.option(
+    '--container-only',
+    is_flag=True,
+    help='Only inject new container assets.'
+)
+@click.option(
+    '--template',
+    default=None,
+    help='Directory containing mldock supported container to use to initialize the container.'
+)
 @click.option(
     '--params',
     '-p',
@@ -68,10 +80,16 @@ def container():
     multiple=True
 )
 @click.pass_obj
-def init(obj, project_directory, no_prompt, container_only, template, params, env_vars):
+def init(obj, project_directory, **kwargs):
     """
     Command to initialize mldock enabled container project
     """
+    no_prompt = kwargs.get('no_prompt', False)
+    container_only = kwargs.get('container_only', False)
+    template = kwargs.get('template', 'generic')
+    params = kwargs.get('params', None)
+    env_vars = kwargs.get('env_vars', None)
+
     reset_terminal()
     mldock_package_path = obj['mldock_package_path']
     try:
@@ -244,15 +262,6 @@ def update(obj, project_directory):
 
         # get sagify_module_path name
         mldock_config = mldock_manager.get_config()
-
-        # get list of dataset names
-        mldock_data = mldock_config.get("data", None)
-        input_config_config = mldock_utils._extract_data_channels_from_mldock(mldock_data)
-
-        src_directory = os.path.join(
-            project_directory,
-            mldock_config.get("mldock_module_dir", "src")
-        )
 
         _ = WorkingDirectoryManager(base_dir=project_directory)
 

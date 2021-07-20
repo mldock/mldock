@@ -1,14 +1,15 @@
+"""PLATFORM HELPERS MLDOCK UTILITIES"""
 import json
 
 def _format_key_as_mldock_env_var(key, prefix=None):
     """
         Formats key as mldock env variable.
-        Replace '\s' and '-', append mldock prefix
+        Replace ' ' and '-', append mldock prefix
         and lastly transforms to uppercase
     """
     if prefix is not None:
         if not key.lower().startswith(prefix.lower()):
-            key = "{}_{}".format(prefix, key)
+            key = "{PREFIX}_{KEY}".format(PREFIX=prefix, KEY=key)
 
     key = key.replace(" ", "_").replace("-", "_")
     key = key.upper()

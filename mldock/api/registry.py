@@ -9,11 +9,20 @@ def compute_progress(current, max_value=10):
 
     if current > max_value:
         multiple = current // max_value
-        current = current - max_value * multiple 
-    
+        current = current - max_value * multiple
+
     return current
 
-def get_layer_state(stream, layer_id, state={}, progress='', fill_char='=', increment=2, max_value=40, status_tag='pushing'):
+def get_layer_state(
+    stream,
+    layer_id,
+    state={},
+    progress='',
+    fill_char='=',
+    increment=2,
+    max_value=40,
+    status_tag='pushing'
+):
     """
         Computes a status update to the state of layer during a push.
         Additionally, adds a progress bar and flexible fill character.

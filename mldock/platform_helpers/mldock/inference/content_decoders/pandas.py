@@ -3,7 +3,7 @@
 
     Handle Decoding of Content in to appropriate format from request as pandas dataframe.
 
-    e.g. 
+    e.g.
         list of lists -> pd.DataFrame.
 """
 import io
@@ -19,8 +19,8 @@ def csv_to_pandas(bytes_like: bytes):
         return:
             (pd.DataFrame): data as pandas dataframe
     """
-    s = bytes_like.decode()
-    data = io.StringIO(s)
+    string_like = bytes_like.decode()
+    data = io.StringIO(string_like)
     return pd.read_csv(data)
 
 def json_list_to_pandas(json_data):

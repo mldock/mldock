@@ -3,7 +3,7 @@
 
     Handle Decoding of Content in to appropriate format from request as numpy array.
 
-    e.g. 
+    e.g.
         list of lists -> np.array.
 """
 import csv
@@ -45,14 +45,12 @@ def csv_to_numpy(bytes_like):
     try:
         stream = io.StringIO(bytes_like.decode())
         reader = csv.reader(stream, delimiter=",", quotechar='"', doublequote=True, strict=True)
-        data = np.array([row for row in reader]).squeeze()
+        data = np.array(list(reader)).squeeze()
         return data
 
-    except ValueError as e:
-        if dtype is not None:
-            raise Exception(
-                "Error while writing numpy array: {}. dtype is: {}".format(e, dtype)
+    except Exception as exception:
+        raise Exception(
+            "Error while decoding csv: {EXCEPTION}".format(
+                EXCEPTION=exception
             )
-        raise
-    except Exception as e:
-        raise Exception("Error while decoding csv: {}".format(e))
+        )

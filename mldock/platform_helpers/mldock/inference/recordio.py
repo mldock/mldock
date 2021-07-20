@@ -192,33 +192,33 @@ for amount in range(4):
 _kmagic = 0xCED7230A
 
 
-def _write_recordio(f, data):
+def _write_recordio(file_, data):
     """Wraps the data with RecordIO magic and writes to file-like object.
     Args:
-        f (file-like object): The file-like object to which the data point will be written.
+        file_ (file-like object): The file-like object to which the data point will be written.
         data (numpy array): Data to write.
     """
     length = len(data)
-    f.write(struct.pack("I", _kmagic))
-    f.write(struct.pack("I", length))
+    file_.write(struct.pack("I", _kmagic))
+    file_.write(struct.pack("I", length))
     pad = (((length + 3) >> 2) << 2) - length
-    f.write(data)
-    f.write(padding[pad])
+    file_.write(data)
+    file_.write(padding[pad])
 
 
-def _read_recordio(f):
+def _read_recordio(file_):
     """Reads a RecordIO and unpacks the body.
     Args:
-        f: File like object.
+        file_: File like object.
     """
     while True:
         try:
-            read_kmagic, = struct.unpack("I", f.read(4))
+            read_kmagic, = struct.unpack("I", file_.read(4))
         except struct.error:
             return
         assert read_kmagic == _kmagic
-        len_record, = struct.unpack("I", f.read(4))
+        len_record, = struct.unpack("I", file_.read(4))
         pad = (((len_record + 3) >> 2) << 2) - len_record
-        yield f.read(len_record)
+        yield file_.read(len_record)
         if pad:
-            f.read(pad)
+            file_.read(pad)
