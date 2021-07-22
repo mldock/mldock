@@ -36,7 +36,7 @@ setuptools.setup(
         'aws': ['boto3'],
         'cli': ['click', 'docker', 'future', 'requests', 'boto3', 'google-auth', 'appdirs', 'halo', 'PyYAML'],
         'sagemaker': ['sagemaker-training'],
-        'testing': ['pandas', 'numpy', 'protobuf>=3.1', 'pillow', 'responses']
+        'testing': ['pandas', 'numpy', 'protobuf>=3.1', 'pillow', 'responses', 'dataclasses']
     },
     entry_points="""
         [console_scripts]
