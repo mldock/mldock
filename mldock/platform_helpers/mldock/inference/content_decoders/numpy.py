@@ -53,4 +53,4 @@ def csv_to_numpy(bytes_like):
             "Error while decoding csv: {EXCEPTION}".format(
                 EXCEPTION=exception
             )
-        )
+        ) from exception

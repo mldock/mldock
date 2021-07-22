@@ -7,19 +7,25 @@ import os
 from pathlib import Path
 import logging
 import boto3
-import os 
 
 from mldock.platform_helpers.utils import \
-    _delete_file, _mkdir, _iter_nested_dir, _check_if_cloud_scheme, \
-        parse_url, zip_folder_as_tarfile, zip_folder, \
-         unzip_file_from_tarfile, unzip_file
+    _mkdir, _iter_nested_dir, _check_if_cloud_scheme, \
+        parse_url, zip_folder_as_tarfile, unzip_file_from_tarfile, \
+            unzip_file
 
 logger = logging.getLogger('mldock')
 
 def download_file_from_bucket(bucket, blob, prefix, filename, target):
+    """
+        download file from s3 bucket
 
-    bucket_name = blob.bucket_name
-    fullpath = os.path.join(bucket_name, prefix, filename)
+        args:
+            bucket (str): s3 bucket name
+            blob (S3Blob): s3 blob object
+            prefix (str): prefix filepath in bucket
+            filename (str): filename
+            target (str): target directory on local
+    """
     dst_filepath = os.path.join(target, os.path.basename(prefix))
     file_destination = os.path.join(dst_filepath, filename)
 
@@ -52,7 +58,14 @@ def download_folder(
             download_file_from_bucket(bucket, blob, prefix, filename, target)
 
 def upload_file_to_bucket(bucket, path, storage_destination):
+    """
+        Upload file from local to bucket.
 
+        args:
+            bucket (S3bucket): s3 bucket object
+            path (str): path to object in local
+            storage_destination: path to object path in storage
+    """
     logger.info("Upload {} to cloud at {}".format(path, storage_destination))
     bucket.upload_file(path.as_posix(), storage_destination)
 
@@ -96,7 +109,11 @@ def download_input_assets(storage_dir_path: str, local_path: str, scheme: str):
             if file_path.suffix == '.zip':
                 unzip_file(filename=file_path, output_dir=file_path.parent, rm_zipped=True)
             elif file_path.suffix == '.gz':
-                unzip_file_from_tarfile(filename=file_path, output_dir=file_path.parent, rm_zipped=True)
+                unzip_file_from_tarfile(
+                    filename=file_path,
+                    output_dir=file_path.parent,
+                    rm_zipped=True
+                )
     else:
         Exception("No Cloud storage url was found. Must have gs:// schema")
 

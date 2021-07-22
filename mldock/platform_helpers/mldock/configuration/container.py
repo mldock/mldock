@@ -36,7 +36,7 @@ class BaseTrainingContainer:
 class BaseServingContainer:
     """
         A set of tasks for setup and cleanup of container
-    
+
         note:
             - Only supports a startup script. Cleanup is a bit fuzzy for serving.
     """
@@ -52,6 +52,9 @@ class BaseServingContainer:
             self.environment.setup_model_artifacts()
         logger.info("\n\n --- Setup Complete --- \n\n")
 
-    def cleanup(self):
+    @staticmethod
+    def cleanup():
         """clean up tasks executed on container task complete"""
-        pass
+        logger.info("\n\n --- Running Cleanup Script ---")
+        logger.info("\n\n --- No tasks to run --- \n\n")
+        logger.info("\n\n --- Cleanup Complete --- \n\n")

@@ -6,9 +6,9 @@
 import sys
 import os
 import json
-import click
 import logging
 from pathlib import Path
+import click
 
 from mldock.platform_helpers import utils
 
@@ -31,6 +31,7 @@ class WorkingDirectoryManager:
         self.make_asset_dirs()
 
     def get_working_dir(self):
+        """Get working directory path"""
         return self.base_dir
 
     def make_asset_dirs(self):
@@ -38,14 +39,10 @@ class WorkingDirectoryManager:
         """
         logger.debug("Creating assets directories in working dir {} .".format(self.base_dir))
 
-        try:
-            self.input_data_dir.mkdir(parents=False, exist_ok=True)
-            self.input_config_dir.mkdir(parents=False, exist_ok=True)
-            self.model_dir.mkdir(parents=False, exist_ok=True)
-            self.output_data_dir.mkdir(parents=False, exist_ok=True)
-
-        except Exception as exception:
-            logger.error(exception)
+        self.input_data_dir.mkdir(parents=False, exist_ok=True)
+        self.input_config_dir.mkdir(parents=False, exist_ok=True)
+        self.model_dir.mkdir(parents=False, exist_ok=True)
+        self.output_data_dir.mkdir(parents=False, exist_ok=True)
 
     @staticmethod
     def file_exists(filename: str) -> bool:
@@ -61,18 +58,22 @@ class WorkingDirectoryManager:
 
     @property
     def input_data_dir(self):
+        """Get input data directory path"""
         return Path(self.base_dir, 'data')
 
     @property
     def input_config_dir(self):
+        """Get input config directory path"""
         return Path(self.base_dir, 'config')
 
     @property
     def model_dir(self):
+        """Get model directory path"""
         return Path(self.base_dir, 'model')
-    
+
     @property
     def output_data_dir(self):
+        """Get output data directory path"""
         return Path(self.base_dir, 'output')
 
 class BaseConfigManager:
@@ -114,7 +115,11 @@ class BaseConfigManager:
                 # create file
                 self.touch(file_name)
             else:
-                logger.error("file not found: '{}/'. Please create.".format(Path(file_name).parents[0]))
+                logger.error((
+                    "file not found: '{DIRECTORY_PATH}/'. Please create.".format(
+                        DIRECTORY_PATH=Path(file_name).parents[0]
+                    )
+                ))
                 sys.exit(1)
 
     def load_config(self, file_name: str, create: bool) -> dict:
@@ -124,7 +129,7 @@ class BaseConfigManager:
             filename (str): path to config to load
         Returns:
             dict: config
-        """        
+        """
         self.check_if_exists_else_create(
             file_name=file_name, create=create
         )

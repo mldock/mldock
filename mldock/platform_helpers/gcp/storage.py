@@ -9,21 +9,30 @@ import logging
 from google.cloud.storage import Client as StorageClient
 
 from mldock.platform_helpers.utils import \
-    _delete_file, _mkdir, _iter_nested_dir, _check_if_cloud_scheme, \
-        parse_url, zip_folder_as_tarfile, zip_folder, \
+    _mkdir, _iter_nested_dir, _check_if_cloud_scheme, \
+        parse_url, zip_folder_as_tarfile, \
          unzip_file_from_tarfile, unzip_file
 
 logger = logging.getLogger('mldock')
 
 def download_blob_to_filename(blob, prefix, filename, target):
-    """download blob from google storage to filename"""
-    bucket_name = blob.bucket.name
-    fullpath = os.path.join(bucket_name, prefix, filename)
+    """
+        download blob from google storage to filename.
+
+        args:
+            blob (GSBlob): gs blob object
+            prefix (str): file destination on local
+            filename (str): name of file
+            target (str): target directory on local
+    """
+
     dst_filepath = os.path.join(target, os.path.basename(prefix))
     file_destination = os.path.join(dst_filepath, filename)
     logger.info("Download {} to local at {}".format(filename, file_destination))
+
     # make directory
     _mkdir(dst_filepath)
+
     # download
     blob.download_to_filename(file_destination)
 
@@ -91,9 +100,20 @@ def download_input_assets(storage_dir_path: str, local_path: str, scheme: str = 
 
         for file_path in Path(local_path).glob('*/*'):
             if file_path.suffix == '.zip':
-                unzip_file(filename=file_path, output_dir=file_path.parent, rm_zipped=True)
+
+                unzip_file(
+                    filename=file_path,
+                    output_dir=file_path.parent,
+                    rm_zipped=True
+                )
+
             elif file_path.suffix == '.gz':
-                unzip_file_from_tarfile(filename=file_path, output_dir=file_path.parent, rm_zipped=True)
+
+                unzip_file_from_tarfile(
+                    filename=file_path,
+                    output_dir=file_path.parent,
+                    rm_zipped=True
+                )
     else:
         Exception("No Cloud storage url was found. Must have gs:// schema")
 

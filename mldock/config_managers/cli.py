@@ -28,10 +28,10 @@ class CliConfigureManager(BaseConfigManager):
         filepath: str = MLDOCK_CLI_CONFIG,
         create: bool = False
     ):
-        self.filepath = filepath
-        self.config = self.load_config(self.filepath, create=create)
+        super().__init__(filepath=filepath, create=create)
 
     def reset(self, config_type):
+        """reset given configuration by config key"""
         click.secho("Dropping {} configuration".format(config_type), bg='blue')
         self.config.pop(config_type, None)
 
@@ -44,10 +44,16 @@ class CliConfigureManager(BaseConfigManager):
                 # create file
                 self.touch(file_name)
             else:
-                logger.error("No MLDOCK CLI config found at '{}/'. To create run: 'mldock configure init'".format(Path(file_name).parents[0]))
+                logger.error((
+                    "No MLDOCK CLI config found at '{CONFIG_PATH}/'. "
+                    "To create run: 'mldock configure init'".format(
+                        CONFIG_PATH=Path(file_name).parents[0]
+                    )
+                ))
                 sys.exit(1)
 
     def setup_local_config(self):
+        """setup and prompt user for local configuration"""
         click.secho("Setup local CLI configuration", bg='blue')
         if self.config.get('local') is None:
             self.config['local'] = {}
@@ -55,6 +61,7 @@ class CliConfigureManager(BaseConfigManager):
         self.ask_for_environment(config_type='local')
 
     def setup_templates_config(self):
+        """setup and prompt user for templates configuration"""
         click.secho("Setup templates CLI configuration", bg='blue')
         if self.config.get('templates') is None:
             self.config['templates'] = {}
@@ -62,6 +69,7 @@ class CliConfigureManager(BaseConfigManager):
         self.ask_for_template_root()
 
     def setup_workspace_config(self):
+        """setup and prompt user for workspace configuration"""
         click.secho("Setup workspace CLI configuration", bg='blue')
         if self.config.get('workspace') is None:
             self.config['workspace'] = {}
@@ -85,20 +93,25 @@ class CliConfigureManager(BaseConfigManager):
             default=self.config.get('auth_type', None),
             show_choices=False
         )
-        
+
         self.config['local'].update({
             'auth_type': auth_type
         })
 
     def ask_for_environment(self, config_type):
-        
+        """
+            prompt user for environment variables
+
+            args:
+                config_type (str): config key that points to configure config type
+        """
         config = self.config[config_type].get('environment', {})
         environment_config_manager = EnvironmentConfigManager(config=config)
         environment_config_manager.ask_for_env_vars()
         self.config[config_type].update({
             'environment': environment_config_manager.get_config()
         })
-    
+
     def ask_for_template_server(self):
         """prompt user to set template server tracking
         """
@@ -117,7 +130,7 @@ class CliConfigureManager(BaseConfigManager):
             default=self.config.get('server_type', None),
             show_choices=False
         )
-        
+
         self.config['templates'].update({
             'server_type': server_type
         })
@@ -132,7 +145,7 @@ class CliConfigureManager(BaseConfigManager):
             text=click.style("Set path to template root dir: ", fg='bright_blue'),
             default=self.config['templates'].get('templates_root', None)
         )
-        
+
         self.config['templates'].update({
             'templates_root': templates_root_dir
         })
@@ -206,7 +219,7 @@ class ResourceConfigManager(BaseConfigManager):
         Returns:
             return: current host name
         """
-        current_host_name = chosen_python_index = click.prompt(
+        current_host_name = click.prompt(
             text="Set current host name: ",
             default="algo",
         )
@@ -244,13 +257,13 @@ class PackageConfigManager(BaseConfigManager):
     """Package Requirement Config Manager for sagify
     """
     @staticmethod
-    def touch(filename):
+    def touch(path):
         """creat an empty txt file
 
         Args:
             filename (str): path to file
         """
-        Path(filename).touch()
+        Path(path).touch()
 
     def load_config(self, file_name: str, create: bool) -> list:
         """load config
@@ -265,9 +278,9 @@ class PackageConfigManager(BaseConfigManager):
             file_name=file_name, create=create
         )
         path = Path(file_name)
-        with path.open() as f: 
-            config = f.readlines()
-        
+        with path.open() as file_:
+            config = file_.readlines()
+
         for index, c_package in enumerate(config):
             if c_package.endswith("\n"):
                 config[index] = config[index].split("\n")[0]
@@ -318,7 +331,16 @@ class StageConfigManager(BaseConfigManager):
         """
         click.secho("Stages", bg='blue', nl=True)
         while True:
-            click.echo(click.style("Add a development stage. ", fg='bright_blue')+"(Follow the prompts)", nl=True)
+            echo_msg = click.style(
+                "Add a development stage. ",
+                fg='bright_blue'
+            ) + "(Follow the prompts)"
+
+            click.echo(
+                echo_msg,
+                nl=True
+            )
+
             stage_name = click.prompt(
                 text="Stage name: ",
                 default="end",
@@ -360,7 +382,16 @@ class HyperparameterConfigManager(BaseConfigManager):
         """
         click.secho("Hyperparameters", bg='blue', nl=True)
         while True:
-            click.echo(click.style("Add a hyperparameter. ", fg='bright_blue')+"(Follow prompts)", nl=True)
+
+            echo_msg = click.style(
+                "Add a hyperparameter. ",
+                fg='bright_blue'
+            )+"(Follow prompts)"
+
+            click.echo(
+                echo_msg,
+                nl=True
+            )
             hparam_name = click.prompt(
                 text="Hyperparameter (name): ",
                 default="end",
@@ -409,7 +440,16 @@ class EnvironmentConfigManager(BaseConfigManager):
         """
         click.secho("Environment Variables", bg='blue', nl=True)
         while True:
-            click.echo(click.style("Add a environment variable. ", fg='bright_blue')+"(Follow prompts)", nl=True)
+            echo_msg = click.style(
+                "Add a environment variable. ",
+                fg='bright_blue'
+            ) + "(Follow prompts)"
+
+            click.echo(
+                echo_msg,
+                nl=True
+            )
+
             env_var_name = click.prompt(
                 text="Environment Variable (name): ",
                 default="end",
@@ -440,7 +480,13 @@ class InputDataConfigManager(BaseConfigManager):
         """
         write to file
         """
-        config = set([Path(dataset['channel'], dataset['filename']).as_posix() for dataset in self.config])
+        config = set(
+            [
+                Path(dataset['channel'], dataset['filename']).as_posix()
+                for dataset in self.config
+            ]
+        )
+
         config_txt = "\n".join(config) + "\n"
 
         ignore_filepath = Path(self.base_path,".gitignore")
@@ -451,23 +497,38 @@ class InputDataConfigManager(BaseConfigManager):
         """
         click.secho("Input Data Channels", bg='blue', nl=True)
         while True:
+
+            echo_msg = click.style(
+                "Add a data channel. ",
+                fg='bright_blue'
+            ) + "(Expects channel/filename). Hit enter to continue."
+
             channel_filename_pair = click.prompt(
-                text=click.style("Add a data channel. ", fg='bright_blue')+"(Expects channel/filename). Hit enter to continue.",
+                text=echo_msg,
                 default="end",
                 show_default=False,
                 type=str
             )
+
             if channel_filename_pair == "end":
+
                 logger.debug("\nUpdated data channels")
+
                 self.pretty_print()
+
                 break
+
             elif "/" in channel_filename_pair and not channel_filename_pair == "channel:filename":
-                channel, filename = channel_filename_pair.split("/",1)
+
+                channel, filename = channel_filename_pair.split("/", 1)
+
                 logger.debug("Adding data/{}/{}".format(channel, filename))
+
                 self.config.append({
                     'channel': channel,
                     'filename': filename
                 })
+
             else:
                 logger.warning("Expected format as channel/filename. Skipping")
 
@@ -483,7 +544,13 @@ class ModelConfigManager(BaseConfigManager):
         """
         write to file
         """
-        config = set([Path(dataset['channel'], dataset['filename']).as_posix() for dataset in self.config])
+        config = set(
+            [
+                Path(dataset['channel'], dataset['filename']).as_posix()
+                for dataset in self.config
+            ]
+        )
+
         config_txt = "\n".join(config) + "\n"
 
         ignore_filepath = Path(self.base_path,".gitignore")
@@ -494,12 +561,19 @@ class ModelConfigManager(BaseConfigManager):
         """
         click.secho("Model Channels", bg='blue', nl=True)
         while True:
+
+            echo_msg = click.style(
+                "Add a model channel. ",
+                fg='bright_blue'
+            ) + "(Expects channel/filename). Hit enter to continue."
+
             channel_filename_pair = click.prompt(
-                text=click.style("Add a model channel. ", fg='bright_blue')+"(Expects channel/filename). Hit enter to continue.",
+                text=echo_msg,
                 default="end",
                 show_default=False,
                 type=str
             )
+
             if channel_filename_pair == "end":
                 logger.debug("\nUpdated model channels")
                 self.pretty_print()

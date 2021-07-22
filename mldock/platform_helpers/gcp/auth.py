@@ -13,7 +13,7 @@ def get_gcp_gcr(region: str):
 
         args:
             region (str): Region to Authenticate GCR registry in
-        
+
         return:
             username (str): username to use in docker client auth
             password (str): password token to use in docker client auth

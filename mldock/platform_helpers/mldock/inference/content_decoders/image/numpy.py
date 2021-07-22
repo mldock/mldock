@@ -3,7 +3,7 @@
 
     Handle Decoding of Content in to appropriate format from request as numpy array.
 
-    e.g. 
+    e.g.
         list of lists -> np.array.
 """
 import io

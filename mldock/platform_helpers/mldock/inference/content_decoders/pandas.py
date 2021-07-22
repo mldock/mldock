@@ -34,5 +34,3 @@ def json_list_to_pandas(json_data):
     """
     data = json.loads(json_data)
     return pd.DataFrame(data)
-
-

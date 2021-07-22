@@ -20,13 +20,6 @@ import io
 import json
 
 import numpy as np
-from scipy.sparse import issparse
-
-from mldock.platform_helpers.mldock.inference import content_types
-from mldock.platform_helpers.mldock.inference.recordio import (
-    _write_numpy_to_dense_tensor,
-    _write_spmatrix_to_sparse_tensor,
-)
 
 def array_to_npy(array_like):
     """Convert an array-like object to the NPY format.
@@ -82,29 +75,3 @@ def array_to_json(array_like):
         return json.JSONEncoder().default(_array_like)
 
     return json.dumps(array_like, default=default)
-
-def array_to_recordio_protobuf(array_like, labels=None):
-    """Convert an array like object to recordio-protobuf format.
-    To understand what an array-like object is, please see:
-    https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
-     Args:
-        array_like (np.array or scipy.sparse.csr_matrix): Array-like object to be
-                                                          converted to recordio-protobuf.
-        labels (np.array or scipy.sparse.csr_matrix): Array-like object representing
-                                                      the labels to be encoded.
-    Returns:
-        buffer: Bytes buffer recordio-protobuf.
-    """
-
-    if len(array_like.shape) == 1:
-        array_like = array_like.reshape(1, array_like.shape[0])
-    assert len(array_like.shape) == 2, "Expecting a 1 or 2 dimensional array"
-
-    buffer = io.BytesIO()
-
-    if issparse(array_like):
-        _write_spmatrix_to_sparse_tensor(buffer, array_like, labels)
-    else:
-        _write_numpy_to_dense_tensor(buffer, array_like, labels)
-    buffer.seek(0)
-    return buffer.getvalue()
