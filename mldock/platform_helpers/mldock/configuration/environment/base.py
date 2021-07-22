@@ -111,7 +111,7 @@ class BaseEnvironment(AbstractEnvironment):
             if not self.hyperparameters_filepath.exists():
                 utils._write_json(
                     obj={},
-                    path=self.hyperparameters_filepath
+                    file_path=self.hyperparameters_filepath
                 )
         except Exception as exception:
             logger.error(exception)
@@ -162,7 +162,7 @@ class BaseEnvironment(AbstractEnvironment):
 
         utils._write_json(
             obj=hyperparameters,
-            path=self.hyperparameters_filepath.as_posix()
+            file_path=self.hyperparameters_filepath.as_posix()
         )
 
     def get_input_channel_iter(self):
