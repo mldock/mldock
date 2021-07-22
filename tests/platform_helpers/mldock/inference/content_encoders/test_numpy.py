@@ -19,7 +19,6 @@ import itertools
 from mock import Mock, patch
 import numpy as np
 import pytest
-from scipy import sparse
 from six import BytesIO
 
 from mldock.platform_helpers.mldock.inference.content_encoders import numpy as numpy_encoders
