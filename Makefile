@@ -34,7 +34,7 @@ test: install-requirements
 	coverage run --source=mldock -m pytest tests;
 	coverage report --fail-under=${COVERAGE_THRESHOLD}
 
-lint:
+lint: install-requirements
 	pip install pylint;
 	pylint --fail-under=9.5 --rcfile=.pylintrc $(python_package)
 
