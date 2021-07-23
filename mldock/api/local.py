@@ -1,15 +1,9 @@
 """Local API methods"""
 import os
-import sys
-import json
-import time
 import logging
 from pathlib import Path
 import requests
 import docker
-import traceback
-import logging
-
 
 from mldock.config_managers.cli import \
     CliConfigureManager
@@ -19,16 +13,16 @@ logger=logging.getLogger('mldock')
 
 # log formatting
 def pretty_build_logs(line: dict):
-
+    """format docker build logs"""
     if line is None:
         return None
 
     error = line.get('error', None)
-    errorDetail = line.get('errorDetail', None)
+    error_detail = line.get('errorDetail', None)
 
     if error is not None:
-        logger.error('{}\n{}'.format(error, errorDetail))
-    
+        logger.error('{}\n{}'.format(error, error_detail))
+
     stream = line.get('stream', '')
 
     if ('Step' in stream) & (':' in stream):
@@ -36,19 +30,26 @@ def pretty_build_logs(line: dict):
     else:
         logger.debug(" ==> {MESSAGE}".format(MESSAGE=stream))
 
+    return None
+
 
 class DockerLLCManager:
-
+    """Docker APIClient context manager"""
+    client = None
     def __init__(self, **kwargs):
-        self.kwargs = kwargs 
+        self.kwargs = kwargs
+
     def __enter__(self):
         self.client = docker.APIClient(**self.kwargs)
         return self.client
+
     def __exit__(self, exc_type, exc_value, exc_tb):
         logger.info(self.client.prune_builds())
         self.client.close()
 
 class DockerManager:
+    """Docker Client context manager"""
+    client = None
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -56,21 +57,71 @@ class DockerManager:
     def __enter__(self):
         self.client = docker.from_env(**self.kwargs)
         return self.client
+
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.client.close()
 
 # API methods
 
-def train_model(working_dir, docker_tag, image_name, entrypoint, cmd, env=None):
+def generate_mldock_mount_volume(
+    host_prefix: str,
+    container_prefix: str,
+    working_dir: str,
+    base_container_path: str,
+    mode: str = 'rw'
+):
+    """
+        generate host and container paths for docker volume mounts.
+
+        args:
+            host_prefix (str): host prefix to use relative to working_dir
+            container_prefix (str): container prefix to use relative to base_container_path
+            working_dir (str): host working directory to build host volumes from
+            base_container_path (str): container base path to build container volumes from
+            mode (str): (default='rw') docker volume mount read/write mode
+    """
+    host_path = Path(working_dir, host_prefix).absolute().as_posix()
+    container_path = Path(base_container_path, container_prefix).as_posix()
+    return host_path, {'bind': container_path, 'mode': mode}
+
+def make_multiple_mldock_mount_volumes(
+    volumes: dict,
+    working_dir: str,
+    base_container_path: str,
+    mode: str = 'rw'
+):
+    """
+        Generate multiple docker volume mounts for a collection of volume mount mappings.
+
+        args:
+            volumes (dict): volume mount mappings
+            working_dir (str): host working directory to build host volumes from
+            base_container_path (str): container base path to build container volumes from
+            mode (str): (default='rw') docker volume mount read/write mode
+    """
+    docker_volumes = {}
+    for volume in volumes:
+
+        host_mount, container_mount = generate_mldock_mount_volume(
+            host_prefix=volume['host_prefix'],
+            container_prefix=volume['container_prefix'],
+            working_dir=working_dir,
+            base_container_path=base_container_path,
+            mode=mode
+        )
+
+        docker_volumes.update(
+            {host_mount: container_mount}
+        )
+    return docker_volumes
+
+def train_model(working_dir, docker_tag, image_name, entrypoint, **kwargs):
     """
     Trains ML model(s) locally
     :param working_dir: [str], source root directory
     :param docker_tag: [str], the Docker tag for the image
     :param image_name: [str], The name of the Docker image
     """
-    process_env = {}
-    if env is not None:
-        process_env.update(env)
 
     config_manager = CliConfigureManager()
 
@@ -78,23 +129,31 @@ def train_model(working_dir, docker_tag, image_name, entrypoint, cmd, env=None):
         with DockerManager() as client:
             base_ml_path = '/opt/ml'
 
-            container_volumes = {
-                Path(working_dir,'config').absolute().as_posix(): {'bind': Path(base_ml_path,'input/config').as_posix(), 'mode': 'rw'},
-                Path(working_dir,'data').absolute().as_posix(): {'bind': Path(base_ml_path,'input/data').as_posix(), 'mode': 'rw'},
-                Path(working_dir,'model').absolute().as_posix(): {'bind': Path(base_ml_path,'model').as_posix(), 'mode': 'rw'},
-                Path(working_dir,'output').absolute().as_posix(): {'bind': Path(base_ml_path,'output').as_posix(), 'mode': 'rw'}
-            }
+            container_volumes = make_multiple_mldock_mount_volumes(
+                volumes=[
+                    {'host_prefix': 'config', 'container_prefix': 'input/config'},
+                    {'host_prefix': 'data', 'container_prefix': 'input/data'},
+                    {'host_prefix': 'model', 'container_prefix': 'model'},
+                    {'host_prefix': 'output', 'container_prefix': 'output'},
+                ],
+                working_dir=working_dir,
+                base_container_path=base_ml_path,
+                mode='rw'
+            )
 
             if config_manager.local.get('auth_type', None) is not None:
 
-                credentials_volume = utils.get_sdk_credentials_volume_mount(config_manager.local.get('auth_type'))
+                credentials_volume = utils.get_sdk_credentials_volume_mount(
+                    config_manager.local.get('auth_type')
+                )
+
                 container_volumes.update(credentials_volume)
 
             container = client.containers.run(
                 image="{IMAGE}:{TAG}".format(IMAGE=image_name, TAG=docker_tag),
                 entrypoint=entrypoint,
-                command=cmd,
-                environment=process_env,
+                command=kwargs.get('cmd', 'train'),
+                environment=kwargs.get('env', {}),
                 remove=True,
                 tty=True,
                 volumes=container_volumes,
@@ -108,47 +167,56 @@ def train_model(working_dir, docker_tag, image_name, entrypoint, cmd, env=None):
         logger.error(exception)
         container.kill()
         raise
-    except (docker.errors.APIError, docker.errors.ContainerError, docker.errors.ImageNotFound) as exception:
+    except (
+        docker.errors.APIError,
+        docker.errors.ContainerError,
+        docker.errors.ImageNotFound
+    ) as exception:
         logger.error(exception)
         raise
     except Exception as exception:
         logger.error(exception)
         raise
 
-def deploy_model(working_dir, docker_tag, image_name, entrypoint, cmd, port=8080, env={}, **kwargs):
+def deploy_model(working_dir, docker_tag, image_name, entrypoint, **kwargs):
     """
     Deploys ML models(s) locally
     :param working_dir: [str], source root directory
     :param docker_tag: [str], the Docker tag for the image
     :param image_name: [str], The name of the Docker image
     """
-    verbose = kwargs.get('verbose', False)
-    process_env = {}
-    if isinstance(env, dict) and len(env) > 0:
-        process_env.update(env)
 
     config_manager = CliConfigureManager()
     try:
         with DockerManager() as client:
             base_ml_path = '/opt/ml'
-            container_volumes = {
-                Path(working_dir,'config').absolute().as_posix(): {'bind': Path(base_ml_path,'input/config').as_posix(), 'mode': 'rw'},
-                Path(working_dir,'data').absolute().as_posix(): {'bind': Path(base_ml_path,'input/data').as_posix(), 'mode': 'rw'},
-                Path(working_dir,'model').absolute().as_posix(): {'bind': Path(base_ml_path,'model').as_posix(), 'mode': 'rw'},
-                Path(working_dir,'output').absolute().as_posix(): {'bind': Path(base_ml_path,'output').as_posix(), 'mode': 'rw'}
-            }
+
+            container_volumes = make_multiple_mldock_mount_volumes(
+                volumes=[
+                    {'host_prefix': 'config', 'container_prefix': 'input/config'},
+                    {'host_prefix': 'data', 'container_prefix': 'input/data'},
+                    {'host_prefix': 'model', 'container_prefix': 'model'},
+                    {'host_prefix': 'output', 'container_prefix': 'output'},
+                ],
+                working_dir=working_dir,
+                base_container_path=base_ml_path,
+                mode='rw'
+            )
 
             if config_manager.local.get('auth_type', None) is not None:
 
-                credentials_volume = utils.get_sdk_credentials_volume_mount(config_manager.local.get('auth_type'))
+                credentials_volume = utils.get_sdk_credentials_volume_mount(
+                    config_manager.local.get('auth_type')
+                )
+
                 container_volumes.update(credentials_volume)
 
             container = client.containers.run(
                 image="{IMAGE}:{TAG}".format(IMAGE=image_name, TAG=docker_tag),
                 entrypoint=entrypoint,
-                command=cmd,
-                environment=process_env,
-                ports={8080: port},
+                command=kwargs.get('cmd', 'serve'),
+                environment=kwargs.get('env', {}),
+                ports=kwargs.get('port', {8080: 8080}),
                 remove=True,
                 tty=True,
                 volumes=container_volumes,
@@ -156,7 +224,8 @@ def deploy_model(working_dir, docker_tag, image_name, entrypoint, cmd, port=8080
                 detach=True,
                 stream=True
             )
-            if verbose:
+
+            if kwargs.get('verbose', False):
                 logs = container.logs(follow=True).decode('utf-8')
 
                 logger.info(logs)
@@ -165,14 +234,19 @@ def deploy_model(working_dir, docker_tag, image_name, entrypoint, cmd, port=8080
         logger.info(
             "\nWorker socket connection timed out. "
             "\n\nThis can happen when connection pool is overloaded. "
-            "We suggest setting environment variable: DOCKER_CLIENT_TIMEOUT=120 to give the client more time."
+            "We suggest setting environment variable: "
+            "DOCKER_CLIENT_TIMEOUT=120 to give the client more time."
         )
 
     except (KeyboardInterrupt, SystemExit) as exception:
         logger.error(exception)
         container.kill()
         raise
-    except (docker.errors.APIError, docker.errors.ContainerError, docker.errors.ImageNotFound) as exception:
+    except (
+        docker.errors.APIError,
+        docker.errors.ContainerError,
+        docker.errors.ImageNotFound
+    ) as exception:
         logger.error(exception)
         raise
     except Exception as exception:
@@ -185,9 +259,7 @@ def docker_build(
     module_path: str,
     target_dir_name: str,
     requirements_file_path: str,
-    no_cache: bool,
-    docker_tag: str,
-    container_platform: str = None
+    **kwargs
 ):
     """Runs the build executable using docker python sdk.
 
@@ -201,6 +273,7 @@ def docker_build(
         requirements_file_path (str):
         docker_tag (str): the docker tag to build
     """
+
     try:
 
         with DockerLLCManager(
@@ -208,33 +281,43 @@ def docker_build(
             base_url=os.environ.get('DOCKER_HOST','unix:///var/run/docker.sock')
         ) as client:
 
+            full_image_name = "{IMAGE}:{TAG}".format(
+                IMAGE=image_name,
+                TAG=kwargs.get('docker_tag', 'latest')
+            )
             logs = client.build(
-                tag="{IMAGE}:{TAG}".format(IMAGE=image_name, TAG=docker_tag),
+                tag=full_image_name,
                 path='.',
-                dockerfile=Path(os.path.join(dockerfile_path, 'Dockerfile')).as_posix(),
+                dockerfile=Path(dockerfile_path).as_posix(),
                 buildargs={
                     'module_path': Path(module_path).as_posix(),
-                    'target_dir_name': Path(target_dir_name).as_posix(),
+                    'target_dir_name': Path(kwargs.get("target_dir_name", "src")).as_posix(),
                     'requirements_file_path': Path(requirements_file_path).as_posix(),
-                    'container_platform': container_platform
+                    'container_platform': kwargs.get('container_platform', None)
                 },
-                nocache=no_cache,
+                nocache=kwargs.get('no_cache', False),
                 rm=True,
                 decode=True
             )
             for line in logs:
                 yield line
-            #     pretty_build_logs(line=line)
 
     except (KeyboardInterrupt, SystemExit) as exception:
         logger.error(exception)
         raise
+    except (
+        docker.errors.APIError,
+        docker.errors.ContainerError,
+        docker.errors.ImageNotFound
+    ) as exception:
+        logger.error(exception)
+        raise
     except (docker.errors.DockerException) as exception:
         if "NewConnectionError" in str(exception):
-            raise Exception("Unable to connect to docker daemon. Set environment variable: DOCKER_HOST")
-        raise
-    except (docker.errors.APIError, docker.errors.ContainerError, docker.errors.ImageNotFound) as exception:
-        logger.error(exception)
+            raise Exception((
+                "Unable to connect to docker daemon. "
+                "Set environment variable: DOCKER_HOST"
+            )) from exception
         raise
     except Exception as exception:
         logger.error(exception)
@@ -249,7 +332,7 @@ def search_mldock_containers(**kwargs):
         mldock_filters.update({
             "ancestor": ancestor
         })
-    
+
     label = kwargs.get("label", ["MLDOCK__IS_MLDOCK_CONTAINER=true"])
     mldock_filters.update(
         {

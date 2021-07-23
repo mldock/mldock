@@ -5,11 +5,10 @@
 """
 import sys
 import json
-import yaml
-import click
 import logging
 from pathlib import Path
-from appdirs import user_config_dir
+import yaml
+import click
 from mldock.terminal import ChoiceWithNumbers, style_dropdown
 from mldock.config_managers.core import BaseConfigManager
 from mldock.platform_helpers import utils
@@ -28,7 +27,10 @@ class CliConfigureManager(BaseConfigManager):
         filepath: str = MLDOCK_CLI_CONFIG,
         create: bool = False
     ):
-        super().__init__(filepath=filepath, create=create)
+        super().__init__()
+        self.filepath = filepath
+
+        self.config = self.load_config(self.filepath, create=create)
 
     def reset(self, config_type):
         """reset given configuration by config key"""
@@ -256,6 +258,17 @@ class ResourceConfigManager(BaseConfigManager):
 class PackageConfigManager(BaseConfigManager):
     """Package Requirement Config Manager for sagify
     """
+
+    def __init__(
+        self,
+        filepath: str,
+        create: bool = False
+    ):
+        super().__init__()
+        self.filepath = filepath
+
+        self.config = self.load_config(self.filepath, create=create)
+
     @staticmethod
     def touch(path):
         """creat an empty txt file
@@ -349,17 +362,17 @@ class StageConfigManager(BaseConfigManager):
             )
             if stage_name == "end":
                 break
-            else:
-                docker_tag = click.prompt(
-                    text="Set docker image tag: ",
-                    default=self.config.get(stage_name, {}).get('tag', None)
-                )
-                if stage_name not in self.config:
-                    self.config[stage_name] = {}
 
-                self.config[stage_name].update(
-                    {'tag': docker_tag}
-                )
+            docker_tag = click.prompt(
+                text="Set docker image tag: ",
+                default=self.config.get(stage_name, {}).get('tag', None)
+            )
+            if stage_name not in self.config:
+                self.config[stage_name] = {}
+
+            self.config[stage_name].update(
+                {'tag': docker_tag}
+            )
 
 class HyperparameterConfigManager(BaseConfigManager):
     """Hyperparameter Config Manager for mldock
@@ -369,10 +382,10 @@ class HyperparameterConfigManager(BaseConfigManager):
         self.config = config
 
     @staticmethod
-    def is_float(s):
+    def is_float(value):
         """ Returns True is string is a number. """
         try:
-            float(s)
+            float(value)
             return True
         except ValueError:
             return False
@@ -398,17 +411,18 @@ class HyperparameterConfigManager(BaseConfigManager):
                 show_default=False,
                 type=str
             )
+
             if hparam_name == "end":
                 break
-            else:
-                hparam_value = click.prompt(
-                    text="Set value: ",
-                    default=self.config.get(hparam_name, None)
-                )
 
-                self.config.update(
-                    {hparam_name: hparam_value}
-                )
+            hparam_value = click.prompt(
+                text="Set value: ",
+                default=self.config.get(hparam_name, None)
+            )
+
+            self.config.update(
+                {hparam_name: hparam_value}
+            )
 
 class EnvironmentConfigManager(BaseConfigManager):
     """Environment Config Manager for mldock
@@ -417,23 +431,23 @@ class EnvironmentConfigManager(BaseConfigManager):
         self.config = config
 
     @staticmethod
-    def is_float(s):
+    def is_float(value):
         """ Returns True is string is a number. """
         try:
-            float(s)
+            float(value)
             return True
         except ValueError:
             return False
 
     @staticmethod
-    def parse_bool(s):
+    def parse_bool(value):
         """ Returns True is string is a bool. """
-        if s.lower() == 'true':
-            return True
-        elif s.lower() == 'false':
-            return False
-        else:
-            return s
+        result = value
+        if value.lower() == 'true':
+            result = True
+        elif value.lower() == 'false':
+            result = False
+        return result
 
     def ask_for_env_vars(self):
         """prompt user for environment variables
@@ -458,15 +472,15 @@ class EnvironmentConfigManager(BaseConfigManager):
             )
             if env_var_name == "end":
                 break
-            else:
-                env_var_value = click.prompt(
-                    text="Set value: ",
-                    default=self.config.get(env_var_name, None)
-                )
 
-                self.config.update(
-                    {env_var_name: env_var_value}
-                )
+            env_var_value = click.prompt(
+                text="Set value: ",
+                default=self.config.get(env_var_name, None)
+            )
+
+            self.config.update(
+                {env_var_name: env_var_value}
+            )
 
 class InputDataConfigManager(BaseConfigManager):
     """InputData Config Manager for mldock
@@ -480,12 +494,10 @@ class InputDataConfigManager(BaseConfigManager):
         """
         write to file
         """
-        config = set(
-            [
-                Path(dataset['channel'], dataset['filename']).as_posix()
-                for dataset in self.config
-            ]
-        )
+        config = {
+            Path(dataset['channel'], dataset['filename']).as_posix()
+            for dataset in self.config
+        }
 
         config_txt = "\n".join(config) + "\n"
 
@@ -510,6 +522,7 @@ class InputDataConfigManager(BaseConfigManager):
                 type=str
             )
 
+            # pylint: disable=no-else-break
             if channel_filename_pair == "end":
 
                 logger.debug("\nUpdated data channels")
@@ -518,11 +531,16 @@ class InputDataConfigManager(BaseConfigManager):
 
                 break
 
-            elif "/" in channel_filename_pair and not channel_filename_pair == "channel:filename":
+            elif "/" in channel_filename_pair and channel_filename_pair != 'channel/filename':
 
                 channel, filename = channel_filename_pair.split("/", 1)
 
-                logger.debug("Adding data/{}/{}".format(channel, filename))
+                logger.debug((
+                    "Adding data/{CHANNEL}/{FILE_NAME}".format(
+                        CHANNEL=channel,
+                        FILE_NAME=filename
+                    )
+                ))
 
                 self.config.append({
                     'channel': channel,
@@ -544,12 +562,10 @@ class ModelConfigManager(BaseConfigManager):
         """
         write to file
         """
-        config = set(
-            [
-                Path(dataset['channel'], dataset['filename']).as_posix()
-                for dataset in self.config
-            ]
-        )
+        config = {
+            Path(dataset['channel'], dataset['filename']).as_posix()
+            for dataset in self.config
+        }
 
         config_txt = "\n".join(config) + "\n"
 
@@ -574,16 +590,20 @@ class ModelConfigManager(BaseConfigManager):
                 type=str
             )
 
+            # pylint: disable=no-else-break
             if channel_filename_pair == "end":
                 logger.debug("\nUpdated model channels")
                 self.pretty_print()
+
                 break
-            elif "/" in channel_filename_pair and not channel_filename_pair == "channel:filename":
-                channel, filename = channel_filename_pair.split("/",1)
+
+            elif "/" in channel_filename_pair and channel_filename_pair != "channel/filename":
+                channel, filename = channel_filename_pair.split("/", 1)
                 logger.debug("Adding data/{}/{}".format(channel, filename))
                 self.config.append({
                     'channel': channel,
                     'filename': filename
                 })
+
             else:
                 logger.warning("Expected format as channel/filename. Skipping")

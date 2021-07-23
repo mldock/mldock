@@ -7,9 +7,9 @@
 """
 import os
 import sys
-import click
 import logging
 from pathlib import Path
+import click
 
 from mldock.terminal import ChoiceWithNumbers, style_dropdown
 from mldock.config_managers.core import BaseConfigManager
@@ -37,10 +37,13 @@ class MLDockConfigManager(BaseConfigManager):
 
     def __init__(self, filepath: str, create: bool = False):
         # dealing with weird os related path formats
+        super().__init__()
         self.filepath = filepath
-        self.image_name_default = Path(filepath).parents[0].name
 
         config = self.load_config(self.filepath, create=create)
+
+        self.image_name_default = Path(filepath).parents[0].name
+
         self.config.update(config)
         self.config["image_name"] = self.image_name_default
 
@@ -53,18 +56,26 @@ class MLDockConfigManager(BaseConfigManager):
                 # create file
                 self.touch(file_name)
             else:
-                logger.error("No MLDOCK container project found with dir = '{}/'. Re-run `mldock container init` and Confirm 'yes' to create.".format(Path(file_name).parents[0]))
+                logger.error((
+                    "No MLDOCK container project found with "
+                    "dir = '{CONTAINER_DIR}/'. Re-run `mldock container init` "
+                    "and Confirm 'yes' to create.".format(
+                        CONTAINER_DIR=Path(file_name).parents[0]
+                    )
+                ))
                 sys.exit(1)
 
-    def setup_config(self, **kwargs):
+    def setup_config(self):
+        """run setup for configuration"""
         click.secho("Base Setup", bg='blue')
         self.ask_for_image_name()
         self.ask_for_template_name()
         self.ask_for_mldock_module_dir()
         self.ask_for_container_dir_name()
         self.ask_for_requirements_file_name()
-    
+
     def update_config(self, **kwargs):
+        """update configuration with given kwargs"""
         self.config.update(kwargs)
 
     def ask_for_image_name(self):
@@ -97,7 +108,7 @@ class MLDockConfigManager(BaseConfigManager):
             default=self.config.get('template', 'generic'),
             show_choices=False
         )
-        
+
         self.config.update({
             'template': template_name
         })
@@ -117,7 +128,7 @@ class MLDockConfigManager(BaseConfigManager):
     def ask_for_mldock_module_dir(self):
         """prompt user for mldock module dir
         """
-        
+
         mldock_module_dir = click.prompt(
             text=click.style("Set mldock module dir: ", fg='bright_blue'),
             default=self.config.get('mldock_module_dir', 'src')
@@ -126,7 +137,7 @@ class MLDockConfigManager(BaseConfigManager):
         self.config.update({
             'mldock_module_dir': mldock_module_dir
         })
-    
+
     @staticmethod
     def _format_data_node_item(item, base_path='data'):
 
@@ -137,7 +148,7 @@ class MLDockConfigManager(BaseConfigManager):
     def _format_data_node(self):
 
         output = []
-        
+
         for item in self.config['data']:
             output.append(self._format_data_node_item(item, base_path='data'))
 
@@ -146,7 +157,7 @@ class MLDockConfigManager(BaseConfigManager):
     def _format_model_node(self):
 
         output = []
-        
+
         for item in self.config['model']:
             output.append(self._format_data_node_item(item, base_path='model'))
 
@@ -155,7 +166,7 @@ class MLDockConfigManager(BaseConfigManager):
     def _format_stage_node(self):
 
         output = []
-        
+
         for key_, value_ in self.config['stages'].items():
             image_and_tag = "{}:{}".format(self.config['image_name'], value_["tag"])
             output.append("\t{} : {}".format(key_, image_and_tag))
@@ -166,7 +177,7 @@ class MLDockConfigManager(BaseConfigManager):
     def _format_nodes(config):
 
         output = []
-        
+
         for key_, value_ in config.items():
             output.append("\t{} : {}".format(key_, value_))
 
@@ -213,9 +224,9 @@ class MLDockConfigManager(BaseConfigManager):
         self.config.update({
             'requirements_dir':requirements_file_name
         })
-    
+
     def update_stages(self, stages: dict):
-        """"""
+        """update stages node in .mldock config"""
         self.config.update(
             {'stages': stages}
         )
@@ -252,7 +263,7 @@ class MLDockConfigManager(BaseConfigManager):
         self.config.update(
             {'data': data}
         )
-    
+
     def update_model_channels(self, models: dict):
         """
             Update data node in .mldock config

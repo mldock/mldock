@@ -79,10 +79,8 @@ class WorkingDirectoryManager:
 class BaseConfigManager:
     """Base config manager with basic read, write and update functionality.
     """
-    def __init__(self, filepath: str, create: bool = False):
-        self.filepath = filepath
-
-        self.config = self.load_config(self.filepath, create=create)
+    config :dict = {}
+    filepath: str = None
 
     @staticmethod
     def touch(path: str):

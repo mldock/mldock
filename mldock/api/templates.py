@@ -1,8 +1,6 @@
 """Container API methods"""
 
 import os
-import sys
-from pathlib import Path
 import logging
 from github import Github
 from environs import Env
@@ -13,8 +11,23 @@ env = Env()
 env.read_env()  # read .env file, if it exists
 
 
-def init_from_template(template_name, templates_root, src_directory, container_only: bool = False, template_server='local'):
+def init_from_template(
+    template_name,
+    templates_root,
+    src_directory,
+    container_only: bool = False,
+    template_server='local'
+):
+    """
+        initialize mldock container project from template
 
+        args:
+            template_name (str):
+            templates_root (str):
+            src_directory (str):
+            container_only (bool): (default=False) only initialize the container directory
+            template_server (str): (default=local) template server to use
+    """
     logger.info("Initializing Container Project")
 
     if template_server == 'local':
@@ -49,7 +62,7 @@ def init_from_template(template_name, templates_root, src_directory, container_o
     logger.debug("Initializing template based on = {}".format(template_name))
     logger.debug("Template directory = {}".format(template_dir))
 
-    logger.info("Setting up workspace") 
+    logger.info("Setting up workspace")
 
     if container_only:
         src_container_directory = os.path.join(

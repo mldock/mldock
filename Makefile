@@ -36,7 +36,7 @@ test: install-requirements
 
 lint:
 	pip install pylint;
-	pylint --rcfile=.pylintrc $(python_package)
+	pylint --fail-under=9.5 --rcfile=.pylintrc $(python_package)
 
 clean:
 	find . -type f -name "*.py[co]" -delete;

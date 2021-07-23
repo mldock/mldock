@@ -2,9 +2,8 @@
 import io
 import json
 import requests
-import json
 
-def execute_request(url, headers, data, **kwargs):
+def execute_request(url, headers, data):
     """compiles and executes request to API"""
     return requests.post(
         url=url,
@@ -22,10 +21,22 @@ def send_json(filepath, host):
         headers={'Content-Type': 'application/json'},
         data=json.dumps(data)
     )
-    if response.status_code == 200:
-        return "{}".format(json.dumps(response.json(), indent=4, separators=(',', ': '), sort_keys=True))
-    else:
-        raise requests.exceptions.RequestException("error ({}): {}".format(response.status_code, response.raise_for_status()))
+    if response.status_code != 200:
+        raise requests.exceptions.RequestException(
+            "error ({}): {}".format(
+                response.status_code,
+                response.raise_for_status()
+            )
+        )
+
+    return "{}".format(
+        json.dumps(
+            response.json(),
+            indent=4,
+            separators=(',', ': '),
+            sort_keys=True
+        )
+    )
 
 def send_csv(filepath, host):
     """Send a json payload in request providing a filepath."""
@@ -38,10 +49,14 @@ def send_csv(filepath, host):
         data=data
     )
 
-    if response.status_code == 200:
-        return response.text
-    else:
-        raise requests.exceptions.RequestException("error ({}): {}".format(response.status_code, response.raise_for_status()))
+    if response.status_code != 200:
+        raise requests.exceptions.RequestException(
+            "error ({}): {}".format(
+                response.status_code,
+                response.raise_for_status()
+            )
+        )
+    return response.text
 
 def send_image_jpeg(filepath, host):
     """Send a image jpeg payload as bytes in request providing a filepath."""
@@ -55,7 +70,18 @@ def send_image_jpeg(filepath, host):
         data=byte_content
     )
 
-    if response.status_code == 200:
-        return "{}".format(json.dumps(response.json(), indent=4, separators=(',', ': '), sort_keys=True))
-    else:
-        raise requests.exceptions.RequestException("error ({}): {}".format(response.status_code, response.raise_for_status()))
+    if response.status_code != 200:
+        raise requests.exceptions.RequestException(
+            "error ({}): {}".format(
+                response.status_code,
+                response.raise_for_status()
+            )
+        )
+    return "{}".format(
+        json.dumps(
+            response.json(),
+            indent=4,
+            separators=(',', ': '),
+            sort_keys=True
+        )
+    )

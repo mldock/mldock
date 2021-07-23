@@ -63,7 +63,8 @@ def build(project_directory, no_cache, tag, stage):
     dockerfile_path = os.path.join(
         project_directory,
         mldock_config.get("mldock_module_dir", "src"),
-        container_dir
+        container_dir,
+        "Dockerfile"
     )
     requirements_file_path = os.path.join(
         project_directory,
@@ -380,7 +381,7 @@ def deploy(obj, project_directory, **kwargs):
             working_dir=project_directory,
             docker_tag=tag,
             image_name=image_name,
-            port=port,
+            port={8080: port},
             entrypoint="src/container/executor.sh",
             cmd="serve",
             env=env_vars,
