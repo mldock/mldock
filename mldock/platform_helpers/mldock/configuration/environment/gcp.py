@@ -1,7 +1,6 @@
 """MLDock Friendly Environments for GCP"""
 from pathlib import Path
 import logging
-
 from mldock.platform_helpers.mldock.configuration.environment import base
 from mldock.platform_helpers.gcp.storage import \
     download_input_assets, package_and_upload_model_dir, package_and_upload_output_data_dir
@@ -18,7 +17,11 @@ class GCPEnvironment(base.BaseEnvironment):
     def setup_inputs(self):
         """ Iterates and downloads assets remoate -> input channels
         """
-        logger.info("Setup assets in {}".format(self.input_data_dir))
+        logger.info((
+            "Setup assets in {INPUT_DATA_DIR}".format(
+                INPUT_DATA_DIR=self.input_data_dir
+            )
+        ))
         # only fetch channels of environment prefix MLDOCK_INPUT_CHANNEL_
         channels = self.get_input_channel_iter()
 
@@ -34,8 +37,12 @@ class GCPEnvironment(base.BaseEnvironment):
                     scheme='gs'
                 )
 
-            except FileExistsError as exception:
-                logger.info("{} Channel skipped. Already exists".format(channel['key']))
+            except FileExistsError:
+                logger.info((
+                    "{CHANNEL_KEY} Channel skipped. Already exists".format(
+                        CHANNEL_KEY=channel['key']
+                    )
+                ))
 
     def cleanup_outputs(self):
         """ Iterates and uploads output channel -> remote
@@ -57,11 +64,11 @@ class GCPEnvironment(base.BaseEnvironment):
                     storage_dir_path=channel['value'],
                     scheme='gs'
                 )
-            except AssertionError as exception:
+            except AssertionError:
                 logger.info(
-                     "Skipping channel. {} is not a "
-                     "directory or could not be found".format(
-                         local_channel_path
+                    "Skipping channel. {LOCAL_CHANNEL_PATH} is not a "
+                    "directory or could not be found".format(
+                        LOCAL_CHANNEL_PATH=local_channel_path
                     )
                 )
 
@@ -83,8 +90,12 @@ class GCPEnvironment(base.BaseEnvironment):
                     scheme='gs'
                 )
 
-            except FileExistsError as exception:
-                logger.info("{} Channel skipped. Already exists".format(channel['key']))
+            except FileExistsError:
+                logger.info((
+                    "{CHANNEL_KEY} Channel skipped. Already exists".format(
+                        CHANNEL_KEY=channel['key']
+                    )
+                ))
 
     def cleanup_model_artifacts(self):
         """ Iterates and uploads from model channel -> remote
@@ -107,10 +118,10 @@ class GCPEnvironment(base.BaseEnvironment):
                     storage_dir_path=channel['value'],
                     scheme='gs'
                 )
-            except AssertionError as exception:
+            except AssertionError:
                 logger.info(
-                     "Skipping channel. {} is not a "
-                     "directory or could not be found".format(
-                         local_channel_path
+                    "Skipping channel. {LOCAL_CHANNEL_PATH} is not a "
+                    "directory or could not be found".format(
+                        LOCAL_CHANNEL_PATH=local_channel_path
                     )
                 )

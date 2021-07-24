@@ -1,3 +1,4 @@
+"""PLATFORM HELPER UTILITIES"""
 import sys
 import os
 import contextlib
@@ -27,8 +28,7 @@ def _mkdir(dir_path: str):
     Args:
         dir_path (str): directory path to build
     """
-    p = Path(dir_path)
-    p.mkdir(parents=True, exist_ok=True)
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 def _iter_nested_dir(root_dir: str) -> Iterator[str]:
     """Iterate through nested folders.
@@ -74,7 +74,13 @@ def parse_url(url: str, scheme: str = 's3'):
     """
     parsed_url = urlparse(url)
     if parsed_url.scheme != scheme:
-        raise ValueError("Expecting '{}' scheme, got: {} in {}.".format(scheme, parsed_url.scheme, url))
+        raise ValueError(
+            "Expecting '{}' scheme, got: {} in {}.".format(
+                scheme,
+                parsed_url.scheme,
+                url
+            )
+        )
     return parsed_url.netloc, parsed_url.path.lstrip("/")
 
 def zip_folder(dir_path, output_file, rm_original=True):
@@ -99,7 +105,12 @@ def zip_folder_as_tarfile(dir_path, output_file, rm_original=True):
 def unzip_file(filename, output_dir, rm_zipped=True):
     """unzip in directory and optionally throw away zipped"""
     with zipfile.ZipFile(filename, 'r', zipfile.ZIP_DEFLATED) as zipf:
-        logger.info("Unzipping {} => {}".format(filename, output_dir))
+        logger.info(
+            "Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
+                ZIP_FILE=filename,
+                OUTPUT_DIR=output_dir
+            )
+        )
         zipf.extractall(output_dir)
         if rm_zipped:
             logger.info("Removing {}".format(filename))
@@ -108,38 +119,43 @@ def unzip_file(filename, output_dir, rm_zipped=True):
 def unzip_file_from_tarfile(filename, output_dir, rm_zipped=True):
     """untar in directory and optionally throw away zipped"""
     with tarfile.open(filename, "r:gz") as tar:
-        logger.info("Unzipping {} => {}".format(filename, output_dir))
+        logger.info("Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
+                ZIP_FILE=filename,
+                OUTPUT_DIR=output_dir
+            )
+        )
         tar.extractall(output_dir)
         if rm_zipped:
-            logger.info("Removing {}".format(filename))
+            logger.info("Removing {FILE_PATH}".format(FILE_PATH=filename))
             _delete_file(filename)
 
-def strip_scheme(url):
+def strip_scheme(url: str):
+    """strip scheme from url"""
     parsed = urlparse(url)
-    scheme = "%s://" % parsed.scheme
+    scheme = "{SCHEME}://".format(SCHEME=parsed.scheme)
     return parsed.geturl().replace(scheme, '', 1)
 
-def _read_json(path):
+def _read_json(file_path):
     """Read a JSON file.
     Args:
         path (str): Path to the file.
     Returns:
         (dict[object, object]): A dictionary representation of the JSON file.
     """
-    with open(path, "r") as f:
-        return json.load(f)
+    with open(file_path, "r") as file_:
+        return json.load(file_)
 
-def _write_json(obj, path):
+def _write_json(obj, file_path):
     """Write a serializeable object as a JSON file."""
-    with open(path, "w") as f:
-        json.dump(obj, f, indent=4)
-        f.write('\n')
+    with open(file_path, "w") as file_:
+        json.dump(obj, file_, indent=4)
+        file_.write('\n')
 
-def _write_file(filepath, parents=True):
+def _write_file(file_path: str, parents: bool =True):
     """write a file"""
-    if parents == True:
-        mkpath(str(Path(filepath).parents[0].absolute()))
-    write_file(str(Path(filepath).absolute()), '')
+    if parents is True:
+        mkpath(str(Path(file_path).parents[0].absolute()))
+    write_file(str(Path(file_path).absolute()), '')
 
 def _rename_file(base_path, current_filename, new_filename):
     """renames filename for a given base_path, saving the file in the same base_path
@@ -170,13 +186,13 @@ def _copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
     """
     source_path = str(Path(src).absolute())
     destination_path = str(Path(dst).absolute())
-    if remove_first == True:
+    if remove_first is True:
         try:
             logger.debug("removing first")
             remove_tree(destination_path)
-        except FileNotFoundError as exception:
+        except FileNotFoundError:
             logger.debug("No file found. Assuming already deleted.")
-    response = copy_tree(source_path, destination_path)
+    _ = copy_tree(source_path, destination_path)
 
 @contextlib.contextmanager
 def set_env(**environ):
@@ -266,7 +282,7 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
         contents = repository.get_contents(server_path, ref=sha)
 
         for content in contents:
-            logger.info("Downloading {}".format(content.path))
+            logger.info("Downloading {CONTENT_PATH}".format(CONTENT_PATH=content.path))
             local_path = Path(local_prefix, Path(content.path).relative_to(relative_to))
             if content.type == 'dir':
                 local_path.mkdir(parents=True, exist_ok=True)
@@ -291,10 +307,10 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
                 with open(local_path, "w+") as file_out:
                     file_out.write(file_data.decode())
                     file_out.write("\n")
-    except (GithubException, IOError) as exc:
+    except (GithubException, IOError):
 
         # get exc info
-        exc_type, exc_value, exc_traceback = sys.exc_info()
+        exc_type, _, _ = sys.exc_info()
 
         # if Unknown Object, inform user path is missing.
         if exc_type == UnknownObjectException:

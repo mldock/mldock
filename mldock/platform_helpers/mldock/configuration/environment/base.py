@@ -1,67 +1,16 @@
+"""BASE ENVIRONMENT INTERFACE"""
 import os
-import environs
-import json
 from pathlib import Path
 import logging
+import environs
 
 from mldock.platform_helpers import utils
 
 
 logger = logging.getLogger('mldock')
 
-class AbstractEnvironment:
-
-    def get_input_channel_iter(self):
-        """Returns: Iterable of the input channels
-        """
-        return list()
-
-    def get_output_channel_iter(self):
-        """Returns: Iterable of the output channel
-        """
-        return list()
-
-    def get_model_input_channel_iter(self):
-        """Returns: Iterable of the model input channels
-        """
-        return list()
-        
-    def get_model_output_channel_iter(self):
-        """Returns: Iterable of the model output channels
-        """
-        return list()
-
-    def setup_inputs(self):
-        """ Iterates and downloads assets remoate -> input channels
-            return:
-                None
-        """
-        pass
-
-    def cleanup_outputs(self):
-        """ Iterates and uploads output channel -> remote
-            return:
-                None
-        """
-        pass
-
-    def setup_model_artifacts(self):
-        """ Iterates and downloads assets remoate -> model channel
-            return:
-                None
-        """
-        pass
-
-    def cleanup_model_artifacts(self):
-        """ Iterates and uploads from model channel -> remote
-            return:
-                None
-        """
-        pass
-
-
-class BaseEnvironment(AbstractEnvironment):
-
+class BaseEnvironment():
+    """Base Environment to be extended for different environments"""
     input_channel_regex = None
     model_channel_regex = None
     output_channel_regex = None
@@ -101,43 +50,50 @@ class BaseEnvironment(AbstractEnvironment):
     def _create_training_directories(self):
         """Create the directory structure, if not exists
         """
-        logger.debug("Creating a new training folder under {} .".format(self.base_dir))
+        logger.debug((
+            "Creating a new training folder under {BASE_DIR} .".format(
+                BASE_DIR=self.base_dir
+            )
+        ))
 
-        try:
-            self.input_data_dir.mkdir(parents=True, exist_ok=True)
-            self.model_dir.mkdir(parents=True, exist_ok=True)
-            self.input_config_dir.mkdir(parents=True, exist_ok=True)
-            self.output_data_dir.mkdir(parents=True, exist_ok=True)
-            if not self.hyperparameters_filepath.exists():
-                utils._write_json(
-                    obj={},
-                    path=self.hyperparameters_filepath
-                )
-        except Exception as exception:
-            logger.error(exception)
+        self.input_data_dir.mkdir(parents=True, exist_ok=True)
+        self.model_dir.mkdir(parents=True, exist_ok=True)
+        self.input_config_dir.mkdir(parents=True, exist_ok=True)
+        self.output_data_dir.mkdir(parents=True, exist_ok=True)
+        if not self.hyperparameters_filepath.exists():
+            utils._write_json(
+                obj={},
+                file_path=self.hyperparameters_filepath
+            )
 
     @property
     def input_dir(self):
+        """path to input directory in working directory"""
         return Path(self.base_dir, 'input')
 
     @property
     def input_data_dir(self):
+        """path to input data directory in working directory"""
         return Path(self.input_dir, 'data')
 
     @property
     def input_config_dir(self):
+        """path to input config directory in working directory"""
         return Path(self.input_dir, 'config')
 
     @property
     def hyperparameters_filepath(self):
+        """path to hyperparameter config in input config directory in working directory"""
         return Path(self.input_config_dir, self.hyperparameters_file)
 
     @property
     def model_dir(self):
+        """path to model directory in working directory"""
         return Path(self.base_dir, 'model')
-    
+
     @property
     def output_data_dir(self):
+        """path to output directory in working directory"""
         return Path(self.base_dir, 'output')
 
     @property
@@ -162,7 +118,7 @@ class BaseEnvironment(AbstractEnvironment):
 
         utils._write_json(
             obj=hyperparameters,
-            path=self.hyperparameters_filepath.as_posix()
+            file_path=self.hyperparameters_filepath.as_posix()
         )
 
     def get_input_channel_iter(self):
@@ -188,3 +144,39 @@ class BaseEnvironment(AbstractEnvironment):
         """
         envvars = dict(os.environ)
         return utils.get_env_vars(environment=envvars, regex=self.model_output_channel_regex)
+
+    @staticmethod
+    def setup_inputs():
+        """ Iterates and downloads assets remoate -> input channels
+            return:
+                None
+        """
+        # pylint: disable=unnecessary-pass
+        pass
+
+    @staticmethod
+    def cleanup_outputs():
+        """ Iterates and uploads output channel -> remote
+            return:
+                None
+        """
+        # pylint: disable=unnecessary-pass
+        pass
+
+    @staticmethod
+    def setup_model_artifacts():
+        """ Iterates and downloads assets remoate -> model channel
+            return:
+                None
+        """
+        # pylint: disable=unnecessary-pass
+        pass
+
+    @staticmethod
+    def cleanup_model_artifacts():
+        """ Iterates and uploads from model channel -> remote
+            return:
+                None
+        """
+        # pylint: disable=unnecessary-pass
+        pass

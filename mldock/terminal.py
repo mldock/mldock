@@ -4,24 +4,33 @@
     Incl. styling and formatting in terminal commands.
 """
 import logging
-import click
 import typing as t
 from gettext import ngettext
+import click
 from halo import Halo
 
 logger = logging.getLogger('mldock')
 
 def pretty_build_logs(line: dict):
-
+    """
+        Format logs and return prettified log message
+        args:
+            line (dict): log record from docker build logs iterator
+    """
+    # pylint: disable=logging-format-interpolation
     if line is None:
         return None
 
     error = line.get('error', None)
-    errorDetail = line.get('errorDetail', None)
+    error_detail = line.get('errorDetail', None)
 
     if error is not None:
-        logger.error('{}\n{}'.format(error, errorDetail))
-    
+        logger.error('{ERROR}\n{ERROR_DETAIL}'.format(
+                ERROR=error,
+                ERROR_DETAIL=error_detail
+            )
+        )
+
     stream = line.get('stream', '')
 
     return " ==> {MESSAGE}".format(MESSAGE=stream)
@@ -31,7 +40,7 @@ class ProgressLogger:
         A terminal based progress context manager.
 
         starts the progress spinner, and passes the object back.
-        finally raises success or failure if exception is raised.    
+        finally raises success or failure if exception is raised.
     """
     def __init__(self, **kwargs):
         self.group = kwargs.pop('group', None)
@@ -40,7 +49,7 @@ class ProgressLogger:
 
         self.on_success = kwargs.pop('on_success', None)
         self.on_failure = kwargs.pop('on_failure', None)
-        
+
         if len(self.group) > 0:
             self.group = self.group + " "
 
@@ -70,8 +79,11 @@ class ProgressLogger:
 class ChoiceWithNumbers(click.Choice):
     """Extends the click.Choice class to allow user to make choice by number"""
     def convert(
-        self, value: t.Any, param: t.Optional["Parameter"], ctx: t.Optional["Context"]
-    ) -> t.Any:
+        self,
+        value: [int, float, str],
+        param: t.Optional["Parameter"],
+        ctx: t.Optional["Context"]
+    ):
         """
             Match through normalization and case sensitivity
             first do token_normalize_func, then lowercase
@@ -85,8 +97,9 @@ class ChoiceWithNumbers(click.Choice):
             normed_value = int(normed_value)
             normed_value = self.choices[normed_value - 1]
 
-        except Exception as exception:
-            pass
+        except ValueError as exception:
+            # ignore since is already a string
+            del exception
 
         if ctx is not None and ctx.token_normalize_func is not None:
             normed_value = ctx.token_normalize_func(value)
@@ -115,6 +128,8 @@ class ChoiceWithNumbers(click.Choice):
             param,
             ctx,
         )
+        # pylint askes for this, even though it will never reach this point.
+        return None
 
 def style_2_level_detail(major_detail, minor_detail):
     """Styling for two level detail"""

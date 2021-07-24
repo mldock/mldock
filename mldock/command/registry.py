@@ -1,5 +1,5 @@
+"""REGISTRY COMMANDS"""
 import os
-import sys
 import logging
 import click
 
@@ -17,7 +17,7 @@ logger = logging.getLogger('mldock')
 MLDOCK_CONFIG_NAME = 'mldock.json'
 
 def reset_terminal():
-    # os.system("clear")
+    """clears the terminal view frame"""
     click.clear()
 
 @click.group()
@@ -25,15 +25,16 @@ def registry():
     """
     Commands to interact with docker image registries.
     """
-    pass
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=False,
         dir_okay=True,
         writable=True,
@@ -67,29 +68,34 @@ def registry():
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def push(obj, dir, region, build, provider, no_cache, stage, tag):
+def push(obj, project_directory, provider, **kwargs):
     """
     Command to push docker container image to Image Registry
     """
+    tag = kwargs.get('tag', 'latest')
+    stage = kwargs.get('stage', None)
+    region = kwargs.get('region', None)
+    build = kwargs.get('build', False)
+    no_cache = kwargs.get('no_cache', False)
     reset_terminal()
     mldock_manager = MLDockConfigManager(
-        filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+        filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
     image_name = mldock_config.get("image_name", None)
     container_dir = mldock_config.get("container_dir", None)
     module_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
     )
     dockerfile_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("mldock_module_dir", "src"),
         container_dir
     )
     requirements_file_path = os.path.join(
-        dir,
+        project_directory,
         mldock_config.get("requirements_dir", "requirements.txt")
     )
 
@@ -114,7 +120,7 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
         text='Authenticating with {}'.format(provider),
         spinner='dots'
     ) as spinner:
-        client, metadata = login_and_authenticate(provider=provider, region=region)
+        _, metadata = login_and_authenticate(provider=provider, region=region)
         image_repository = "{}/{}".format(metadata['repository'], image_name)
 
 
@@ -141,7 +147,11 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
                 spinner.start()
 
     # Push image to cloud repository
-    with ProgressLogger(group='Push', text='Pushing to {}'.format(image_repository), spinner='dots') as spinner:
+    with ProgressLogger(
+        group='Push',
+        text='Pushing to {}'.format(image_repository),
+        spinner='dots'
+    ) as spinner:
         states = push_image_to_repository(
             image_repository=image_repository,
             auth_config = {'username': metadata['username'], 'password': metadata['password']},
@@ -160,11 +170,13 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=False,
         dir_okay=True,
         writable=True,
@@ -174,7 +186,6 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
         path_type=None
     )
 )
-@click.option('--no-cache', help='builds container from scratch', is_flag=True)
 @click.option(
     '--provider',
     help='Set the cloud provider',
@@ -192,27 +203,20 @@ def push(obj, dir, region, build, provider, no_cache, stage, tag):
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
 @click.pass_obj
-def pull(obj, dir, region, provider, no_cache, stage, tag):
+def pull(obj, project_directory, provider, **kwargs):
     """
     Command to pull docker container image from Image Registry
     """
+    tag = kwargs.get('tag', 'latest')
+    stage = kwargs.get('stage', None)
+    region = kwargs.get('region', None)
     mldock_manager = MLDockConfigManager(
-        filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+        filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
 
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
     image_name = mldock_config.get("image_name", None)
-    container_dir = mldock_config.get("container_dir", None)
-    module_path = os.path.join(
-        dir,
-        mldock_config.get("mldock_module_dir", "src"),
-    )
-    dockerfile_path = os.path.join(
-        dir,
-        mldock_config.get("mldock_module_dir", "src"),
-        container_dir
-    )
 
     # retrieve stages
     with ProgressLogger(
@@ -235,7 +239,7 @@ def pull(obj, dir, region, provider, no_cache, stage, tag):
         text='Authenticating with {}'.format(provider),
         spinner='dots'
     ) as spinner:
-        client, metadata = login_and_authenticate(provider=provider, region=region)
+        _, metadata = login_and_authenticate(provider=provider, region=region)
         image_repository = "{}/{}".format(metadata['repository'], image_name)
 
     # Push image to cloud repository
@@ -259,5 +263,13 @@ def pull(obj, dir, region, provider, no_cache, stage, tag):
         logger.info(obj["logo"])
         spinner.start()
 
-registry.add_command(push)
-registry.add_command(pull)
+def add_commands(cli_group: click.group):
+    """
+        add commands to cli group
+        args:
+            cli (click.group)
+    """
+    cli_group.add_command(push)
+    cli_group.add_command(pull)
+
+add_commands(registry)

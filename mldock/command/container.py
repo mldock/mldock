@@ -1,8 +1,9 @@
+"""CONTAINER PROJECT MANAGEMENT COMMANDS"""
 import os
 import json
+from pathlib import Path
 import logging
 import click
-from pathlib import Path
 
 from mldock.config_managers.core import WorkingDirectoryManager
 from mldock.config_managers.container import MLDockConfigManager
@@ -12,7 +13,6 @@ from mldock.config_managers.cli import \
         InputDataConfigManager, StageConfigManager, \
             ModelConfigManager, EnvironmentConfigManager, CliConfigureManager
 
-from mldock.platform_helpers.mldock import utils as mldock_utils
 from mldock.api.templates import init_from_template
 
 click.disable_unicode_literals_warning = True
@@ -29,12 +29,13 @@ def container():
     """
     Commands to create, update and manage container projects and templates.
     """
-    pass
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
         exists=False,
@@ -47,9 +48,21 @@ def container():
         path_type=None
     )
 )
-@click.option('--no-prompt', is_flag=True, help='Do not prompt user, instead use the mldock config to initialize the container.')
-@click.option('--container-only', is_flag=True, help='Only inject new container assets.')
-@click.option('--template', default=None, help='Directory containing mldock supported container to use to initialize the container.')
+@click.option(
+    '--no-prompt',
+    is_flag=True,
+    help='Do not prompt user, instead use the mldock config to initialize the container.'
+)
+@click.option(
+    '--container-only',
+    is_flag=True,
+    help='Only inject new container assets.'
+)
+@click.option(
+    '--template',
+    default=None,
+    help='Directory containing mldock supported container to use to initialize the container.'
+)
 @click.option(
     '--params',
     '-p',
@@ -67,22 +80,28 @@ def container():
     multiple=True
 )
 @click.pass_obj
-def init(obj, dir, no_prompt, container_only, template, params, env_vars):
+def init(obj, project_directory, **kwargs):
     """
     Command to initialize mldock enabled container project
     """
+    no_prompt = kwargs.get('no_prompt', False)
+    container_only = kwargs.get('container_only', False)
+    template = kwargs.get('template', 'generic')
+    params = kwargs.get('params', None)
+    env_vars = kwargs.get('env_vars', None)
+
     reset_terminal()
     mldock_package_path = obj['mldock_package_path']
     try:
         click.secho("Initializing MLDock project configuration", bg='blue', nl=True)
 
-        if not Path(dir).is_dir():
+        if not Path(project_directory).is_dir():
             create_new = click.prompt('No MLDOCK project found. Create?', type=bool)
         else:
             create_new = False
 
         mldock_manager = MLDockConfigManager(
-            filepath=Path(dir, MLDOCK_CONFIG_NAME),
+            filepath=Path(project_directory, MLDOCK_CONFIG_NAME),
             create=create_new
         )
 
@@ -110,7 +129,7 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
         if not no_prompt:
             mldock_manager.setup_config()
 
-        package_dir = mldock_manager.get_config().get('requirements', dir)
+        package_dir = mldock_manager.get_config().get('requirements', project_directory)
         package_manager = PackageConfigManager(
             filepath=os.path.join(package_dir, "requirements.txt"),
             create=True
@@ -119,7 +138,7 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
         package_manager.write_file()
 
 
-        path_to_payload = Path(os.path.join(dir, "payload.json"))
+        path_to_payload = Path(os.path.join(project_directory, "payload.json"))
         if not path_to_payload.exists():
             path_to_payload.write_text(json.dumps({"feature1": 10, "feature2":"groupA"}))
 
@@ -127,11 +146,11 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
         mldock_config = mldock_manager.get_config()
 
         src_directory = os.path.join(
-            dir,
+            project_directory,
             mldock_config.get("mldock_module_dir", "src")
         )
 
-        _ = WorkingDirectoryManager(base_dir=dir)
+        _ = WorkingDirectoryManager(base_dir=project_directory)
 
         # create stages config
         stage_config_manager = StageConfigManager(
@@ -140,13 +159,13 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get('data', []),
-            base_path=Path(dir, 'data')
+            base_path=Path(project_directory, 'data')
         )
 
         # set model channels
         model_channels = ModelConfigManager(
             config=mldock_config.get('model', []),
-            base_path=Path(dir, 'model')
+            base_path=Path(project_directory, 'model')
         )
 
         # set hyperparameters
@@ -213,11 +232,13 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=False,
         dir_okay=True,
         writable=True,
@@ -228,7 +249,7 @@ def init(obj, dir, no_prompt, container_only, template, params, env_vars):
     )
 )
 @click.pass_obj
-def update(obj, dir):
+def update(obj, project_directory):
     """
     Command to update mldock container.
     """
@@ -236,22 +257,13 @@ def update(obj, dir):
     try:
         logger.info("Loading MLDock config")
         mldock_manager = MLDockConfigManager(
-            filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+            filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
         )
 
         # get sagify_module_path name
         mldock_config = mldock_manager.get_config()
 
-        # get list of dataset names
-        mldock_data = mldock_config.get("data", None)
-        input_config_config = mldock_utils._extract_data_channels_from_mldock(mldock_data)
-
-        src_directory = os.path.join(
-            dir,
-            mldock_config.get("mldock_module_dir", "src")
-        )
-
-        _ = WorkingDirectoryManager(base_dir=dir)
+        _ = WorkingDirectoryManager(base_dir=project_directory)
 
         # create stages config
         stage_config_manager = StageConfigManager(
@@ -260,12 +272,12 @@ def update(obj, dir):
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get('data', []),
-            base_path=Path(dir, 'data')
+            base_path=Path(project_directory, 'data')
         )
         # set model channels
         model_channels = ModelConfigManager(
             config=mldock_config.get('model', []),
-            base_path=Path(dir, 'model')
+            base_path=Path(project_directory, 'model')
         )
 
         # set hyperparameters
@@ -313,11 +325,13 @@ def update(obj, dir):
 
 @click.command()
 @click.option(
+    '--project_directory',
     '--dir',
-    help='Set the working directory for your mldock container.',
+    '-d',
+    help='mldock container project.',
     required=True,
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=False,
         dir_okay=True,
         writable=True,
@@ -327,13 +341,13 @@ def update(obj, dir):
         path_type=None
     )
 )
-def summary(dir):
+def summary(project_directory):
     """
     Command to show summary for mldock container
     """
     try:
         mldock_manager = MLDockConfigManager(
-            filepath=os.path.join(dir, MLDOCK_CONFIG_NAME)
+            filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
         )
 
         states = mldock_manager.get_state()
@@ -346,10 +360,14 @@ def summary(dir):
         logger.error(exception)
         raise
 
-def add_commands(cli):
-    """add cli commands to group"""
-    cli.add_command(init)
-    cli.add_command(update)
-    cli.add_command(summary)
+def add_commands(cli_group: click.group):
+    """
+        add commands to cli group
+        args:
+            cli (click.group)
+    """
+    cli_group.add_command(init)
+    cli_group.add_command(update)
+    cli_group.add_command(summary)
 
 add_commands(container)

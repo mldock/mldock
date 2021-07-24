@@ -3,10 +3,9 @@
 
     Handle Decoding of Content in to appropriate format from request as numpy array.
 
-    e.g. 
+    e.g.
         list of lists -> np.array.
 """
-import csv
 import io
 from PIL import Image
 import numpy as np

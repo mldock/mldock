@@ -1,7 +1,7 @@
+"""MODEL BASE CLASS"""
 from abc import ABCMeta, abstractmethod
 
-
-class ModelService(object):
+class ModelService:
     """
     ModelService wraps up all preprocessing, inference and postprocessing
     functions used by model service. It is defined in a flexible manner to
@@ -14,7 +14,7 @@ class ModelService(object):
     def __init__(self, model_path: str):
         """
             Internal initialize ModelService.
-            
+
             args:
                 model_path (str): path to model
             return:
@@ -22,19 +22,21 @@ class ModelService(object):
         """
         self.model = self.load_model(model_path)
 
+    @staticmethod
     @abstractmethod
-    def load_model(self, model_path: str):
+    def load_model(model_path: str):
         """
             (Abstract) load model
-        
+
             args:
                 model_path(str): path to model
         """
         # pylint: disable=unnecessary-pass
         pass
 
+    @staticmethod
     @abstractmethod
-    def predict(self, input):
+    def predict(input_data):
         """
             (Abstract) Predict method
 
@@ -46,8 +48,9 @@ class ModelService(object):
         # pylint: disable=unnecessary-pass
         pass
 
+    @staticmethod
     @abstractmethod
-    def input_transform(input, **kwargs):
+    def input_transform(input_data, **kwargs):
         """
             (Abstract) Output Transform
 
@@ -59,6 +62,7 @@ class ModelService(object):
         # pylint: disable=unnecessary-pass
         pass
 
+    @staticmethod
     @abstractmethod
     def output_transform(predictions, **kwargs):
         """
