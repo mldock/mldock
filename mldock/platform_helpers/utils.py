@@ -135,6 +135,10 @@ def strip_scheme(url: str):
     scheme = "{SCHEME}://".format(SCHEME=parsed.scheme)
     return parsed.geturl().replace(scheme, '', 1)
 
+def get_scheme(path: str):
+    parsed = urlparse(path)
+    return parsed.scheme
+
 def _read_json(file_path):
     """Read a JSON file.
     Args:
