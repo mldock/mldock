@@ -48,12 +48,9 @@ class ExperimentTracker:
         # register write_artifacts to fire on script exit.
         atexit.register(self.write_artifacts)
 
-    def log(self, msg, level: str ='info'):
-        """log to opt/ml/output/logs/stream.txt"""
-        if level == 'info':
-            self.logger.info(msg)
-        else:
-            self.logger.debug(msg)
+    def log(self, msg, level = logging.INFO, *args, **kwargs):
+        """log"""
+        self.logger.log(level, msg, *args, **kwargs)
     
     def log_metric(self, name, value):
         """log a metric"""
@@ -61,7 +58,7 @@ class ExperimentTracker:
             {name: value}
         )
         msg = "metric: {NAME}={VALUE};".format(NAME=name, VALUE=value)
-        self.log(msg, level='info')
+        self.log(msg)
 
     def log_metrics(self, metrics: dict):
         """log metrics"""
@@ -77,7 +74,7 @@ class ExperimentTracker:
             {name: value}
         )
         msg = "param: {NAME}={VALUE};".format(NAME=name, VALUE=value)
-        self.logger.info(msg)
+        self.log(msg)
 
     def log_params(self, params: dict):
         """log params"""

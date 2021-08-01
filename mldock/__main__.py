@@ -12,6 +12,7 @@ from mldock.command.configure import configure
 from mldock.command.local import local
 from mldock.command.registry import registry
 from mldock.command.templates import templates
+from mldock.command.logs import logs
 from mldock.log import configure_logger
 
 click.disable_unicode_literals_warning = True
@@ -43,6 +44,7 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(local)
     cli_group.add_command(registry)
     cli_group.add_command(templates)
+    cli_group.add_command(logs)
 
 add_commands(cli)
 
