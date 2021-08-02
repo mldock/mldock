@@ -4,8 +4,7 @@ from pathlib import Path
 import logging
 import click
 from clickclick.console import print_table
-
-from pygrok import Grok
+from mldock.api.logs import parse_grok, get_all_file_objects
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
@@ -52,25 +51,15 @@ def show(log_path, log_file):
     """show metrics for all runs as a table"""
 
     pattern="metric: %{WORD:name}=%{NUMBER:value};"
-    grok = Grok(pattern)
 
-    log_dir = Path(log_path)
-
-    logs = [log for log in log_dir.glob('**/*') if log.name == log_file]
+    logs = get_all_file_objects(log_path, log_file)
 
     keys = set()
     rows = list()
     for log in logs:
-        run_id = log.parents[0].name
+        run_id = Path(log.path).parents[0].name
         keys.add('run_id')
-        metadata = []
-        with open(log.as_posix()) as file_:
-            logs = file_.read()
-        for log in logs.split('\n'):
-
-            result = grok.match(log)
-            if result is not None:
-                metadata.append(result)
+        metadata = parse_grok(log.path, pattern)
 
         row = dict()
         row.update({'run_id': run_id})

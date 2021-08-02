@@ -4,7 +4,8 @@ from pathlib import Path
 import logging
 import click
 from clickclick import choice
-from pygrok import Grok
+
+from mldock.api.logs import parse_grok, get_all_file_objects
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
@@ -36,27 +37,19 @@ def grok():
 )
 def parse(log_path, log_file, pattern):
     """parse logs using a custom crok config and show"""
-    grok = Grok(pattern)
+    
+    logs = get_all_file_objects(log_path, log_file)
 
-    log_dir = Path(log_path)
-
-    log_runs = [log.parents[0].name for log in log_dir.glob('**/*') if log.name == log_file]
+    log_runs = [Path(log.path).parents[0].name for log in logs]
 
     state = choice('Select a run', log_runs, default=None)
 
-    for log in log_dir.glob('**/*'):
-        if log.parents[0].name == state:
+    for log in logs:
+        if Path(log.path).parents[0].name == state:
+            log_file_path = log.path
             break
 
-    with open(log.as_posix()) as file_:
-        logs = file_.read()
-
-    metadata = []
-    for log in logs.split('\n'):
-
-        result = grok.match(log)
-        if result is not None:
-            metadata.append(result)
+    metadata = parse_grok(log_file_path, pattern)
 
     print(json.dumps(metadata, indent=4, sort_keys=True))
 
