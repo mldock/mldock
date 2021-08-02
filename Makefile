@@ -10,6 +10,10 @@ install-requirements:
 	python -m pip install --upgrade pip;
 	pip install -e ".[aws, gcp, cli, testing]";
 
+install-cli:
+	python -m pip install --upgrade pip;
+	pip install -e ".[cli, pyarrow, gcsfs, s3fs]";
+
 build:
 	make install-requirements;
 	make test;
