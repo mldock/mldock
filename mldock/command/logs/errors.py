@@ -1,12 +1,14 @@
 """LOGS ERRORS COMMANDS"""
+import json
 import logging
 from pathlib import Path
 import click
 from clickclick import choice
-from pygrok import Grok
+
+from mldock.api.logs import parse_grok, get_all_file_objects, infer_filesystem_type
+
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
-MLDOCK_CONFIG_NAME = 'mldock.json'
 
 def reset_terminal():
     """clears the terminal view frame"""
@@ -30,25 +32,30 @@ def errors():
     default='logs.txt',
     help='file name'
 )
-def show(log_path, log_file):
+@click.pass_obj
+def show(obj, log_path, log_file):
     """show errors for all runs as a table"""
 
+    pattern = 'Exception during %{WORD:script}\: %{GREEDYDATA:msg}'
+    file_system, log_path = infer_filesystem_type(log_path)
 
-    log_dir = Path(log_path)
+    logs = get_all_file_objects(log_path, log_file, file_system)
 
-    log_runs = [log.parents[0].name for log in log_dir.glob('**/*') if log.name == log_file]
+    log_runs = [Path(log).parents[0].name for log in logs]
 
     state = choice('Select a run', log_runs, default=None)
 
-    for log in log_dir.glob('**/*'):
-        if log.parents[0].name == state:
+    for log in logs:
+        if Path(log).parents[0].name == state:
+            log_file_path = log
             break
 
-    with open(log.as_posix()) as file_:
-        logs = file_.read()
+    metadata = parse_grok(log_file_path, pattern, file_system)
 
     reset_terminal()
-    print(logs)
+    logger.info(obj['logo'])
+    print(f"Script => {metadata['script']}")
+    print(f"Exception:\n\n{metadata['msg']}")
 
 
 errors.add_command(show)

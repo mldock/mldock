@@ -4,7 +4,7 @@ from pathlib import Path
 import logging
 import click
 from clickclick.console import print_table
-from mldock.api.logs import parse_grok, get_all_file_objects
+from mldock.api.logs import parse_grok_multiline, get_all_file_objects, infer_filesystem_type
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
@@ -52,17 +52,23 @@ def show(log_path, log_file):
 
     pattern="metric: %{WORD:name}=%{NUMBER:value};"
 
-    logs = get_all_file_objects(log_path, log_file)
+
+    file_system, log_path = infer_filesystem_type(log_path)
+
+    logs = get_all_file_objects(log_path, log_file, file_system)
 
     keys = set()
     rows = list()
     for log in logs:
-        run_id = Path(log.path).parents[0].name
+        run_id = Path(log).parents[0].name
+        experiment = Path(log).parents[1].relative_to(log_path).as_posix().replace("/", ":")
         keys.add('run_id')
-        metadata = parse_grok(log.path, pattern)
+        keys.add('experiment')
+        metadata = parse_grok_multiline(log, pattern, file_system)
 
         row = dict()
         row.update({'run_id': run_id})
+        row.update({'experiment': experiment})
         for m in metadata:
             keys.add(m['name'])
             row.update(
