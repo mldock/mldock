@@ -61,7 +61,7 @@ class ExperimentTracker:
     def log(self, msg, *args, **kwargs):
         """log message to log stream"""
 
-        level = kwargs.get('level', logging.INFO)
+        level = kwargs.pop('level', logging.INFO)
         self.experiment_logger.log(level, msg, *args, **kwargs)
 
     def log_metric(self, name, value):
