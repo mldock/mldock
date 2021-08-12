@@ -136,6 +136,7 @@ def strip_scheme(url: str):
     return parsed.geturl().replace(scheme, '', 1)
 
 def get_scheme(path: str):
+    """get the scheme of the given path"""
     parsed = urlparse(path)
     return parsed.scheme
 

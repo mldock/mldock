@@ -14,10 +14,14 @@ logger = logging.getLogger('mldock')
 logger.setLevel(logging.INFO)
 
 class ExperimentTracker:
+    """
+        Experiment Tracker that supports logging metrics
+        and params. Finally, uploading to remote on exit if fs_base_path is provided
+    """
     metrics: dict = None
     params: dict = None
 
-    def __init__(self, experiment_name, logger, file_system, **kwargs):
+    def __init__(self, experiment_name, experiment_logger, file_system, **kwargs):
 
         self.file_system = file_system
         self.fs_base_path = kwargs.get('fs_base_path', None)
@@ -27,20 +31,26 @@ class ExperimentTracker:
         self.experiment_name = experiment_name
         self.run_id = str(uuid.uuid4())
 
-        self.logger = logger
+        self.experiment_logger = experiment_logger
         # use a certain type of StreamHandler
         self.buffer = io.StringIO()
         stream_handler = logging.StreamHandler(self.buffer)
 
+        # pytest: disable=R1732
         self.tmp_dir = tempfile.TemporaryDirectory(suffix=None, prefix=None, dir=None)
-        self.artifact_dir = Path(self.tmp_dir.name, self.base_path, self.experiment_name, self.run_id)
+        self.artifact_dir = Path(
+            self.tmp_dir.name,
+            self.base_path,
+            self.experiment_name,
+            self.run_id
+        )
         Path(self.artifact_dir).mkdir(parents=True, exist_ok=True)
 
         file_handler = logging.FileHandler(Path(self.artifact_dir, 'logs.txt'), mode='a')
 
-        # add it to logger
-        self.logger.addHandler(stream_handler)
-        self.logger.addHandler(file_handler)
+        # add it to experiment_logger
+        self.experiment_logger.addHandler(stream_handler)
+        self.experiment_logger.addHandler(file_handler)
 
         self.metrics = {}
         self.params = {}
@@ -48,12 +58,14 @@ class ExperimentTracker:
         # register write_artifacts to fire on script exit.
         atexit.register(self.write_artifacts)
 
-    def log(self, msg, level = logging.INFO, *args, **kwargs):
-        """log"""
-        self.logger.log(level, msg, *args, **kwargs)
-    
+    def log(self, msg, *args, **kwargs):
+        """log message to log stream"""
+
+        level = kwargs.get('level', logging.INFO)
+        self.experiment_logger.log(level, msg, *args, **kwargs)
+
     def log_metric(self, name, value):
-        """log a metric"""
+        """log a metric to log stream"""
         self.metrics.update(
             {name: value}
         )
@@ -61,7 +73,7 @@ class ExperimentTracker:
         self.log(msg)
 
     def log_metrics(self, metrics: dict):
-        """log metrics"""
+        """log metrics to log stream"""
         self.metrics.update(
             metrics
         )
@@ -69,7 +81,7 @@ class ExperimentTracker:
             self.log_metric(name, value)
 
     def log_param(self, name, value):
-        """log a param"""
+        """log a param to log stream"""
         self.params.update(
             {name: value}
         )
@@ -77,7 +89,7 @@ class ExperimentTracker:
         self.log(msg)
 
     def log_params(self, params: dict):
-        """log params"""
+        """log params to log stream"""
         self.params.update(
             params
         )
@@ -90,15 +102,25 @@ class ExperimentTracker:
         fs_base_path = utils.strip_scheme(fs_base_path)
 
         # create full artifacts base path
-        artifacts_base_path = Path(fs_base_path, self.base_path, self.experiment_name, self.run_id)
+        artifacts_base_path = Path(
+            fs_base_path,
+            self.base_path,
+            self.experiment_name,
+            self.run_id
+        )
 
         local = fs.LocalFileSystem()
-        for file in local.get_file_info(fs.FileSelector(self.artifact_dir.as_posix(), recursive=True)):
+
+        file_selector = fs.FileSelector(
+            self.artifact_dir.as_posix(),
+            recursive=True
+        )
+        for file in local.get_file_info(file_selector):
             src_path = Path(file.path)
             file_name = src_path.name
             dst_path = Path(artifacts_base_path, file_name)
 
-            if type(self.file_system) == fs.LocalFileSystem:
+            if isinstance(self.file_system, fs.LocalFileSystem):
                 artifacts_base_path.mkdir(parents=True, exist_ok=True)
                 self.file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
             else:
@@ -110,7 +132,7 @@ class ExperimentTracker:
             {
                 "params": self.params,
                 "metrics": self.metrics
-            }            
+            }
         )
         utils._write_json(
             obj=self.manifest,

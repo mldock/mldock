@@ -20,13 +20,13 @@ def infer_filesystem_type(path: str):
     """
 
     if utils._check_if_cloud_scheme(path, scheme=''):
-        return fs.LocalFileSystem(), path
+        file_system = fs.LocalFileSystem()
     elif utils._check_if_cloud_scheme(path, scheme='s3'):
         path_without_scheme = utils.strip_scheme(path)
-        return s3fs.S3FileSystem(), path_without_scheme
+        file_system, path = s3fs.S3FileSystem(), path_without_scheme
     elif utils._check_if_cloud_scheme(path, scheme='gs'):
         path_without_scheme = utils.strip_scheme(path)
-        return gcsfs.GCSFileSystem(), path_without_scheme
+        file_system, path = gcsfs.GCSFileSystem(), path_without_scheme
     else:
         raise TypeError(
             "path scheme = '{SCHEME}' for '{PATH}' "
@@ -37,6 +37,7 @@ def infer_filesystem_type(path: str):
                 PATH=path
             )
         )
+    return file_system, path
 
 def read_file_stream(file_path, file_system):
     """
@@ -114,8 +115,16 @@ def get_all_file_objects(base_path, file_name, file_system):
 
     if isinstance(file_system, fs.LocalFileSystem):
         file_selector = fs.FileSelector(base_path, recursive=True)
-        logs = [log.path for log in file_system.get_file_info(file_selector) if log.base_name == file_name ]
+        logs = [
+            log.path
+            for log in file_system.get_file_info(file_selector)
+            if log.base_name == file_name
+        ]
     else:
-        logs = [log for log in file_system.glob(f'{base_path}/**') if Path(log).name == file_name ]
-            
+        logs = [
+            log
+            for log in file_system.glob(f'{base_path}/**')
+            if Path(log).name == file_name
+        ]
+
     return logs

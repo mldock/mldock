@@ -1,5 +1,4 @@
 """LOGS METRICS COMMANDS"""
-import json
 from pathlib import Path
 import logging
 import click
@@ -50,7 +49,7 @@ def metrics():
 def show(log_path, log_file):
     """show metrics for all runs as a table"""
 
-    pattern="metric: %{WORD:name}=%{NUMBER:value};"
+    pattern=r"metric: %{WORD:name}=%{NUMBER:value};"
 
 
     file_system, log_path = infer_filesystem_type(log_path)
@@ -69,10 +68,10 @@ def show(log_path, log_file):
         row = dict()
         row.update({'run_id': run_id})
         row.update({'experiment': experiment})
-        for m in metadata:
-            keys.add(m['name'])
+        for obj in metadata:
+            keys.add(obj['name'])
             row.update(
-                {m['name']: m['value']}
+                {obj['name']: obj['value']}
             )
         rows.append(row)
 

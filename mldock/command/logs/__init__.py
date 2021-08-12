@@ -42,13 +42,13 @@ def show(log_path, log_file):
 
     file_system, log_path = infer_filesystem_type(log_path)
 
-    logs = get_all_file_objects(log_path, log_file, file_system)
+    logs_data = get_all_file_objects(log_path, log_file, file_system)
 
-    log_runs = [Path(log).parents[0].name for log in logs]
+    log_runs = [Path(log).parents[0].name for log in logs_data]
 
     state = choice('Select a run', log_runs, default=None)
 
-    for log in logs:
+    for log in logs_data:
         if Path(log).parents[0].name == state:
             log_file_path = log
             break
@@ -64,11 +64,10 @@ def add_commands(cli_group: click.group):
         args:
             cli (click.group)
     """
-    cli_group.add_command(show)    
+    cli_group.add_command(show)
     cli_group.add_command(metrics)
     cli_group.add_command(params)
     cli_group.add_command(grok)
     cli_group.add_command(errors)
 
 add_commands(logs)
-

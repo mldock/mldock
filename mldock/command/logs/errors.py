@@ -1,5 +1,4 @@
 """LOGS ERRORS COMMANDS"""
-import json
 import logging
 from pathlib import Path
 import click
@@ -36,7 +35,7 @@ def errors():
 def show(obj, log_path, log_file):
     """show errors for all runs as a table"""
 
-    pattern = 'Exception during %{WORD:script}\: %{GREEDYDATA:msg}'
+    pattern = r'Exception during %{WORD:script}\: %{GREEDYDATA:msg}'
     file_system, log_path = infer_filesystem_type(log_path)
 
     logs = get_all_file_objects(log_path, log_file, file_system)
