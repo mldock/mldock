@@ -19,7 +19,7 @@ build:
 	make test;
 	make lint;
 
-test: install-requirements
+test: install-requirements install-cli
 	pip install pytest mock pytest-mock coverage;
 	coverage run --source=mldock -m pytest tests;
 	coverage report --fail-under=${COVERAGE_THRESHOLD}
