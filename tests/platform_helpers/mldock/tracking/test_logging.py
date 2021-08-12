@@ -11,10 +11,10 @@ from mldock.platform_helpers.mldock.tracking.logging import ExperimentTracker
 class TestExperimentTracker:
     """Test Experiment Tracker functionality"""
     @staticmethod
-    def __setup_tracker(logger, fs_base_path):
+    def __setup_tracker(experiment_logger, fs_base_path):
         """setup tracker"""
         experiment_tracker = ExperimentTracker(
-            logger=logger,
+            experiment_logger=experiment_logger,
             base_path='test_tracker',
             experiment_name='test_experiment',
             fs_base_path=fs_base_path,
