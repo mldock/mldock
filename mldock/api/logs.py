@@ -69,13 +69,10 @@ def parse_grok(file_path, pattern, file_system):
     """
     grok = Grok(pattern)
 
-    metadata = []
-
     log_data = read_file_stream(file_path, file_system)
 
     metadata = grok.match(log_data.replace('\n', '\\n'))
 
-    metadata['msg'] = metadata['msg'].replace("\\n", "\n")
     return metadata
 
 def parse_grok_multiline(file_path, pattern, file_system):
