@@ -1,4 +1,4 @@
-import os
+import collections
 from pathlib import Path
 import tempfile
 import logging
@@ -42,7 +42,10 @@ class TestExperimentTracker:
 
         # cleanup
         tmp_dir.cleanup()
-        assert files == ['logs.txt', 'manifest.json'], "Failure: Did not create log.txt and manifest.json"
+        
+        assert (
+            collections.Counter(files) == collections.Counter(['logs.txt', 'manifest.json'])
+        ), "Failure: Did not create log.txt and manifest.json"
 
     def test_logs_contain_info_debug_error_success(self, caplog):
         """
