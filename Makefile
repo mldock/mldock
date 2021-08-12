@@ -10,17 +10,21 @@ install-requirements:
 	python -m pip install --upgrade pip;
 	pip install -e ".[aws, gcp, cli, testing]";
 
+install-cli:
+	python -m pip install --upgrade pip;
+	pip install -e ".[cli, pyarrow, gcsfs, s3fs]";
+
 build:
 	make install-requirements;
 	make test;
 	make lint;
 
-test: install-requirements
+test: install-requirements install-cli
 	pip install pytest mock pytest-mock coverage;
 	coverage run --source=mldock -m pytest tests;
 	coverage report --fail-under=${COVERAGE_THRESHOLD}
 
-lint: install-requirements
+lint: install-requirements install-cli
 	pip install pylint;
 	pylint --fail-under=9.5 --rcfile=.pylintrc $(python_package)
 

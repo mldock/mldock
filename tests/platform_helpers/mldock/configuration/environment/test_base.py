@@ -1,5 +1,5 @@
 """TEST ENVIRONMENT UTILITIES"""
-import os
+import collections
 import json
 import tempfile
 from pathlib import Path
@@ -22,9 +22,13 @@ class TestBaseEnvironment:
 
             input_dir_tree = [p.relative_to(tempdir).as_posix() for p in Path(container_opt,'input').glob('*')]
 
-            assert root_dir_tree == ['input', 'output', 'model'], "Fail. Root directories were not created successfully"
+            assert (
+                collections.Counter(root_dir_tree) == collections.Counter(['input', 'output', 'model'])
+            ), "Fail. Root directories were not created successfully"
 
-            assert input_dir_tree == ['input/data', 'input/config'], "Fail. Root directories were not created successfully"
+            assert (
+                collections.Counter(input_dir_tree) == collections.Counter(['input/data', 'input/config'])
+            ), "Fail. Root directories were not created successfully"
 
     @staticmethod
     def test_environment_properties_with_expected_paths():

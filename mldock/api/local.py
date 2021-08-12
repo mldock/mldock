@@ -257,7 +257,6 @@ def docker_build(
     image_name: str,
     dockerfile_path: str,
     module_path: str,
-    target_dir_name: str,
     requirements_file_path: str,
     **kwargs
 ):
