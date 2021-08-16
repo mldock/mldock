@@ -92,7 +92,8 @@ def push(obj, project_directory, provider, **kwargs):
     dockerfile_path = os.path.join(
         project_directory,
         mldock_config.get("mldock_module_dir", "src"),
-        container_dir
+        container_dir,
+        "Dockerfile"
     )
     requirements_file_path = os.path.join(
         project_directory,
