@@ -45,7 +45,10 @@ class MLDockConfigManager(BaseConfigManager):
         self.image_name_default = Path(filepath).parents[0].name
 
         self.config.update(config)
-        self.config["image_name"] = self.image_name_default
+
+        if self.config.get("image_name", None) is None:
+            # if is None override with default
+            self.config["image_name"] = self.image_name_default
 
     def check_if_exists_else_create(self, file_name: str, create: bool):
         """check that mldock fileexists"""
