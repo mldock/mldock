@@ -34,12 +34,24 @@ setuptools.setup(
     extras_require={
         'gcp': ['google-cloud-storage', 'google-api-python-client'],
         'aws': ['boto3'],
-        'cli': ['click', 'clickclick', 'docker', 'future', 'requests', 'boto3', 'google-auth', 'appdirs', 'halo', 'PyYAML', 'pygrok'],
+        'cli': [
+            'click',
+            'clickclick',
+            'docker',
+            'future',
+            'requests',
+            'boto3',
+            'google-auth',
+            'appdirs',
+            'halo',
+            'PyYAML',
+            'pygrok',
+            'gcsfs',
+            's3fs',
+            'pyarrow'
+        ],
         'sagemaker': ['sagemaker-training'],
         'testing': ['pandas', 'numpy', 'protobuf>=3.1', 'pillow', 'responses', 'dataclasses'],
-        'gcsfs': ['gcsfs'],
-        's3fs': ['s3fs'],
-        'pyarrow': ['pyarrow']
     },
     entry_points="""
         [console_scripts]
