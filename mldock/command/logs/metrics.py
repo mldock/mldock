@@ -49,7 +49,7 @@ def metrics():
 def show(log_path, log_file):
     """show metrics for all runs as a table"""
 
-    pattern=r"metric: %{WORD:name}=%{NUMBER:value};"
+    pattern=r"metric: %{GREEDYDATA:name}=%{NUMBER:value};"
 
 
     file_system, log_path = infer_filesystem_type(log_path)
