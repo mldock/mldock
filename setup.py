@@ -48,7 +48,8 @@ setuptools.setup(
             'pygrok',
             'gcsfs',
             's3fs',
-            'pyarrow'
+            'pyarrow',
+            'wheel'
         ],
         'sagemaker': ['sagemaker-training'],
         'testing': ['pandas', 'numpy', 'protobuf>=3.1', 'pillow', 'responses', 'dataclasses'],
