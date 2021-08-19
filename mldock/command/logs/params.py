@@ -49,7 +49,7 @@ def params():
 def show(log_path, log_file):
     """show params for all runs as a table"""
 
-    pattern=r"param: %{WORD:name}=%{NUMBER:value};"
+    pattern=r"param: %{GREEDYDATA:name}=%{NUMBER:value};"
 
     file_system, log_path = infer_filesystem_type(log_path)
 

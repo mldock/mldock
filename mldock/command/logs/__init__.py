@@ -4,8 +4,8 @@ from pathlib import Path
 import click
 from clickclick import choice
 
-from mldock.command.logs.metrics import metrics
-from mldock.command.logs.params import params
+from mldock.command.logs.metrics import metrics as metrics_commands
+from mldock.command.logs.params import params as params_commands
 from mldock.command.logs.grok import grok
 from mldock.command.logs.errors import errors
 from mldock.api.logs import read_file_stream, get_all_file_objects, infer_filesystem_type
@@ -65,8 +65,8 @@ def add_commands(cli_group: click.group):
             cli (click.group)
     """
     cli_group.add_command(show)
-    cli_group.add_command(metrics)
-    cli_group.add_command(params)
+    cli_group.add_command(metrics_commands)
+    cli_group.add_command(params_commands)
     cli_group.add_command(grok)
     cli_group.add_command(errors)
 
