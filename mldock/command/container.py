@@ -360,6 +360,43 @@ def summary(project_directory):
         logger.error(exception)
         raise
 
+@click.command()
+@click.option(
+    '--project_directory',
+    '--dir',
+    '-d',
+    help='mldock container project.',
+    required=True,
+    type=click.Path(
+        exists=False,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
+def pack(project_directory):
+    """
+    Package scripts in to an mldock ready container
+    """
+    try:
+        mldock_manager = MLDockConfigManager(
+            filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
+        )
+
+        states = mldock_manager.get_state()
+
+        for state in states:
+            click.echo(click.style(state["name"], bg='blue'), nl=True)
+            click.echo(click.style(state["message"], fg='white'), nl=True)
+
+    except Exception as exception:
+        logger.error(exception)
+        raise
+
 def add_commands(cli_group: click.group):
     """
         add commands to cli group
@@ -369,5 +406,6 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(init)
     cli_group.add_command(update)
     cli_group.add_command(summary)
+    cli_group.add_command(pack)
 
 add_commands(container)

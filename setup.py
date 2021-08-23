@@ -53,6 +53,14 @@ setuptools.setup(
         ],
         'sagemaker': ['sagemaker-training'],
         'testing': ['pandas', 'numpy', 'protobuf>=3.1', 'pillow', 'responses', 'dataclasses'],
+        'pyarrow-gcs': [
+            'gcsfs',
+            'pyarrow',
+        ],
+        'pyarrow-s3': [
+            's3fs',
+            'pyarrow',
+        ]
     },
     entry_points="""
         [console_scripts]
