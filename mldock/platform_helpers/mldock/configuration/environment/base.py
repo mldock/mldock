@@ -18,10 +18,17 @@ class BaseEnvironment():
     hyperparameters_file = None
     environment_variables = environs.Env()
 
-    def __init__(self, base_dir, **kwargs):
+    def __init__(self, base_dir: str = None, **kwargs):
 
         self.environment_variables.read_env()
         self.base_dir = base_dir
+        if self.base_dir is None:
+            # look for it in environment
+            # default to /opt/ml
+            self.base_dir = self.environment_variables.str(
+                'MLDOCK_BASE_DIR', '/opt/ml'
+            )
+
         self.hyperparameters_file = kwargs.get(
             'hyperparameters_file', 'hyperparameters.json'
         )
