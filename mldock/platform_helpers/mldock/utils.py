@@ -30,12 +30,9 @@ def _format_dictionary_as_env_vars(obj: dict, group=None):
 
         _key = _format_key_as_mldock_env_var(_key, prefix=group)
 
-        if isinstance(_value, dict):
-            _value = json.dumps(_value)
-
         new_keys.update(
             {
-                _key: _value
+                _key:  json.dumps(_value)
             }
         )
     return new_keys

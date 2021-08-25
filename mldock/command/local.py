@@ -1,5 +1,6 @@
 """LOCAL COMMANDS"""
 import os
+import json
 from pathlib import Path
 import logging
 import click
@@ -238,7 +239,7 @@ def train(project_directory, **kwargs):
         spinner='dots',
         on_success='Stages Retrieved'
     ) as spinner:
-        stages = mldock_config.get("stages", None)
+        stages = mldock_config.get("stages", 'null')
 
         if stage is not None:
             tag = stages[stage]['tag']

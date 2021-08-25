@@ -16,7 +16,7 @@ from mldock.config_managers.core import BaseConfigManager
 from mldock.platform_helpers.mldock import utils as mldock_utils
 from mldock.platform_helpers import utils
 
-logger=logging.getLogger('mldock')
+logger = logging.getLogger('mldock')
 
 class MLDockConfigManager(BaseConfigManager):
     """Hyperparameter Config Manager for mldock
@@ -25,7 +25,7 @@ class MLDockConfigManager(BaseConfigManager):
     config = {
         "image_name": None,
         "template": "generic",
-        "requirements_dir": "src/requirements.txt",
+        "requirements_dir": "src",
         "mldock_module_dir": "src",
         "container_dir": "container",
         "data": list(),
@@ -98,6 +98,7 @@ class MLDockConfigManager(BaseConfigManager):
         """
 
         click.secho("Set container template name", bg='blue', nl=True)
+        # would be awesome to fetch this from the template dir
         options = ['generic', 'gcp', 'aws']
 
         template_name = click.prompt(
@@ -225,7 +226,7 @@ class MLDockConfigManager(BaseConfigManager):
         )
 
         self.config.update({
-            'requirements_dir':requirements_file_name
+            'requirements_dir': requirements_file_name
         })
 
     def update_stages(self, stages: dict):

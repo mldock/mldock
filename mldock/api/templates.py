@@ -1,6 +1,7 @@
 """Container API methods"""
 
 import os
+from pathlib import Path
 import logging
 from github import Github
 from environs import Env
@@ -15,8 +16,7 @@ def init_from_template(
     template_name,
     templates_root,
     src_directory,
-    container_only: bool = False,
-    template_server='local'
+    **kwargs
 ):
     """
         initialize mldock container project from template
@@ -27,7 +27,17 @@ def init_from_template(
             src_directory (str):
             container_only (bool): (default=False) only initialize the container directory
             template_server (str): (default=local) template server to use
+        kwargs:
+            container_only (bool): (default=False) only initialize the container directory
+            template_server (str): (default=local) template server to use
+            prediction_script (str): (default=None) optional prediction script to use
+            trainer_script (str): (default=None) optional trainer script to use
     """
+    container_only = kwargs.get('container_only', False)
+    template_server = kwargs.get('template_server', 'local')
+    prediction_script = kwargs.get('prediction_script', None)
+    trainer_script = kwargs.get('trainer_script', None)
+
     logger.info("Initializing Container Project")
 
     if template_server == 'local':
@@ -78,4 +88,20 @@ def init_from_template(
         utils._copy_boilerplate_to_dst(
             os.path.join(template_dir, template_name, 'src/'),
             src_directory
+        )
+
+    if prediction_script is not None:
+        new_script_location = Path(src_directory, 'prediction.py')
+        logger.info(f"Copying {prediction_script} => {new_script_location}")
+        utils.copy_file(
+            prediction_script,
+            new_script_location
+        )
+
+    if trainer_script is not None:
+        new_script_location = Path(src_directory, 'trainer.py')
+        logger.info(f"Copying {trainer_script} => {new_script_location}")
+        utils.copy_file(
+            trainer_script,
+            new_script_location
         )

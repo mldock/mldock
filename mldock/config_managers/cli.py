@@ -203,58 +203,6 @@ class CliConfigureManager(BaseConfigManager):
         """
         return self.config.get('templates', {})
 
-class ResourceConfigManager(BaseConfigManager):
-    """Resource Config Manager for mldock
-    """
-    config = {
-        "current_host": "algo-1",
-        "hosts": [
-            "algo-1"
-        ],
-        "network_interface_name": "eth1"
-    }
-
-    @staticmethod
-    def ask_for_current_host_name():
-        """prompt user for current host name
-
-        Returns:
-            return: current host name
-        """
-        current_host_name = click.prompt(
-            text="Set current host name: ",
-            default="algo",
-        )
-
-        return current_host_name
-
-    @staticmethod
-    def ask_for_network_interface_name():
-        """prompt user for network interface name
-
-        Returns:
-            str: network interface name
-        """
-        network_interface_name = click.prompt(
-            text="Set current host name: ",
-            default="eth1",
-        )
-
-        return network_interface_name
-
-    def ask_for_resourceconfig(self):
-        """prompt user for resource config
-        """
-        current_host_name = self.ask_for_current_host_name()
-        hosts = [current_host_name+"-1"]
-        network_interface_name = self.ask_for_network_interface_name()
-
-        self.config = {
-            "current_host": hosts[0],
-            "hosts": hosts,
-            "network_interface_name": network_interface_name
-        }
-
 class PackageConfigManager(BaseConfigManager):
     """Package Requirement Config Manager for sagify
     """

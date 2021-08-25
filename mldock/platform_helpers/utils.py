@@ -12,7 +12,7 @@ import logging
 import re
 from distutils.dir_util import copy_tree, remove_tree
 from distutils.dir_util import mkpath
-from distutils.file_util import write_file
+from distutils.file_util import write_file, copy_file
 import tempfile
 import base64
 
@@ -189,8 +189,8 @@ def _copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
         src (str): [description]
         dst (str): [description]
     """
-    source_path = str(Path(src).absolute())
-    destination_path = str(Path(dst).absolute())
+    source_path = Path(src).absolute().as_posix()
+    destination_path = Path(dst).absolute().as_posix()
     if remove_first is True:
         try:
             logger.debug("removing first")
@@ -198,6 +198,27 @@ def _copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
         except FileNotFoundError:
             logger.debug("No file found. Assuming already deleted.")
     _ = copy_tree(source_path, destination_path)
+
+def copy_file_to_new_file(
+    infile, 
+    outfile,
+    **kwargs
+):
+    """Copy a file respecting verbose, dry-run and force flags.  (The
+    former two default to whatever is in the Distribution object, and
+    the latter defaults to false for commands that don't define it.)"""
+    preserve_mode = kwargs.get('preserve_mode', 1),
+    preserve_times = kwargs.get('preserve_times', 1),
+    link = kwargs.get('link', None)
+    return copy_file(
+        infile,
+        outfile,
+        preserve_mode,
+        preserve_times,
+        not self.force,
+        link,
+        dry_run=self.dry_run
+    )
 
 @contextlib.contextmanager
 def set_env(**environ):

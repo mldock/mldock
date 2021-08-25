@@ -7,7 +7,7 @@ import click
 
 from mldock.config_managers.core import WorkingDirectoryManager
 from mldock.config_managers.container import MLDockConfigManager
-
+from mldock.platform_helpers import utils
 from mldock.config_managers.cli import \
     PackageConfigManager, HyperparameterConfigManager, \
         InputDataConfigManager, StageConfigManager, \
@@ -64,6 +64,11 @@ def container():
     help='Directory containing mldock supported container to use to initialize the container.'
 )
 @click.option(
+    '--requirements',
+    default=None,
+    help='path to requirements file.'
+)
+@click.option(
     '--params',
     '-p',
     help='(Optional) Hyperparameter to be added in config.',
@@ -79,6 +84,34 @@ def container():
     type=click.Tuple([str, str]),
     multiple=True
 )
+@click.option(
+    '--trainer-script',
+    help='provide a path to your trainer script.',
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
+@click.option(
+    '--prediction-script',
+    help='provide a path to your prediction script.',
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
 @click.pass_obj
 def init(obj, project_directory, **kwargs):
     """
@@ -87,15 +120,18 @@ def init(obj, project_directory, **kwargs):
     no_prompt = kwargs.get('no_prompt', False)
     container_only = kwargs.get('container_only', False)
     template = kwargs.get('template', 'generic')
+    requirements = kwargs.get('requirements', 'src/requirements.txt')
     params = kwargs.get('params', None)
     env_vars = kwargs.get('env_vars', None)
+    trainer_script = kwargs.get('trainer_script', None)
+    prediction_script = kwargs.get('prediction_script', None)
 
     reset_terminal()
     mldock_package_path = obj['mldock_package_path']
     try:
         click.secho("Initializing MLDock project configuration", bg='blue', nl=True)
 
-        if not Path(project_directory).is_dir():
+        if not Path(project_directory, 'mldock.json').is_file():
             create_new = click.prompt('No MLDOCK project found. Create?', type=bool)
         else:
             create_new = False
@@ -129,16 +165,9 @@ def init(obj, project_directory, **kwargs):
         if not no_prompt:
             mldock_manager.setup_config()
 
-        package_dir = mldock_manager.get_config().get('requirements', project_directory)
-        package_manager = PackageConfigManager(
-            filepath=os.path.join(package_dir, "requirements.txt"),
-            create=True
-        )
-        # write to package manager
-        package_manager.write_file()
+        # finally delete original
 
-
-        path_to_payload = Path(os.path.join(project_directory, "payload.json"))
+        path_to_payload = Path(project_directory, "payload.json")
         if not path_to_payload.exists():
             path_to_payload.write_text(json.dumps({"feature1": 10, "feature2":"groupA"}))
 
@@ -216,8 +245,26 @@ def init(obj, project_directory, **kwargs):
             templates_root=templates_root,
             src_directory=src_directory,
             container_only=container_only,
-            template_server=template_server
+            template_server=template_server,
+            trainer_script=trainer_script,
+            prediction_script=prediction_script
         )
+
+        # always setup requirements in src/
+        package_dir = mldock_manager.get_config().get('requirements_dir', 'src')
+        requirement_file = os.path.join(project_directory, package_dir, "requirements.txt")
+        if requirements is not None:
+            logger.info(f"Copying {requirements} => {requirement_file}")
+            utils.copy_file(
+                requirements,
+                requirement_file
+            )
+
+        package_manager = PackageConfigManager(
+            filepath=requirement_file,
+            create=True
+        )
+        package_manager.write_file()
 
         states = mldock_manager.get_state()
 
@@ -360,43 +407,6 @@ def summary(project_directory):
         logger.error(exception)
         raise
 
-@click.command()
-@click.option(
-    '--project_directory',
-    '--dir',
-    '-d',
-    help='mldock container project.',
-    required=True,
-    type=click.Path(
-        exists=False,
-        file_okay=False,
-        dir_okay=True,
-        writable=True,
-        readable=True,
-        resolve_path=False,
-        allow_dash=False,
-        path_type=None
-    )
-)
-def pack(project_directory):
-    """
-    Package scripts in to an mldock ready container
-    """
-    try:
-        mldock_manager = MLDockConfigManager(
-            filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
-        )
-
-        states = mldock_manager.get_state()
-
-        for state in states:
-            click.echo(click.style(state["name"], bg='blue'), nl=True)
-            click.echo(click.style(state["message"], fg='white'), nl=True)
-
-    except Exception as exception:
-        logger.error(exception)
-        raise
-
 def add_commands(cli_group: click.group):
     """
         add commands to cli group
@@ -406,6 +416,5 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(init)
     cli_group.add_command(update)
     cli_group.add_command(summary)
-    cli_group.add_command(pack)
 
 add_commands(container)
