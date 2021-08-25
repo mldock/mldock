@@ -45,7 +45,8 @@ def trainer(container, environment, logger):
                 # Write out an error file. This will be returned as the failureReason in the
                 # DescribeTrainingJob result.
                 trc = traceback.format_exc()
-                with open(os.path.join('/opt/ml/output/failure'), 'w') as s:
+                log_file_path = os.path.join(environment.output_data_dir, 'failure')
+                with open(log_file_path, 'w') as s:
                     s.write('Exception during training: ' + str(exception) + '\n' + trc)
                 # Printing this causes the exception to be in the training job logs, as well.
                 logger.error('Exception during training: ' + str(exception) + '\n' + trc)
@@ -63,6 +64,9 @@ def predictor(container, environment, logger):
     """
         Args:
             TrainingContainer, environment, logger
+
+        note:
+            - this is called each time server calls your method, now decorated with this.
     """
     def general_decorator(function):
 
@@ -75,20 +79,21 @@ def predictor(container, environment, logger):
             """
             serving = container(environment=environment)
             try:
-                serving.startup()
+                serving.startup_worker()
 
                 return function(*args, **kwargs)
             except Exception as exception:
                 # Write out an error file. This will be returned as the failureReason in the
                 # DescribeTrainingJob result.
                 trc = traceback.format_exc()
-                with open(os.path.join('/opt/ml/output/failure'), 'w') as s:
+                log_file_path = os.path.join(environment.output_data_dir, 'failure')
+                with open(log_file_path, 'w') as s:
                     s.write('Exception during training: ' + str(exception) + '\n' + trc)
                 # Printing this causes the exception to be in the training job logs, as well.
                 logger.error('Exception during training: ' + str(exception) + '\n' + trc)
                 raise
             finally:
-                serving.cleanup()
+                serving.cleanup_worker()
 
         return func_wrapper
 

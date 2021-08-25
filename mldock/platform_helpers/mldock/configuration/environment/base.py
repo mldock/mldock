@@ -29,6 +29,12 @@ class BaseEnvironment():
                 'MLDOCK_BASE_DIR', '/opt/ml'
             )
 
+        self.relative_input_dir = self.environment_variables.str(
+            'MLDOCK_INPUT_DIR', 'input'
+        )
+        if self.relative_input_dir is None:
+            self.relative_input_dir = 'input'
+
         self.hyperparameters_file = kwargs.get(
             'hyperparameters_file', 'hyperparameters.json'
         )
@@ -76,7 +82,7 @@ class BaseEnvironment():
     @property
     def input_dir(self):
         """path to input directory in working directory"""
-        return Path(self.base_dir, 'input')
+        return Path(self.base_dir, self.relative_input_dir)
 
     @property
     def input_data_dir(self):

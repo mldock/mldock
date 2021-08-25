@@ -6,7 +6,6 @@ import click
 
 import sys
 import subprocess
-import six
 
 from mldock.config_managers.cli import \
     CliConfigureManager
@@ -23,105 +22,23 @@ click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
 MLDOCK_CONFIG_NAME = 'mldock.json'
 
-class ClientError(Exception):
-    """Error class used to separate framework and user errors."""
+def run_script_interactively(cmd, **kwargs):
+    """Basic runner script for local interactive script execution"""
+    output = subprocess.check_output(
+        cmd,
+        **kwargs
+    )
+    logger.info(output)
 
-
-class _CalledProcessError(ClientError):
-    """This exception is raised when a process run by check_call() or
-    check_output() returns a non-zero exit status.
-    Attributes:
-      cmd, return_code, output
-    """
-
-    def __init__(self, cmd, return_code=None, output=None):
-        self.return_code = return_code
-        self.cmd = cmd
-        self.output = output
-        super(_CalledProcessError, self).__init__()
-
-    def __str__(self):
-        if six.PY3 and self.output:
-            error_msg = "\n%s" % self.output.decode("latin1")
-        elif self.output:
-            error_msg = "\n%s" % self.output
-        else:
-            error_msg = ""
-
-        message = '%s:\nCommand "%s"%s' % (type(self).__name__, self.cmd, error_msg)
-        return message.strip()
-
-
-class InstallModuleError(_CalledProcessError):
-    """Error class indicating a module failed to install."""
-
-
-class InstallRequirementsError(_CalledProcessError):
-    """Error class indicating a module failed to install."""
-
-
-class ImportModuleError(ClientError):
-    """Error class indicating a module failed to import."""
-
-
-class ExecuteUserScriptError(_CalledProcessError):
-    """Error class indicating a user script failed to execute."""
-
-def create(cmd, error_class, cwd='.', capture_error=True, **kwargs):
-    """Spawn a process with subprocess.Popen for the given command.
-    Args:
-        cmd (list): The command to be run.
-        error_class (cls): The class to use when raising an exception.
-        cwd (str): The location from which to run the command (default: None).
-            If None, this defaults to the ``code_dir`` of the environment.
-        capture_error (bool): Whether or not to direct stderr to a stream
-            that can later be read (default: False).
-        **kwargs: Extra arguments that are passed to the subprocess.Popen constructor.
+def python_executable():
+    """Return the real path for the Python executable, if it exists.
+    Return RuntimeError otherwise.
     Returns:
-        subprocess.Popen: The process for the given command.
-    Raises:
-        error_class: If there is an exception raised when creating the process.
+        (str): The real path of the current Python executable.
     """
-    try:
-        stderr = subprocess.PIPE# if capture_error else None
-        print(cmd, cwd, stderr, kwargs.get('env'))
-        return subprocess.Popen(
-            cmd, cwd=cwd, stderr=stderr, **kwargs
-        )
-    except Exception as e:  # pylint: disable=broad-except
-        six.reraise(error_class, error_class(e), sys.exc_info()[2])
-
-def check_error(cmd, error_class, capture_error=True, **kwargs):
-    """Run a commmand, raising an exception if there is an error.
-    Args:
-        cmd ([str]): The command to be run.
-        error_class (cls): The class to use when raising an exception.
-        capture_error (bool): Whether or not to include stderr in
-            the exception message (default: False). In either case,
-            stderr is streamed to the process's output.
-        **kwargs: Extra arguments that are passed to the subprocess.Popen constructor.
-    Returns:
-        subprocess.Popen: The process for the given command.
-    Raises:
-        error_class: If there is an exception raised when creating the process.
-    """
-    print(cmd)
-    print("start command")
-    process = create(cmd, error_class, capture_error=capture_error, **kwargs)
-    print("complete -- no listend")
-    if capture_error:
-        _, stderr = process.communicate()
-        # This will force the stderr to be printed after stdout
-        # If wait is false and cature error is true, we will never see the stderr.
-        print(stderr.decode(errors="replace"))
-        return_code = process.poll()
-    else:
-        stderr = None
-        return_code = process.wait()
-
-    if return_code:
-        raise error_class(return_code=return_code, cmd=" ".join(cmd), output=stderr)
-    return process
+    if not sys.executable:
+        raise RuntimeError("Failed to retrieve the real path for the Python executable binary")
+    return sys.executable
 
 @click.group()
 def local():
@@ -378,30 +295,25 @@ def train(project_directory, **kwargs):
             # must update /opt/ml working directory before running
             # perhaps setting from environment would be the best
             env_vars.update({
-                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix()
+                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
+                'MLDOCK_INPUT_DIR': '.'
             })
             script_path = 'src/container/training/train.py'
-            print(script_path)
-            process = check_error(
-                ["/bin/sh", "-c", "python", script_path],
-                ExecuteUserScriptError,
-                capture_error=True,
+            run_script_interactively(
+                [python_executable(), script_path],
                 cwd=base_ml_path,
                 env=env_vars
             )
-            print(process)
         else:
             spinner.info("Running docker container")
             spinner.start()
-            base_ml_path = '/opt/ml'
             train_model(
                 working_dir=project_directory,
                 docker_tag=tag,
                 image_name=image_name,
                 entrypoint="src/container/executor.sh",
                 cmd="train",
-                env=env_vars,
-                base_ml_path=base_ml_path
+                env=env_vars
             )
 
 
@@ -523,22 +435,20 @@ def deploy(obj, project_directory, **kwargs):
             # perhaps setting from environment would be the best
             # check out the python runner from sagemaker_training
             env_vars.update({
-                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix()
+                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
+                'MLDOCK_INPUT_DIR': '.'
             })
             script_path = 'src/container/prediction/serve.py'
-            print(script_path)
-            process = check_error(
-                ["/bin/sh", "-c", "python", script_path],
-                ExecuteUserScriptError,
-                capture_error=True,
+
+            run_script_interactively(
+                [python_executable(), script_path],
                 cwd=base_ml_path,
                 env=env_vars
             )
-            print(process)
         else:
             spinner.info("Running docker container")
             spinner.start()
-            base_ml_path = '/opt/ml'
+
             deploy_model(
                 working_dir=project_directory,
                 docker_tag=tag,
@@ -547,8 +457,7 @@ def deploy(obj, project_directory, **kwargs):
                 entrypoint="src/container/executor.sh",
                 cmd="serve",
                 env=env_vars,
-                verbose=verbose,
-                base_ml_path=base_ml_path
+                verbose=verbose
             )
 
 @click.command()
