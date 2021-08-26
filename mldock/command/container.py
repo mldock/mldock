@@ -132,7 +132,7 @@ def init(obj, project_directory, **kwargs):
         click.secho("Initializing MLDock project configuration", bg='blue', nl=True)
 
         if not Path(project_directory, 'mldock.json').is_file():
-            create_new = click.prompt('No MLDOCK project found. Create?', type=bool)
+            create_new = click.prompt('No MLDOCK project found. Create?', type=bool, default='no')
         else:
             create_new = False
 

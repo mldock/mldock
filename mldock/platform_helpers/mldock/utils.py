@@ -15,6 +15,21 @@ def _format_key_as_mldock_env_var(key, prefix=None):
     key = key.upper()
     return key
 
+def covert_if_not_ascii(value):
+    """converts a value if it is not a ascii supported str"""
+    try:
+        value.encode('ascii')
+        return value
+    except (AttributeError, UnicodeEncodeError):
+        return str(value)
+
+def format_dict_for_subprocess(obj: dict):
+    """formats dictionary object keys & values to asci"""
+    return {
+        covert_if_not_ascii(key): covert_if_not_ascii(value)
+        for key, value in obj.items()
+    }
+
 def _format_dictionary_as_env_vars(obj: dict, group=None):
     """
         format key and values as appropriate environment variables
@@ -30,9 +45,12 @@ def _format_dictionary_as_env_vars(obj: dict, group=None):
 
         _key = _format_key_as_mldock_env_var(_key, prefix=group)
 
+        if isinstance(_value, dict):
+            _value = json.dumps(_value)
+
         new_keys.update(
             {
-                _key:  json.dumps(_value)
+                _key: _value
             }
         )
     return new_keys

@@ -297,8 +297,11 @@ def train(project_directory, **kwargs):
             # perhaps setting from environment would be the best
             env_vars.update({
                 'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
-                'MLDOCK_INPUT_DIR': '.'
+                'MLDOCK_INPUT_DIR': '.',
             })
+
+            # subprocess only supports 'ascii' supported str for environment variables
+            env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
             script_path = 'src/container/training/train.py'
             run_script_interactively(
                 [python_executable(), script_path],
@@ -439,6 +442,10 @@ def deploy(obj, project_directory, **kwargs):
                 'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
                 'MLDOCK_INPUT_DIR': '.'
             })
+
+            # subprocess only supports 'ascii' supported str for environment variables
+            env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
+
             script_path = 'src/container/prediction/serve.py'
 
             run_script_interactively(

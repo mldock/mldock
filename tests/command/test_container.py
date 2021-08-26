@@ -134,7 +134,7 @@ class TestContainerCommands:
             # mldock can't write a new file in tmp directory
             # init an empty file
             mldock_project = Path(tmp_dir, 'my_app')
-            mldock_filepath = Path(mldock_project,'mldock.json')
+            mldock_filepath = Path(mldock_project, 'mldock.json')
 
             result = runner.invoke(
                 cli=cli,
