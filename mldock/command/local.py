@@ -1,12 +1,10 @@
 """LOCAL COMMANDS"""
 import os
-import json
+import sys
 from pathlib import Path
 import logging
-import click
-
-import sys
 import subprocess
+import click
 
 from mldock.config_managers.cli import \
     CliConfigureManager

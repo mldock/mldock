@@ -207,17 +207,10 @@ def copy_file_to_new_file(
     """Copy a file respecting verbose, dry-run and force flags.  (The
     former two default to whatever is in the Distribution object, and
     the latter defaults to false for commands that don't define it.)"""
-    preserve_mode = kwargs.get('preserve_mode', 1),
-    preserve_times = kwargs.get('preserve_times', 1),
-    link = kwargs.get('link', None)
     return copy_file(
         infile,
         outfile,
-        preserve_mode,
-        preserve_times,
-        not self.force,
-        link,
-        dry_run=self.dry_run
+        **kwargs
     )
 
 @contextlib.contextmanager

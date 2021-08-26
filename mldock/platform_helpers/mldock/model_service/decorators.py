@@ -1,3 +1,9 @@
+"""
+    Decorators for model service workflows
+
+    Provides a set of decorators for Training and prediction workflows, which include
+    error handling and start up and cleanup steps in the workflow management.
+"""
 from functools import wraps
 import os
 import traceback
@@ -9,16 +15,14 @@ def make_decorator(foreign_decorator):
         spits out.
     """
     def new_decorator(func):
-        # Call to newDecorator(method)
-        # Exactly like old decorator, but output keeps track of what decorated it
-        R = foreign_decorator(func) # apply foreignDecorator, like call to foreignDecorator(method) would have done
-        R.decorator = new_decorator # keep track of decorator
-        #R.original = func         # might as well keep track of everything!
-        return R
+        """wrapper to create the new decorated func"""
+        decorator_result = foreign_decorator(func)
+        decorator_result.decorator = new_decorator
+
+        return decorator_result
 
     new_decorator.__name__ = foreign_decorator.__name__
     new_decorator.__doc__ = foreign_decorator.__doc__
-    # (*)We can be somewhat "hygienic", but newDecorator still isn't signature-preserving, i.e. you will not be able to get a runtime list of parameters. For that, you need hackish libraries...but in this case, the only argument is func, so it's not a big issue
 
     return new_decorator
 
@@ -46,8 +50,8 @@ def trainer(container, environment, logger):
                 # DescribeTrainingJob result.
                 trc = traceback.format_exc()
                 log_file_path = os.path.join(environment.output_data_dir, 'failure')
-                with open(log_file_path, 'w') as s:
-                    s.write('Exception during training: ' + str(exception) + '\n' + trc)
+                with open(log_file_path, 'w') as file_:
+                    file_.write('Exception during training: ' + str(exception) + '\n' + trc)
                 # Printing this causes the exception to be in the training job logs, as well.
                 logger.error('Exception during training: ' + str(exception) + '\n' + trc)
                 raise
@@ -87,8 +91,8 @@ def predictor(container, environment, logger):
                 # DescribeTrainingJob result.
                 trc = traceback.format_exc()
                 log_file_path = os.path.join(environment.output_data_dir, 'failure')
-                with open(log_file_path, 'w') as s:
-                    s.write('Exception during training: ' + str(exception) + '\n' + trc)
+                with open(log_file_path, 'w') as file_:
+                    file_.write('Exception during training: ' + str(exception) + '\n' + trc)
                 # Printing this causes the exception to be in the training job logs, as well.
                 logger.error('Exception during training: ' + str(exception) + '\n' + trc)
                 raise

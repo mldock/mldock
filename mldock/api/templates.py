@@ -33,17 +33,12 @@ def init_from_template(
             prediction_script (str): (default=None) optional prediction script to use
             trainer_script (str): (default=None) optional trainer script to use
     """
-    container_only = kwargs.get('container_only', False)
-    template_server = kwargs.get('template_server', 'local')
-    prediction_script = kwargs.get('prediction_script', None)
-    trainer_script = kwargs.get('trainer_script', None)
-
     logger.info("Initializing Container Project")
 
-    if template_server == 'local':
+    if kwargs.get('template_server', 'local') == 'local':
         template_dir = templates_root
 
-    elif template_server == 'github':
+    elif kwargs.get('template_server', 'local') == 'github':
 
         # set up in either ENV or configure local
         github_token = env("MLDOCK_GITHUB_TOKEN", default=None)
@@ -74,7 +69,7 @@ def init_from_template(
 
     logger.info("Setting up workspace")
 
-    if container_only:
+    if kwargs.get('container_only', False):
         src_container_directory = os.path.join(
             src_directory,
             'container'
@@ -90,18 +85,18 @@ def init_from_template(
             src_directory
         )
 
-    if prediction_script is not None:
+    if kwargs.get('prediction_script', None) is not None:
         new_script_location = Path(src_directory, 'prediction.py')
-        logger.info(f"Copying {prediction_script} => {new_script_location}")
+        logger.info(f"Copying {kwargs.get('prediction_script', None)} => {new_script_location}")
         utils.copy_file(
-            prediction_script,
+            kwargs.get('prediction_script', None),
             new_script_location
         )
 
-    if trainer_script is not None:
+    if kwargs.get('trainer_script', None) is not None:
         new_script_location = Path(src_directory, 'trainer.py')
-        logger.info(f"Copying {trainer_script} => {new_script_location}")
+        logger.info(f"Copying {kwargs.get('trainer_script', None)} => {new_script_location}")
         utils.copy_file(
-            trainer_script,
+            kwargs.get('trainer_script', None),
             new_script_location
         )

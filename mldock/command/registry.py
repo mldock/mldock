@@ -76,15 +76,12 @@ def push(obj, project_directory, provider, **kwargs):
     stage = kwargs.get('stage', None)
     region = kwargs.get('region', None)
     build = kwargs.get('build', False)
-    no_cache = kwargs.get('no_cache', False)
     reset_terminal()
     mldock_manager = MLDockConfigManager(
         filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
-    image_name = mldock_config.get("image_name", None)
-    container_dir = mldock_config.get("container_dir", None)
     module_path = os.path.join(
         project_directory,
         mldock_config.get("mldock_module_dir", "src"),
@@ -92,7 +89,7 @@ def push(obj, project_directory, provider, **kwargs):
     dockerfile_path = os.path.join(
         project_directory,
         mldock_config.get("mldock_module_dir", "src"),
-        container_dir,
+        mldock_config.get("container_dir", None),
         "Dockerfile"
     )
     requirements_file_path = os.path.join(
@@ -122,7 +119,7 @@ def push(obj, project_directory, provider, **kwargs):
         spinner='dots'
     ) as spinner:
         _, metadata = login_and_authenticate(provider=provider, region=region)
-        image_repository = "{}/{}".format(metadata['repository'], image_name)
+        image_repository = f"{metadata['repository']}/{mldock_config.get('image_name', None)}"
 
 
     if build:
@@ -138,7 +135,7 @@ def push(obj, project_directory, provider, **kwargs):
                 module_path=module_path,
                 target_dir_name=mldock_config.get("mldock_module_dir", "src"),
                 requirements_file_path=requirements_file_path,
-                no_cache=no_cache,
+                no_cache=kwargs.get('no_cache', False),
                 docker_tag=tag
             )
             for line in logs:
@@ -217,7 +214,6 @@ def pull(obj, project_directory, provider, **kwargs):
 
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
-    image_name = mldock_config.get("image_name", None)
 
     # retrieve stages
     with ProgressLogger(
@@ -241,7 +237,7 @@ def pull(obj, project_directory, provider, **kwargs):
         spinner='dots'
     ) as spinner:
         _, metadata = login_and_authenticate(provider=provider, region=region)
-        image_repository = "{}/{}".format(metadata['repository'], image_name)
+        image_repository = f"{metadata['repository']}/{mldock_config.get('image_name', None)}"
 
     # Push image to cloud repository
     with ProgressLogger(
