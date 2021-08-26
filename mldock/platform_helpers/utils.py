@@ -200,7 +200,7 @@ def _copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
     _ = copy_tree(source_path, destination_path)
 
 def copy_file_to_new_file(
-    infile, 
+    infile,
     outfile,
     **kwargs
 ):
@@ -344,8 +344,9 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
             sys.exit(-1)
         raise
 
-def download_from_git(github, start_dir, org, repo, branch, root: str = '.'):
+def download_from_git(github, start_dir, org, repo, branch, **kwargs):
     """Download the server path from git remote directory"""
+    root = kwargs.get('root', '.')
     organization = github.get_organization(org)
     repository = organization.get_repo(repo)
     sha = get_sha_for_tag(repository, branch)
