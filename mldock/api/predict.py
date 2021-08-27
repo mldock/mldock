@@ -13,7 +13,7 @@ def execute_request(url, headers, data):
 
 def send_json(filepath, host):
     """Send a json payload in request providing a filepath."""
-    with open(filepath, 'r', encoding = 'utf-8') as file_:
+    with open(filepath, 'r') as file_:
         data = json.load(file_)
 
     response = execute_request(
@@ -40,7 +40,7 @@ def send_json(filepath, host):
 
 def send_csv(filepath, host):
     """Send a json payload in request providing a filepath."""
-    with open(filepath, 'r', encoding = 'utf-8') as file_:
+    with open(filepath, 'r') as file_:
         data = file_.read()
 
     response = execute_request(
@@ -61,7 +61,7 @@ def send_csv(filepath, host):
 def send_image_jpeg(filepath, host):
     """Send a image jpeg payload as bytes in request providing a filepath."""
 
-    with open(filepath, 'rb', encoding = 'utf-8') as file_:
+    with open(filepath, 'rb') as file_:
         byte_content = io.BytesIO(file_.read())
 
     response = execute_request(
