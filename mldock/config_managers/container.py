@@ -28,11 +28,11 @@ class MLDockConfigManager(BaseConfigManager):
         "requirements_dir": "src",
         "mldock_module_dir": "src",
         "container_dir": "container",
-        "data": list(),
-        "environment": dict(),
-        "hyperparameters": dict(),
-        "model": list(),
-        "stages": dict(),
+        "data": [],
+        "environment": {},
+        "hyperparameters": {},
+        "model": [],
+        "stages": {},
     }
 
     def __init__(self, filepath: str, create: bool = False):

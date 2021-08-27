@@ -34,7 +34,7 @@ class TestLocalCommands:
         with open(my_path, 'w+') as file:
             file.write(log_data)
 
-    @patch('mldock.command.logs.metrics.print_table')
+    @patch('mldock.api.logs.print_table')
     def test_logs_metrics_grok_successful(self, mock_print_table, log_data):
         """test logs metrics groks logs as aspected"""
         runner = CliRunner()
@@ -63,7 +63,7 @@ class TestLocalCommands:
         assert args[0] == validation, "Failed to parse metric names correctly"
         assert result.exit_code == 0, result.output
 
-    @patch('mldock.command.logs.params.print_table')
+    @patch('mldock.api.logs.print_table')
     def test_logs_params_grok_successful(self, mock_print_table, log_data):
         """test logs params groks logs as aspected"""
         runner = CliRunner()
