@@ -11,6 +11,7 @@ logger = logging.getLogger('mldock')
 
 class BaseEnvironment():
     """Base Environment to be extended for different environments"""
+    # pylint: disable=too-many-instance-attributes
     input_channel_regex = None
     model_channel_regex = None
     output_channel_regex = None
