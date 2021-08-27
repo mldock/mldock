@@ -22,7 +22,7 @@ CLI_VERSION = 'Version: cli {}'.format(__version__)
 
 @click.group()
 @click.version_option(message='{}\n{}'.format(MLDOCK_LOGO, CLI_VERSION))
-@click.option(u"-v", u"--verbose", count=True, help=u"Turn on debug logging")
+@click.option("-v", "--verbose", count=True, help="Turn on debug logging")
 @click.pass_context
 def cli(ctx, verbose):
     """

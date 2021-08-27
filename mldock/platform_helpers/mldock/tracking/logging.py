@@ -18,6 +18,7 @@ class ExperimentTracker:
         Experiment Tracker that supports logging metrics
         and params. Finally, uploading to remote on exit if fs_base_path is provided
     """
+    # pylint: disable=too-many-instance-attributes
     metrics: dict = None
     params: dict = None
 
@@ -36,7 +37,7 @@ class ExperimentTracker:
         self.buffer = io.StringIO()
         stream_handler = logging.StreamHandler(self.buffer)
 
-        # pytest: disable=R1732
+        # pytest: disable=consider-using-with
         self.tmp_dir = tempfile.TemporaryDirectory(suffix=None, prefix=None, dir=None)
         self.artifact_dir = Path(
             self.tmp_dir.name,

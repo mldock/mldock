@@ -10,6 +10,7 @@ from mldock.command.logs.grok import grok
 from mldock.command.logs.errors import errors
 from mldock.api.logs import read_file_stream, get_all_file_objects, infer_filesystem_type
 
+
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
 MLDOCK_CONFIG_NAME = 'mldock.json'

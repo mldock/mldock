@@ -11,6 +11,7 @@ logger = logging.getLogger('mldock')
 
 class BaseEnvironment():
     """Base Environment to be extended for different environments"""
+    # pylint: disable=too-many-instance-attributes
     input_channel_regex = None
     model_channel_regex = None
     output_channel_regex = None
@@ -18,10 +19,23 @@ class BaseEnvironment():
     hyperparameters_file = None
     environment_variables = environs.Env()
 
-    def __init__(self, base_dir, **kwargs):
+    def __init__(self, base_dir: str = None, **kwargs):
 
         self.environment_variables.read_env()
         self.base_dir = base_dir
+        if self.base_dir is None:
+            # look for it in environment
+            # default to /opt/ml
+            self.base_dir = self.environment_variables.str(
+                'MLDOCK_BASE_DIR', '/opt/ml'
+            )
+
+        self.relative_input_dir = self.environment_variables.str(
+            'MLDOCK_INPUT_DIR', 'input'
+        )
+        if self.relative_input_dir is None:
+            self.relative_input_dir = 'input'
+
         self.hyperparameters_file = kwargs.get(
             'hyperparameters_file', 'hyperparameters.json'
         )
@@ -69,7 +83,7 @@ class BaseEnvironment():
     @property
     def input_dir(self):
         """path to input directory in working directory"""
-        return Path(self.base_dir, 'input')
+        return Path(self.base_dir, self.relative_input_dir)
 
     @property
     def input_data_dir(self):

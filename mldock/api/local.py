@@ -127,7 +127,7 @@ def train_model(working_dir, docker_tag, image_name, entrypoint, **kwargs):
 
     try:
         with DockerManager() as client:
-            base_ml_path = '/opt/ml'
+            base_ml_path = kwargs.get('base_ml_path', '/opt/ml')
 
             container_volumes = make_multiple_mldock_mount_volumes(
                 volumes=[
@@ -189,7 +189,7 @@ def deploy_model(working_dir, docker_tag, image_name, entrypoint, **kwargs):
     config_manager = CliConfigureManager()
     try:
         with DockerManager() as client:
-            base_ml_path = '/opt/ml'
+            base_ml_path = kwargs.get('base_ml_path', '/opt/ml')
 
             container_volumes = make_multiple_mldock_mount_volumes(
                 volumes=[

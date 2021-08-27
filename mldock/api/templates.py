@@ -1,6 +1,7 @@
 """Container API methods"""
 
 import os
+from pathlib import Path
 import logging
 from github import Github
 from environs import Env
@@ -15,8 +16,7 @@ def init_from_template(
     template_name,
     templates_root,
     src_directory,
-    container_only: bool = False,
-    template_server='local'
+    **kwargs
 ):
     """
         initialize mldock container project from template
@@ -27,13 +27,18 @@ def init_from_template(
             src_directory (str):
             container_only (bool): (default=False) only initialize the container directory
             template_server (str): (default=local) template server to use
+        kwargs:
+            container_only (bool): (default=False) only initialize the container directory
+            template_server (str): (default=local) template server to use
+            prediction_script (str): (default=None) optional prediction script to use
+            trainer_script (str): (default=None) optional trainer script to use
     """
     logger.info("Initializing Container Project")
 
-    if template_server == 'local':
+    if kwargs.get('template_server', 'local') == 'local':
         template_dir = templates_root
 
-    elif template_server == 'github':
+    elif kwargs.get('template_server', 'local') == 'github':
 
         # set up in either ENV or configure local
         github_token = env("MLDOCK_GITHUB_TOKEN", default=None)
@@ -64,7 +69,7 @@ def init_from_template(
 
     logger.info("Setting up workspace")
 
-    if container_only:
+    if kwargs.get('container_only', False):
         src_container_directory = os.path.join(
             src_directory,
             'container'
@@ -78,4 +83,20 @@ def init_from_template(
         utils._copy_boilerplate_to_dst(
             os.path.join(template_dir, template_name, 'src/'),
             src_directory
+        )
+
+    if kwargs.get('prediction_script', None) is not None:
+        new_script_location = Path(src_directory, 'prediction.py')
+        logger.info(f"Copying {kwargs.get('prediction_script', None)} => {new_script_location}")
+        utils.copy_file(
+            kwargs.get('prediction_script', None),
+            new_script_location
+        )
+
+    if kwargs.get('trainer_script', None) is not None:
+        new_script_location = Path(src_directory, 'trainer.py')
+        logger.info(f"Copying {kwargs.get('trainer_script', None)} => {new_script_location}")
+        utils.copy_file(
+            kwargs.get('trainer_script', None),
+            new_script_location
         )

@@ -1,6 +1,9 @@
 """LOCAL COMMANDS"""
 import os
+import sys
+from pathlib import Path
 import logging
+import subprocess
 import click
 
 from mldock.config_managers.cli import \
@@ -17,6 +20,24 @@ from mldock.api.local import \
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
 MLDOCK_CONFIG_NAME = 'mldock.json'
+
+def run_script_interactively(cmd, **kwargs):
+    """Basic runner script for local interactive script execution"""
+    output = subprocess.check_output(
+        cmd,
+        **kwargs
+    )
+    logger.info(output)
+
+def python_executable():
+    """Return the real path for the Python executable, if it exists.
+    Return RuntimeError otherwise.
+    Returns:
+        (str): The real path of the current Python executable.
+    """
+    if not sys.executable:
+        raise RuntimeError("Failed to retrieve the real path for the Python executable binary")
+    return sys.executable
 
 @click.group()
 def local():
@@ -192,10 +213,17 @@ def predict(payload, content_type, host):
 )
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--stage', help='environment to stage.')
-def train(project_directory, params, env_vars, tag, stage):
+@click.option('--interactive', help='run workflow without docker', is_flag=True)
+def train(project_directory, **kwargs):
     """
     Command to run training locally on localhost
     """
+    params = kwargs.get('params', None)
+    env_vars = kwargs.get('env_vars', None)
+    tag = kwargs.get('tag', None)
+    stage = kwargs.get('stage', None)
+    interactive = kwargs.get('interactive', False)
+
     mldock_manager = MLDockConfigManager(
         filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
@@ -209,7 +237,7 @@ def train(project_directory, params, env_vars, tag, stage):
         spinner='dots',
         on_success='Stages Retrieved'
     ) as spinner:
-        stages = mldock_config.get("stages", None)
+        stages = mldock_config.get("stages", 'null')
 
         if stage is not None:
             tag = stages[stage]['tag']
@@ -258,15 +286,37 @@ def train(project_directory, params, env_vars, tag, stage):
 
         spinner.info("Training Environment = {}".format(env_vars))
         spinner.start()
+        if interactive:
+            spinner.info("Running interactively")
+            spinner.start()
+            # just run python src/container/prediction/serve.py
+            base_ml_path = project_directory
+            # must update /opt/ml working directory before running
+            # perhaps setting from environment would be the best
+            env_vars.update({
+                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
+                'MLDOCK_INPUT_DIR': '.',
+            })
 
-        train_model(
-            working_dir=project_directory,
-            docker_tag=tag,
-            image_name=image_name,
-            entrypoint="src/container/executor.sh",
-            cmd="train",
-            env=env_vars
-        )
+            # subprocess only supports 'ascii' supported str for environment variables
+            env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
+            script_path = 'src/container/training/train.py'
+            run_script_interactively(
+                [python_executable(), script_path],
+                cwd=base_ml_path,
+                env=env_vars
+            )
+        else:
+            spinner.info("Running docker container")
+            spinner.start()
+            train_model(
+                working_dir=project_directory,
+                docker_tag=tag,
+                image_name=image_name,
+                entrypoint="src/container/executor.sh",
+                cmd="train",
+                env=env_vars
+            )
 
 
 @click.command()
@@ -306,6 +356,7 @@ def train(project_directory, params, env_vars, tag, stage):
 @click.option('--tag', help='docker tag', type=str, default='latest')
 @click.option('--port', help='host url at which model is served', type=str, default='8080')
 @click.option('--stage', help='environment to stage.')
+@click.option('--interactive', help='run workflow without docker', is_flag=True)
 @click.pass_obj
 def deploy(obj, project_directory, **kwargs):
     """
@@ -316,6 +367,7 @@ def deploy(obj, project_directory, **kwargs):
     tag = kwargs.get('tag', None)
     port = kwargs.get('port', None)
     stage = kwargs.get('stage', None)
+    interactive = kwargs.get('interactive', False)
 
     verbose = obj.get('verbose', False)
     mldock_manager = MLDockConfigManager(
@@ -374,19 +426,45 @@ def deploy(obj, project_directory, **kwargs):
         text='Deploying model to {} @ localhost'.format(port),
         spinner='dots'
     ) as spinner:
-
         spinner.info("Deployment Environment = {}".format(env_vars))
         spinner.start()
-        deploy_model(
-            working_dir=project_directory,
-            docker_tag=tag,
-            image_name=image_name,
-            port={8080: port},
-            entrypoint="src/container/executor.sh",
-            cmd="serve",
-            env=env_vars,
-            verbose=verbose
-        )
+        if interactive:
+            spinner.info("Running interactively")
+            spinner.start()
+            # just run python src/container/prediction/serve.py
+            base_ml_path = project_directory
+            # must update /opt/ml working directory before running
+            # perhaps setting from environment would be the best
+            # check out the python runner from sagemaker_training
+            env_vars.update({
+                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
+                'MLDOCK_INPUT_DIR': '.'
+            })
+
+            # subprocess only supports 'ascii' supported str for environment variables
+            env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
+
+            script_path = 'src/container/prediction/serve.py'
+
+            run_script_interactively(
+                [python_executable(), script_path],
+                cwd=base_ml_path,
+                env=env_vars
+            )
+        else:
+            spinner.info("Running docker container")
+            spinner.start()
+
+            deploy_model(
+                working_dir=project_directory,
+                docker_tag=tag,
+                image_name=image_name,
+                port={8080: port},
+                entrypoint="src/container/executor.sh",
+                cmd="serve",
+                env=env_vars,
+                verbose=verbose
+            )
 
 @click.command()
 def stop():
