@@ -13,7 +13,7 @@ from mldock.config_managers.cli import \
         InputDataConfigManager, StageConfigManager, \
             ModelConfigManager, EnvironmentConfigManager, CliConfigureManager
 
-from mldock.api.templates import init_from_template
+from mldock.api.templates import init_from_template, check_available_templates
 
 click.disable_unicode_literals_warning = True
 logger=logging.getLogger('mldock')
@@ -136,9 +136,26 @@ def init(obj, project_directory, **kwargs):
         else:
             create_new = False
 
+        # check template config
+        config_manager = CliConfigureManager()
+        templates = config_manager.templates
+
+        # get configured template server metadata
+        # if not set, default to package default templates
+        templates_root = templates.get('templates_root', Path(mldock_package_path, 'templates'))
+        # if not set, default to local
+        template_server = templates.get('server_type', 'local')
+
+        # get available templates
+        available_templates = check_available_templates(
+            templates_root=templates_root,
+            template_server=template_server
+        )
+
         mldock_manager = MLDockConfigManager(
             filepath=Path(project_directory, MLDOCK_CONFIG_NAME),
-            create=create_new
+            create=create_new,
+            available_templates=available_templates
         )
 
         if template is not None:
@@ -230,15 +247,6 @@ def init(obj, project_directory, **kwargs):
 
         # Get template specific files
         template = mldock_config["template"]
-
-        config_manager = CliConfigureManager()
-        templates = config_manager.templates
-
-        # get configured template server metadata
-        # if not set, default to package default templates
-        templates_root = templates.get('templates_root', Path(mldock_package_path, 'templates'))
-        # if not set, default to local
-        template_server = templates.get('server_type', 'local')
 
         init_from_template(
             template_name=template,
