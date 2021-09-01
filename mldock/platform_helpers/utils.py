@@ -19,7 +19,6 @@ import base64
 from github import GithubException
 from github.GithubException import UnknownObjectException
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mldock')
 
 def _mkdir(dir_path: str):
@@ -326,6 +325,7 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
                 with open(local_path, "w+") as file_out:
                     file_out.write(file_data.decode())
                     file_out.write("\n")
+
     except (GithubException, IOError):
 
         # get exc info
@@ -362,3 +362,37 @@ def download_from_git(github, start_dir, org, repo, branch, **kwargs):
     )
 
     return tmp_dir
+
+def list_objects_at_server_path(repository, sha, server_path):
+    """
+    Download all contents at server_path with commit tag sha in
+    the repository.
+    """
+    try:
+        contents = repository.get_contents(server_path, ref=sha)
+
+        templates = []
+        for content in contents:
+            templates.append(Path(content.path).name)
+        
+        return templates
+
+    except (GithubException, IOError):
+
+        # get exc info
+        exc_type, _, _ = sys.exc_info()
+        raise
+
+def list_templates(github, start_dir, org, repo, branch, **kwargs):
+    """Download the server path from git remote directory"""
+    root = kwargs.get('root', '.')
+    organization = github.get_organization(org)
+    repository = organization.get_repo(repo)
+    sha = get_sha_for_tag(repository, branch)
+
+    ## download to tmp
+    return list_objects_at_server_path(
+        repository,
+        sha,
+        server_path=Path(root, start_dir).as_posix()
+    )

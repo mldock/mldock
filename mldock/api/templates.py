@@ -7,10 +7,48 @@ from github import Github
 from environs import Env
 from mldock.platform_helpers import utils
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mldock')
 env = Env()
 env.read_env()  # read .env file, if it exists
 
+def check_available_templates(
+    templates_root,
+    **kwargs
+):
+    """
+        initialize mldock container project from template
+
+        args:
+            templates_root (str):
+        kwargs:
+            template_server (str): (default=local) template server to use
+    """
+    logger.info("Initializing Container Project")
+
+    if kwargs.get('template_server', 'local') == 'local':
+        template_dir = templates_root
+        available_templates = [p.name for p in Path(template_dir).iterdir()]
+    elif kwargs.get('template_server', 'local') == 'github':
+
+        # set up in either ENV or configure local
+        github_token = env("MLDOCK_GITHUB_TOKEN", default=None)
+        github_org = env("MLDOCK_GITHUB_ORG", default='mldock')
+        github_repo = env("MLDOCK_GITHUB_REPO", default='mldock-templates')
+        github_branch = env("MLDOCK_GITHUB_REPO_BRANCH", default='main')
+
+        github = Github(github_token)
+
+        available_templates = utils.list_templates(
+            github,
+            '.',
+            github_org,
+            github_repo,
+            github_branch,
+            root=templates_root
+        )
+    
+    return available_templates
 
 def init_from_template(
     template_name,
@@ -47,6 +85,7 @@ def init_from_template(
         github_branch = env("MLDOCK_GITHUB_REPO_BRANCH", default='main')
 
         github = Github(github_token)
+
         template_dir = utils.download_from_git(
             github,
             template_name,

@@ -35,10 +35,13 @@ class MLDockConfigManager(BaseConfigManager):
         "stages": {},
     }
 
-    def __init__(self, filepath: str, create: bool = False):
+    available_templates = None
+
+    def __init__(self, filepath: str, create: bool = False, **kwargs):
         # dealing with weird os related path formats
         super().__init__()
         self.filepath = filepath
+        self.available_templates = kwargs.get('available_templates', None)
 
         config = self.load_config(self.filepath, create=create)
 
@@ -99,7 +102,7 @@ class MLDockConfigManager(BaseConfigManager):
 
         click.secho("Set container template name", bg='blue', nl=True)
         # would be awesome to fetch this from the template dir
-        options = ['generic', 'gcp', 'aws']
+        options = self.available_templates
 
         template_name = click.prompt(
             text=style_dropdown(
