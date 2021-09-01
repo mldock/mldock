@@ -1,79 +1,65 @@
-import os
-import io
-import csv
-import logging
+"""
+    Serving Endpoint
+    This is the file that implements a flask server to do inferences. It's the file that you will
+    modify to implement the scoring for your own algorithm.
+"""
+from mldock.platform_helpers.mldock.configuration import environment
 import numpy as np
-from mldock.platform_helpers.mldock.errors import extract_stack_trace
-from mldock.platform_helpers.mldock.model_service import base
-from src.container.assets import environment, logger
+from fastapi import FastAPI, Request, HTTPException
+import src.prediction as model_serving
+from mldock.platform_helpers.mldock.inference.content_encoders import \
+    numpy as content_encoders
+from src.container.lifecycle import serving_container
 
-class ModelService(base.ModelService):
-    model = None
+app = FastAPI()
 
-    def load_model(self, model_path):
-        """Get the model object for this instance, loading it if it's not already loaded."""
-        if self.model == None:
-            # TODO place your model load code here
-            # get your model from MODEL_DIR
-            self.model = None
-        return self.model
+@app.on_event("startup")
+def startup_event():
+    serving_container.startup()
 
-    @staticmethod
-    def input_transform(input):
-        """
-            Custom input transformer
+@app.on_event("shutdown")
+def shutdown_event():
+    serving_container.cleanup()
 
-            args:
-                input: raw input from request
-        """
-        return input
-
-    @staticmethod
-    def output_transform(predictions):
-        """
-            Custom output transformation code
-        """
-        return predictions
-
-    def predict(self, input):
-        """For the input, do the predictions and return them.
-
-        Args:
-            input (a pandas dataframe): The data on which to do the predictions. There will be
-                one prediction per row in the dataframe"""
-        try:
-            logger.info("Model = {}".format(self.model))
-            # TODO replace this with your model.predict
-            pred = np.array(['pred_1', 'pred_2', 'pred_3'])
-            logger.info(pred)
-            return pred
-        except Exception as exception:
-            # get stack trace as exception
-            stack_trace = extract_stack_trace()
-            reformatted_log_msg = (
-                    'Server Error: {ex}'.format(ex=stack_trace)
-            )
-            return reformatted_log_msg
-
-
-def handler(json_input):
+# serving workflow utilties
+@serving_container.wrap
+def handler(json_input, environment, logger, **kwargs):
     """
-    Prediction given the request input
+    Handles a request from to the server app
     :param json_input: [dict], request input
     :return: [dict], prediction
     """
-    
-    model_service = ModelService(model_path=os.path.join(environment.model_dir, "model.joblib"))
-
     # TODO input transformer
-    model_input = model_service.input_transform(input)
+    del json_input
 
     # TODO model prediction
-    pred = model_service.predict(model_input)
+    pred = np.array(['pred_1', 'pred_2', 'pred_3'])
     logger.info(pred)
     # TODO Add any output processing
-    results = model_service.output_transform(
-        predictions=pred
-    )
+    results = pred
 
     return results
+
+# Serving Endpoints
+@app.get('/ping')
+async def ping():
+    """Determine if the container is working and healthy"""
+    return {'message': 'ping!pong!'}
+
+
+@app.post('/invocations')
+async def transformation(request: Request):
+    """Do an inference on a single batch of data. In this sample server, we take data as JSON"""
+    if request.headers['content-type'] == 'application/json':
+        data = request.body
+        print(data)
+
+        results = model_serving.handler(
+            np.array(data)
+        )
+        return content_encoders.array_to_json(results)
+    else:
+        raise HTTPException(
+            status_code=415,
+            detail={'message': 'This predictor only supports JSON or CSV data'}
+        )

@@ -40,7 +40,7 @@ def trainer(container, environment, logger):
 
                 This could be train.py:
             """
-            training = container(environment=environment)
+            training = container(container_environment=environment, container_logger=logger)
             try:
                 training.startup()
 
@@ -81,7 +81,7 @@ def predictor(container, environment, logger):
 
                 This could be train.py:
             """
-            serving = container(environment=environment)
+            serving = container(container_environment=environment, container_logger=logger)
             try:
                 serving.startup_worker()
 
