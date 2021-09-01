@@ -42,17 +42,9 @@ def init_from_template(
 
         # set up in either ENV or configure local
         github_token = env("MLDOCK_GITHUB_TOKEN", default=None)
-        github_org = env("MLDOCK_GITHUB_ORG", default=None)
-        github_repo = env("MLDOCK_GITHUB_REPO", default=None)
-        github_branch = env("MLDOCK_GITHUB_REPO_BRANCH", default=None)
-
-        if github_token is None:
-            raise KeyError(
-                "Template server == 'github' requires the "
-                "following environment variables: "
-                "MLDOCK_GITHUB_TOKEN, MLDOCK_GITHUB_ORG, "
-                "MLDOCK_GITHUB_REPO, MLDOCK_GITHUB_REPO_BRANCH"
-            )
+        github_org = env("MLDOCK_GITHUB_ORG", default='mldock')
+        github_repo = env("MLDOCK_GITHUB_REPO", default='mldock-templates')
+        github_branch = env("MLDOCK_GITHUB_REPO_BRANCH", default='main')
 
         github = Github(github_token)
         template_dir = utils.download_from_git(
