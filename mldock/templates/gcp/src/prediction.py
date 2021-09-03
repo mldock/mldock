@@ -3,7 +3,6 @@
     This is the file that implements a flask server to do inferences. It's the file that you will
     modify to implement the scoring for your own algorithm.
 """
-from mldock.platform_helpers.mldock.configuration import environment
 import numpy as np
 from fastapi import FastAPI, Request, HTTPException
 import src.prediction as model_serving

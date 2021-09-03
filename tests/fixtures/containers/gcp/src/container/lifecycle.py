@@ -1,3 +1,9 @@
+"""
+    CONTINAER LIFECYCLE MANAGEMENT
+
+    Provides a central place to instantiate container environment, loggers and container assets management objects.
+    Call these instantiated objects in to other scripts using a simple import.
+"""
 import logging
 from mldock.platform_helpers.mldock.configuration.environment.gcp import GCPEnvironment
 

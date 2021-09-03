@@ -1,3 +1,11 @@
+"""
+    CONTAINER ASSETS MANAGEMENT
+
+    Provides class objects with methods to execute at certain parts of the container life-cycle, i.e. startup or cleanup, etc.
+    In short we call them TrainingContainer and ServingContainer classes. Each provides everything your container needs, including
+    environment, logger, etc.
+    Since Serving Containers and Training Containers are unique in use-case and requirements, we recommend providing one for each workflow.
+"""
 from pathlib import Path
 import pandas as pd
 from sklearn import datasets

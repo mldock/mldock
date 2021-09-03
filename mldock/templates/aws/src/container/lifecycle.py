@@ -5,12 +5,12 @@
     Call these instantiated objects in to other scripts using a simple import.
 """
 import logging
-from mldock.platform_helpers.mldock.configuration.environment.gcp import GCPEnvironment
+from mldock.platform_helpers.mldock.configuration.environment.aws import AWSEnvironment
 
 from src.assets import TrainingContainer, ServingContainer
 
 # Init Environment
-environment = GCPEnvironment()
+environment = AWSEnvironment()
 
 # Set debug level
 if environment.environment_variables('MLDOCK_LOGS_LEVEL', None) == 'debug':
