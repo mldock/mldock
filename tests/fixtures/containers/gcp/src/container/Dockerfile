@@ -53,7 +53,7 @@ ARG target_dir_name
 WORKDIR /opt/program/
 
 # Here we get all python packages.
-RUN pip install flask gevent gunicorn
+RUN pip install fastapi uvicorn[standard]
 # in development of helpers, COPY setup.py and install
 COPY ./mldock /opt/program/mldock
 COPY ./README.md /opt/program/README.md
@@ -68,7 +68,8 @@ RUN apt-get -y purge --auto-remove git
 
 COPY ${module_path}/trainer.py /opt/program/${target_dir_name}/trainer.py
 COPY ${module_path}/prediction.py /opt/program/${target_dir_name}/prediction.py
-COPY ${module_path}/container/assets.py /opt/program/${target_dir_name}/container/assets.py
+COPY ${module_path}/assets.py /opt/program/${target_dir_name}/assets.py
+COPY ${module_path}/container/lifecycle.py /opt/program/${target_dir_name}/container/lifecycle.py
 COPY ${module_path}/container/executor.sh /opt/program/${target_dir_name}/container/executor.sh
 COPY ${module_path}/container/prediction /opt/program/${target_dir_name}/container/prediction
 COPY ${module_path}/container/training /opt/program/${target_dir_name}/container/training

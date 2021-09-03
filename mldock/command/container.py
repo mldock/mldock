@@ -120,7 +120,7 @@ def init(obj, project_directory, **kwargs):
     no_prompt = kwargs.get('no_prompt', False)
     container_only = kwargs.get('container_only', False)
     template = kwargs.get('template', 'generic')
-    requirements = kwargs.get('requirements', 'src/requirements.txt')
+    requirements = kwargs.get('requirements', None)
     params = kwargs.get('params', None)
     env_vars = kwargs.get('env_vars', None)
     trainer_script = kwargs.get('trainer_script', None)
@@ -259,10 +259,10 @@ def init(obj, project_directory, **kwargs):
         )
 
         # always setup requirements in src/
-        package_dir = mldock_manager.get_config().get('requirements_dir', 'src')
-        requirement_file = os.path.join(project_directory, package_dir, "requirements.txt")
+        package_dir = mldock_manager.get_config().get('requirements_dir', 'src/requirements.txt')
+        requirement_file = Path(project_directory, package_dir)
         if requirements is not None:
-            logger.info(f"Copying {requirements} => {requirement_file}")
+            logger.info(f"Copying {requirements} => {requirement_file.as_posix()}")
             utils.copy_file(
                 requirements,
                 requirement_file
@@ -270,7 +270,7 @@ def init(obj, project_directory, **kwargs):
 
         package_manager = PackageConfigManager(
             filepath=requirement_file,
-            create=True
+            create=(requirement_file.is_file() == False)
         )
         package_manager.write_file()
 

@@ -1,4 +1,4 @@
 pandas
 scikit-learn
-numpy
 protobuf>=3.1
+numpy
