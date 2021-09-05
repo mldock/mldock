@@ -25,7 +25,7 @@ class MLDockConfigManager(BaseConfigManager):
     config = {
         "image_name": None,
         "template": "generic",
-        "requirements_dir": "src",
+        "requirements_dir": "src/requirements.txt",
         "mldock_module_dir": "src",
         "container_dir": "container",
         "data": [],
