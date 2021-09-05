@@ -134,6 +134,11 @@ def strip_scheme(url: str):
     scheme = "{SCHEME}://".format(SCHEME=parsed.scheme)
     return parsed.geturl().replace(scheme, '', 1)
 
+def get_bucket_and_path_from_scheme(url: str):
+    """strip scheme from url"""
+    parsed = urlparse(url)
+    return parsed.netloc, parsed.path
+
 def get_scheme(path: str):
     """get the scheme of the given path"""
     parsed = urlparse(path)
