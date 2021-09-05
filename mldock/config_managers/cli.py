@@ -452,6 +452,59 @@ class InputDataConfigManager(BaseConfigManager):
         ignore_filepath = Path(self.base_path,".gitignore")
         Path(ignore_filepath).write_text(config_txt)
 
+    def check_if_asset_exists(self, channel, filename):
+
+        found_match = False
+        for i in range(len(self.config)):
+            tmp_config = self.config[i]
+
+            if (
+                (
+                    tmp_config['channel'] == channel
+                ) and (
+                    tmp_config['filename'] == filename
+                )
+            ):
+                # pop the current config
+                found_match = True
+        
+                return found_match, i
+        return False, None
+        
+    def add_asset(self, update: bool = False, **data_config):
+        """add an asset to data config"""
+
+
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if (update==False) and found_match:
+            logger.error("dataset artifact already exists. To update, run 'datasets update' instead.")
+            exit(0)
+        elif update and found_match:
+            current_config = self.config.pop(i)
+            current_config.update(data_config)
+        elif update and (found_match == False):
+            logger.error("dataset artifact does not exists. To create, run 'datasets create' instead.")
+            exit(0)
+        else:
+            current_config = data_config
+
+        self.config.append(data_config)
+
+    def remove(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if found_match:
+            self.config.pop(i)
+        else:
+            logger.error("dataset artifact does not exists, so nothing to remove.")
+
     def ask_for_input_data_channels(self):
         """prompt user for hyperparameters
         """
@@ -519,6 +572,59 @@ class ModelConfigManager(BaseConfigManager):
 
         ignore_filepath = Path(self.base_path,".gitignore")
         Path(ignore_filepath).write_text(config_txt)
+
+    def check_if_asset_exists(self, channel, filename):
+
+        found_match = False
+        for i in range(len(self.config)):
+            tmp_config = self.config[i]
+
+            if (
+                (
+                    tmp_config['channel'] == channel
+                ) and (
+                    tmp_config['filename'] == filename
+                )
+            ):
+                # pop the current config
+                found_match = True
+        
+                return found_match, i
+        return False, None
+        
+    def add_asset(self, update: bool = False, **data_config):
+        """add an asset to data config"""
+
+
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if (update==False) and found_match:
+            logger.error("model artifact already exists. To update, run 'datasets update' instead.")
+            exit(0)
+        elif update and found_match:
+            current_config = self.config.pop(i)
+            current_config.update(data_config)
+        elif update and (found_match == False):
+            logger.error("model artifact does not exists. To create, run 'datasets create' instead.")
+            exit(0)
+        else:
+            current_config = data_config
+
+        self.config.append(data_config)
+
+    def remove(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if found_match:
+            self.config.pop(i)
+        else:
+            logger.error("model artifact does not exists, so nothing to remove.")
 
     def ask_for_model_channels(self):
         """prompt user for hyperparameters
