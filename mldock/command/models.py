@@ -372,7 +372,8 @@ def push(channel, name, project_directory):
         upload_assets(
             fs_base_path=remote['path'],
             local_path=Path(project_directory, 'model', model['channel']).as_posix(),
-            storage_location=Path('model', model['remote_path']).as_posix()
+            storage_location=Path('model', model['remote_path']).as_posix(),
+            zip=model.get('compression', None) == 'zip'
         )
 
 

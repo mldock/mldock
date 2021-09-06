@@ -1,7 +1,7 @@
 
 import logging
 from pathlib import Path
-
+import tempfile
 from pyarrow import fs
 import gcsfs
 import s3fs
@@ -43,10 +43,15 @@ def infer_filesystem_type(path: str):
         )
     return file_system, path
 
-def upload_assets(fs_base_path, local_path, storage_location):
+def upload_assets(fs_base_path, local_path, storage_location, zip: bool = False):
     """Uploads logs to specified file-system"""
 
     file_system, fs_base_path = infer_filesystem_type(fs_base_path)
+
+    if zip:
+        tmp_dir = tempfile.TemporaryDirectory()
+        utils.zip_folder(local_path, Path(tmp_dir.name, "artifacts.zip"), rm_original=False)
+        local_path = tmp_dir.name
 
     # create full artifacts base path
     artifacts_base_path = Path(
@@ -70,6 +75,9 @@ def upload_assets(fs_base_path, local_path, storage_location):
             file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
         else:
             file_system.upload(src_path.as_posix(), dst_path.as_posix())
+
+    if zip:
+        tmp_dir.cleanup()
 
 def download_assets(fs_base_path, local_path, storage_location):
     """Uploads logs to specified file-system"""
@@ -105,3 +113,10 @@ def download_assets(fs_base_path, local_path, storage_location):
         else:
             file_system.download(src_path.as_posix(), dst_path.as_posix())
 
+            if Path(file).suffix == '.zip':
+
+                utils.unzip_file(dst_path, local_path, rm_zipped=True)
+
+            elif Path(file).suffix == '.gz':
+
+                utils.unzip_file_from_tarfile(dst_path, local_path, rm_zipped=True)

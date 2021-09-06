@@ -372,9 +372,9 @@ def push(channel, name, project_directory):
         upload_assets(
             fs_base_path=remote['path'],
             local_path=Path(project_directory, 'data', dataset['channel']).as_posix(),
-            storage_location=Path('data', dataset['remote_path']).as_posix()
+            storage_location=Path('data', dataset['remote_path']).as_posix(),
+            zip=dataset.get('compression', None) == 'zip'
         )
-
 
     except Exception as exception:
         logger.error(exception)
