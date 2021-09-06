@@ -8,8 +8,9 @@ import s3fs
 
 from mldock.platform_helpers import utils
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('mldock')
-logger.setLevel(logging.INFO)
+# logger.setLevel(logging.INFO)
 
 def infer_filesystem_type(path: str):
     """
@@ -69,3 +70,38 @@ def upload_assets(fs_base_path, local_path, storage_location):
             file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
         else:
             file_system.upload(src_path.as_posix(), dst_path.as_posix())
+
+def download_assets(fs_base_path, local_path, storage_location):
+    """Uploads logs to specified file-system"""
+
+    file_system, fs_base_path = infer_filesystem_type(fs_base_path)
+
+    # create full artifacts base path
+    artifacts_base_path = Path(
+        fs_base_path,
+        storage_location
+    )
+
+    local = fs.LocalFileSystem()
+
+    if isinstance(file_system, fs.LocalFileSystem):
+        file_selector = fs.FileSelector(
+            file_system,
+            recursive=True
+        )
+    else:
+        file_selector = file_system.glob(
+            Path(artifacts_base_path, "**").as_posix()
+        )
+
+    for file in file_selector:
+        src_path = Path(file)
+        file_name = src_path.name
+        dst_path = Path(local_path, file_name)
+
+        if isinstance(file_system, fs.LocalFileSystem):
+            artifacts_base_path.mkdir(parents=True, exist_ok=True)
+            file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
+        else:
+            file_system.download(src_path.as_posix(), dst_path.as_posix())
+

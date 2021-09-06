@@ -8,7 +8,7 @@ from mldock.config_managers.cli import ModelConfigManager, CliConfigureManager
 from mldock.config_managers.container import \
     MLDockConfigManager
     
-from mldock.api.assets import upload_assets
+from mldock.api.assets import upload_assets, download_assets
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
@@ -380,6 +380,82 @@ def push(channel, name, project_directory):
         logger.error(exception)
         raise
 
+@click.command()
+@click.option(
+    '--channel',
+    help='asset channel name. Directory name, within project data/ to store assets',
+    required=True,
+    type=str
+)
+@click.option(
+    '--name',
+    help='asset filename name. File name, within project data/<channel> in which data artifact will be found',
+    required=True,
+    type=str
+)
+@click.option(
+    '--project_directory',
+    '--dir',
+    '-d',
+    help='mldock container project.',
+    required=True,
+    type=click.Path(
+        exists=False,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
+def pull(channel, name, project_directory):
+    """
+    Command to create dataset manifest for mldock enabled container projects.
+    """
+
+    try:
+        if not Path(project_directory, MLDOCK_CONFIG_NAME).exists():
+            raise Exception((
+                "Path '{}' was not an mldock project. "
+                "Confirm this directory is correct, otherwise "
+                "create one.".format(project_directory)
+            ))
+
+        mldock_manager = MLDockConfigManager(
+            filepath=Path(project_directory, MLDOCK_CONFIG_NAME)
+        )
+
+        # get mldock_module_dir name
+        mldock_config = mldock_manager.get_config()
+
+        input_data_channels = ModelConfigManager(
+            config=mldock_config.get('model', []),
+            base_path=Path(project_directory, 'model')
+        )
+
+        dataset = input_data_channels.get(
+            channel=channel,
+            filename=name
+        )
+    
+        config_manager = CliConfigureManager()
+
+        remote = config_manager.remotes.get(name=dataset['remote'])
+
+        download_assets(
+            fs_base_path=remote['path'],
+            storage_location=Path('model', dataset['remote_path']).as_posix(),
+            local_path=Path(project_directory, 'model', dataset['channel']).as_posix()
+        )
+
+
+    except Exception as exception:
+        logger.error(exception)
+        raise
+
+
 
 def add_commands(cli_group: click.group):
     """
@@ -391,5 +467,6 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(update)
     cli_group.add_command(remove)
     cli_group.add_command(push)
+    cli_group.add_command(pull)
 
 add_commands(models)
