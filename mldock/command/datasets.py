@@ -4,9 +4,11 @@ import logging
 from pathlib import Path
 import click
 
-from mldock.config_managers.cli import InputDataConfigManager
+from mldock.config_managers.cli import InputDataConfigManager, CliConfigureManager
 from mldock.config_managers.container import \
     MLDockConfigManager
+    
+from mldock.api.assets import upload_assets
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
@@ -55,6 +57,11 @@ def datasets():
     type=str
 )
 @click.option(
+    '--remote_path',
+    help='relative path within remote to store',
+    type=str
+)
+@click.option(
     '--mime_type',
     '--type',
     help='type of file based on mimetypes',
@@ -68,7 +75,7 @@ def datasets():
         case_sensitive=False
     )
 )
-def create(channel, name, project_directory, remote, mime_type, compression):
+def create(channel, name, project_directory, remote, remote_path, mime_type, compression):
     """
     Command to create dataset manifest for mldock enabled container projects.
     """
@@ -83,6 +90,11 @@ def create(channel, name, project_directory, remote, mime_type, compression):
 
         if mime_type is None:
             mime_type = mimetypes.guess_type(name)
+            if isinstance(mime_type, (list, tuple)):
+                mime_type = mime_type[0]
+
+        if remote_path is None:
+            remote_path = channel
 
         mldock_manager = MLDockConfigManager(
             filepath=Path(project_directory, MLDOCK_CONFIG_NAME)
@@ -101,7 +113,8 @@ def create(channel, name, project_directory, remote, mime_type, compression):
             filename=name,
             type=mime_type,
             remote=remote,
-            compression=compression
+            compression=compression,
+            remote_path=remote_path
         )
         input_data_channels.write_gitignore()
         mldock_manager.update_data_channels(data=input_data_channels.get_config())
@@ -149,6 +162,11 @@ def create(channel, name, project_directory, remote, mime_type, compression):
     type=str
 )
 @click.option(
+    '--remote_path',
+    help='relative path within remote to store',
+    type=str
+)
+@click.option(
     '--mime_type',
     '--type',
     help='type of file based on mimetypes',
@@ -162,7 +180,7 @@ def create(channel, name, project_directory, remote, mime_type, compression):
         case_sensitive=False
     )
 )
-def update(channel, name, project_directory, remote, mime_type, compression):
+def update(channel, name, project_directory, remote, remote_path, mime_type, compression):
     """
     Command to create dataset manifest for mldock enabled container projects.
     """
@@ -179,6 +197,9 @@ def update(channel, name, project_directory, remote, mime_type, compression):
             mime_type = mimetypes.guess_type(name)
             if isinstance(mime_type, (list, tuple)):
                 mime_type = mime_type[0]
+
+        if remote_path is None:
+            remote_path = channel
 
         mldock_manager = MLDockConfigManager(
             filepath=Path(project_directory, MLDOCK_CONFIG_NAME)
@@ -198,6 +219,7 @@ def update(channel, name, project_directory, remote, mime_type, compression):
             type=mime_type,
             remote=remote,
             compression=compression,
+            remote_path=remote_path,
             update=True
         )
         input_data_channels.write_gitignore()
@@ -279,6 +301,86 @@ def remove(channel, name, project_directory):
         logger.error(exception)
         raise
 
+@click.command()
+@click.option(
+    '--channel',
+    help='asset channel name. Directory name, within project data/ to store assets',
+    required=True,
+    type=str
+)
+@click.option(
+    '--name',
+    help='asset filename name. File name, within project data/<channel> in which data artifact will be found',
+    required=True,
+    type=str
+)
+@click.option(
+    '--project_directory',
+    '--dir',
+    '-d',
+    help='mldock container project.',
+    required=True,
+    type=click.Path(
+        exists=False,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
+def push(channel, name, project_directory):
+    """
+    Command to create dataset manifest for mldock enabled container projects.
+    """
+
+    try:
+        if not Path(project_directory, MLDOCK_CONFIG_NAME).exists():
+            raise Exception((
+                "Path '{}' was not an mldock project. "
+                "Confirm this directory is correct, otherwise "
+                "create one.".format(project_directory)
+            ))
+
+        mldock_manager = MLDockConfigManager(
+            filepath=Path(project_directory, MLDOCK_CONFIG_NAME)
+        )
+
+        # get mldock_module_dir name
+        mldock_config = mldock_manager.get_config()
+
+        input_data_channels = InputDataConfigManager(
+            config=mldock_config.get('data', []),
+            base_path=Path(project_directory, 'data')
+        )
+
+        dataset = input_data_channels.get(
+            channel=channel,
+            filename=name
+        )
+
+        logger.info(dataset)
+    
+        config_manager = CliConfigureManager()
+
+        remote = config_manager.remotes.get(name=dataset['remote'])
+
+        logger.info(remote)
+
+        upload_assets(
+            fs_base_path=remote['path'],
+            local_path=Path(project_directory, 'data', dataset['channel']).as_posix(),
+            storage_location=Path('data', dataset['remote_path']).as_posix()
+        )
+
+
+    except Exception as exception:
+        logger.error(exception)
+        raise
+
+
 def add_commands(cli_group: click.group):
     """
         add commands to cli group
@@ -288,5 +390,6 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(create)
     cli_group.add_command(update)
     cli_group.add_command(remove)
+    cli_group.add_command(push)
 
 add_commands(datasets)
