@@ -7,8 +7,9 @@ import click
 from mldock.config_managers.cli import ModelConfigManager, CliConfigureManager
 from mldock.config_managers.container import \
     MLDockConfigManager
-    
-from mldock.api.assets import upload_assets, download_assets
+from mldock.terminal import ProgressLogger
+from mldock.platform_helpers.mldock.storage.pyarrow import upload_assets, download_assets
+from mldock.api.assets import infer_filesystem_type
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
@@ -103,12 +104,12 @@ def create(channel, name, project_directory, remote, remote_path, mime_type, com
         # get mldock_module_dir name
         mldock_config = mldock_manager.get_config()
 
-        input_data_channels = ModelConfigManager(
+        model_channels = ModelConfigManager(
             config=mldock_config.get('model', []),
             base_path=Path(project_directory, 'model')
         )
 
-        input_data_channels.add_asset(
+        model_channels.add_asset(
             channel=channel,
             filename=name,
             type=mime_type,
@@ -116,8 +117,8 @@ def create(channel, name, project_directory, remote, remote_path, mime_type, com
             compression=compression,
             remote_path=remote_path
         )
-        input_data_channels.write_gitignore()
-        mldock_manager.update_data_channels(data=input_data_channels.get_config())
+        model_channels.write_gitignore()
+        mldock_manager.update_model_channels(models=model_channels.get_config())
 
         mldock_manager.write_file()
 
@@ -208,12 +209,12 @@ def update(channel, name, project_directory, remote, remote_path, mime_type, com
         # get mldock_module_dir name
         mldock_config = mldock_manager.get_config()
 
-        input_data_channels = ModelConfigManager(
+        model_channels = ModelConfigManager(
             config=mldock_config.get('model', []),
             base_path=Path(project_directory, 'model')
         )
 
-        input_data_channels.add_asset(
+        model_channels.add_asset(
             channel=channel,
             filename=name,
             type=mime_type,
@@ -222,8 +223,8 @@ def update(channel, name, project_directory, remote, remote_path, mime_type, com
             remote_path=remote_path,
             update=True
         )
-        input_data_channels.write_gitignore()
-        mldock_manager.update_data_channels(data=input_data_channels.get_config())
+        model_channels.write_gitignore()
+        mldock_manager.update_model_channels(models=model_channels.get_config())
 
         mldock_manager.write_file()
 
@@ -360,22 +361,27 @@ def push(channel, name, project_directory):
             channel=channel,
             filename=name
         )
-
-        logger.info(model)
     
         config_manager = CliConfigureManager()
 
         remote = config_manager.remotes.get(name=model['remote'])
 
-        logger.info(remote)
+        file_system, fs_base_path = infer_filesystem_type(remote['path'])
 
-        upload_assets(
-            fs_base_path=remote['path'],
-            local_path=Path(project_directory, 'model', model['channel']).as_posix(),
-            storage_location=Path('model', model['remote_path']).as_posix(),
-            zip=model.get('compression', None) == 'zip'
-        )
-
+        with ProgressLogger(
+            group='Upload',
+            text='Uploading model artifacts',
+            spinner='dots',
+            on_success='Successfully uploaded model artifacts'
+        ) as spinner:
+            upload_assets(
+                file_system=file_system,
+                fs_base_path=fs_base_path,
+                local_path=Path(project_directory, 'model', model['channel']).as_posix(),
+                storage_location=Path('model', model['remote_path']).as_posix(),
+                zip=model.get('compression', None) == 'zip'
+            )
+            spinner.stop()
 
     except Exception as exception:
         logger.error(exception)
@@ -445,12 +451,22 @@ def pull(channel, name, project_directory):
 
         remote = config_manager.remotes.get(name=dataset['remote'])
 
-        download_assets(
-            fs_base_path=remote['path'],
-            storage_location=Path('model', dataset['remote_path']).as_posix(),
-            local_path=Path(project_directory, 'model', dataset['channel']).as_posix()
-        )
+        file_system, fs_base_path = infer_filesystem_type(remote['path'])
 
+        with ProgressLogger(
+            group='Download',
+            text='Downloading model artifacts',
+            spinner='dots',
+            on_success='Successfully downloaded model artifacts'
+        ) as spinner:
+
+            download_assets(
+                file_system=file_system,
+                fs_base_path=fs_base_path,
+                storage_location=Path('model', dataset['remote_path']).as_posix(),
+                local_path=Path(project_directory, 'model', dataset['channel']).as_posix()
+            )
+            spinner.stop()
 
     except Exception as exception:
         logger.error(exception)

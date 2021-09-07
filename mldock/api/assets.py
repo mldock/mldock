@@ -1,16 +1,10 @@
 
-import logging
-from pathlib import Path
-import tempfile
 from pyarrow import fs
 import gcsfs
 import s3fs
 
 from mldock.platform_helpers import utils
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('mldock')
-# logger.setLevel(logging.INFO)
 
 def infer_filesystem_type(path: str):
     """
@@ -42,81 +36,3 @@ def infer_filesystem_type(path: str):
             )
         )
     return file_system, path
-
-def upload_assets(fs_base_path, local_path, storage_location, zip: bool = False):
-    """Uploads logs to specified file-system"""
-
-    file_system, fs_base_path = infer_filesystem_type(fs_base_path)
-
-    if zip:
-        tmp_dir = tempfile.TemporaryDirectory()
-        utils.zip_folder(local_path, Path(tmp_dir.name, "artifacts.zip"), rm_original=False)
-        local_path = tmp_dir.name
-
-    # create full artifacts base path
-    artifacts_base_path = Path(
-        fs_base_path,
-        storage_location
-    )
-
-    local = fs.LocalFileSystem()
-
-    file_selector = fs.FileSelector(
-        local_path,
-        recursive=True
-    )
-    for file in local.get_file_info(file_selector):
-        src_path = Path(file.path)
-        file_name = src_path.name
-        dst_path = Path(artifacts_base_path, file_name)
-
-        if isinstance(file_system, fs.LocalFileSystem):
-            artifacts_base_path.mkdir(parents=True, exist_ok=True)
-            file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
-        else:
-            file_system.upload(src_path.as_posix(), dst_path.as_posix())
-
-    if zip:
-        tmp_dir.cleanup()
-
-def download_assets(fs_base_path, local_path, storage_location):
-    """Uploads logs to specified file-system"""
-
-    file_system, fs_base_path = infer_filesystem_type(fs_base_path)
-
-    # create full artifacts base path
-    artifacts_base_path = Path(
-        fs_base_path,
-        storage_location
-    )
-
-    local = fs.LocalFileSystem()
-
-    if isinstance(file_system, fs.LocalFileSystem):
-        file_selector = fs.FileSelector(
-            file_system,
-            recursive=True
-        )
-    else:
-        file_selector = file_system.glob(
-            Path(artifacts_base_path, "**").as_posix()
-        )
-
-    for file in file_selector:
-        src_path = Path(file)
-        file_name = src_path.name
-        dst_path = Path(local_path, file_name)
-
-        if isinstance(file_system, fs.LocalFileSystem):
-            artifacts_base_path.mkdir(parents=True, exist_ok=True)
-            file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
-        else:
-            file_system.download(src_path.as_posix(), dst_path.as_posix())
-
-            if Path(file).suffix == '.zip':
-
-                utils.unzip_file(dst_path, local_path, rm_zipped=True)
-
-            elif Path(file).suffix == '.gz':
-
-                utils.unzip_file_from_tarfile(dst_path, local_path, rm_zipped=True)

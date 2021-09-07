@@ -7,8 +7,9 @@ import click
 from mldock.config_managers.cli import InputDataConfigManager, CliConfigureManager
 from mldock.config_managers.container import \
     MLDockConfigManager
-    
-from mldock.api.assets import upload_assets, download_assets
+from mldock.terminal import ProgressLogger
+from mldock.platform_helpers.mldock.storage.pyarrow import upload_assets, download_assets
+from mldock.api.assets import infer_filesystem_type
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')
@@ -360,21 +361,27 @@ def push(channel, name, project_directory):
             channel=channel,
             filename=name
         )
-
-        logger.info(dataset)
     
         config_manager = CliConfigureManager()
 
         remote = config_manager.remotes.get(name=dataset['remote'])
 
-        logger.info(remote)
+        file_system, fs_base_path = infer_filesystem_type(remote['path'])
 
-        upload_assets(
-            fs_base_path=remote['path'],
-            local_path=Path(project_directory, 'data', dataset['channel']).as_posix(),
-            storage_location=Path('data', dataset['remote_path']).as_posix(),
-            zip=dataset.get('compression', None) == 'zip'
-        )
+        with ProgressLogger(
+            group='Upload',
+            text='Uploading data artifacts',
+            spinner='dots',
+            on_success='Successfully uploaded model artifacts'
+        ) as spinner:
+            upload_assets(
+                file_system=file_system,
+                fs_base_path=fs_base_path,
+                local_path=Path(project_directory, 'data', dataset['channel']).as_posix(),
+                storage_location=Path('data', dataset['remote_path']).as_posix(),
+                zip=dataset.get('compression', None) == 'zip'
+            )
+            spinner.stop()
 
     except Exception as exception:
         logger.error(exception)
@@ -444,11 +451,23 @@ def pull(channel, name, project_directory):
 
         remote = config_manager.remotes.get(name=dataset['remote'])
 
-        download_assets(
-            fs_base_path=remote['path'],
-            storage_location=Path('data', dataset['remote_path']).as_posix(),
-            local_path=Path(project_directory, 'data', dataset['channel']).as_posix()
-        )
+
+        file_system, fs_base_path = infer_filesystem_type(remote['path'])
+
+        with ProgressLogger(
+            group='Download',
+            text='Downloading data artifacts',
+            spinner='dots',
+            on_success='Successfully downloaded model artifacts'
+        ) as spinner:
+
+            download_assets(
+                file_system=file_system,
+                fs_base_path=fs_base_path,
+                storage_location=Path('data', dataset['remote_path']).as_posix(),
+                local_path=Path(project_directory, 'data', dataset['channel']).as_posix()
+            )
+            spinner.stop()
 
 
     except Exception as exception:

@@ -104,7 +104,7 @@ def zip_folder_as_tarfile(dir_path, output_file, rm_original=True):
 def unzip_file(filename, output_dir, rm_zipped=True):
     """unzip in directory and optionally throw away zipped"""
     with zipfile.ZipFile(filename, 'r', zipfile.ZIP_DEFLATED) as zipf:
-        logger.info(
+        logger.debug(
             "Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
                 ZIP_FILE=filename,
                 OUTPUT_DIR=output_dir
@@ -112,20 +112,20 @@ def unzip_file(filename, output_dir, rm_zipped=True):
         )
         zipf.extractall(output_dir)
         if rm_zipped:
-            logger.info("Removing {}".format(filename))
+            logger.debug("Removing {}".format(filename))
             _delete_file(filename)
 
 def unzip_file_from_tarfile(filename, output_dir, rm_zipped=True):
     """untar in directory and optionally throw away zipped"""
     with tarfile.open(filename, "r:gz") as tar:
-        logger.info("Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
+        logger.debug("Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
                 ZIP_FILE=filename,
                 OUTPUT_DIR=output_dir
             )
         )
         tar.extractall(output_dir)
         if rm_zipped:
-            logger.info("Removing {FILE_PATH}".format(FILE_PATH=filename))
+            logger.debug("Removing {FILE_PATH}".format(FILE_PATH=filename))
             _delete_file(filename)
 
 def strip_scheme(url: str):
@@ -305,7 +305,7 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
         contents = repository.get_contents(server_path, ref=sha)
 
         for content in contents:
-            logger.info("Downloading {CONTENT_PATH}".format(CONTENT_PATH=content.path))
+            logger.debug("Downloading {CONTENT_PATH}".format(CONTENT_PATH=content.path))
             local_path = Path(local_prefix, Path(content.path).relative_to(relative_to))
             if content.type == 'dir':
                 local_path.mkdir(parents=True, exist_ok=True)

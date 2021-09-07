@@ -32,8 +32,17 @@ setuptools.setup(
     setup_requires=['setuptools>=39.1.0'],
     install_requires=['future', 'environs', 'PyGithub'],
     extras_require={
-        'gcp': ['google-cloud-storage', 'google-api-python-client'],
-        'aws': ['boto3'],
+        'gcp': [
+            'google-cloud-storage',
+            'google-api-python-client',
+            'gcsfs',
+            'pyarrow'
+        ],
+        'aws': [
+            'boto3',
+            's3fs',
+            'pyarrow'
+        ],
         'cli': [
             'click',
             'clickclick',
