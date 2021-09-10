@@ -5,7 +5,6 @@
 """
 import numpy as np
 from fastapi import FastAPI, Request, HTTPException
-import src.prediction as model_serving
 from mldock.platform_helpers.mldock.inference.content_encoders import \
     numpy as content_encoders
 from src.container.lifecycle import serving_container
@@ -50,7 +49,7 @@ async def ping():
 async def transformation(request: Request):
     """Do an inference on a single batch of data. In this sample server, we take data as JSON"""
     if request.headers['content-type'] == 'application/json':
-        data = request.body
+        data = await request.body()
         print(data)
 
         results = model_serving.handler(

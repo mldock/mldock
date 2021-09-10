@@ -70,6 +70,13 @@ class CliConfigureManager(BaseConfigManager):
         self.ask_for_template_server()
         self.ask_for_template_root()
 
+    def setup_remotes_config(self):
+        """setup and prompt user for templates configuration"""
+        click.secho("Setup remotes CLI configuration", bg='blue')
+        if self.config.get('remotes') is None:
+            self.config['remotes'] = []
+        self.ask_for_remote_path()
+
     def setup_workspace_config(self):
         """setup and prompt user for workspace configuration"""
         click.secho("Setup workspace CLI configuration", bg='blue')
@@ -152,6 +159,29 @@ class CliConfigureManager(BaseConfigManager):
             'templates_root': templates_root_dir
         })
 
+    def ask_for_remote_path(self):
+        """prompt user to set template root
+        """
+
+        click.secho("Set remote path", bg='blue', nl=True)
+
+        remote_path = click.prompt(
+            text=click.style("Set path to remote: ", fg='bright_blue')
+        )
+
+        _, path = utils.get_bucket_and_path_from_scheme(remote_path)
+        name = path.replace("/", " ").strip().replace(" ", ":")
+        scheme = utils.get_scheme(remote_path)
+
+        remotes_manager = RemotesConfigManager(config=self.config.get('remotes', []))
+
+        remotes_manager.add_remote(
+            name=name,
+            type=scheme,
+            path=remote_path
+        )
+        self.config['remotes'] = remotes_manager.get_config()
+
     @staticmethod
     def _format_nodes(config):
 
@@ -202,6 +232,19 @@ class CliConfigureManager(BaseConfigManager):
             dict: config
         """
         return self.config.get('templates', {})
+
+    @property
+    def remotes(self) -> dict:
+        """get config object
+
+        Returns:
+            dict: config
+        """
+
+        return RemotesConfigManager(
+            config=self.config.get('remotes', {})
+        )
+
 
 class PackageConfigManager(BaseConfigManager):
     """Package Requirement Config Manager for sagify
@@ -452,6 +495,71 @@ class InputDataConfigManager(BaseConfigManager):
         ignore_filepath = Path(self.base_path,".gitignore")
         Path(ignore_filepath).write_text(config_txt)
 
+    def check_if_asset_exists(self, channel, filename):
+
+        found_match = False
+        for i in range(len(self.config)):
+            tmp_config = self.config[i]
+
+            if (
+                (
+                    tmp_config['channel'] == channel
+                ) and (
+                    tmp_config['filename'] == filename
+                )
+            ):
+                # pop the current config
+                found_match = True
+        
+                return found_match, i
+        return False, None
+        
+    def add_asset(self, update: bool = False, **data_config):
+        """add an asset to data config"""
+
+
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if (update==False) and found_match:
+            logger.error("dataset artifact already exists. To update, run 'datasets update' instead.")
+            exit(0)
+        elif update and found_match:
+            current_config = self.config.pop(i)
+            current_config.update(data_config)
+        elif update and (found_match == False):
+            logger.error("dataset artifact does not exists. To create, run 'datasets create' instead.")
+            exit(0)
+        else:
+            current_config = data_config
+
+        self.config.append(data_config)
+
+    def remove(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if found_match:
+            self.config.pop(i)
+        else:
+            logger.error("dataset artifact does not exists, so nothing to remove.")
+
+    def get(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config['channel'],
+            filename=data_config['filename']
+        )
+
+        if found_match:
+            return self.config[i]
+        else:
+            logger.error("dataset artifact does not exists. To create, run 'datasets create' instead.")
+            exit(0)
+
     def ask_for_input_data_channels(self):
         """prompt user for hyperparameters
         """
@@ -520,6 +628,71 @@ class ModelConfigManager(BaseConfigManager):
         ignore_filepath = Path(self.base_path,".gitignore")
         Path(ignore_filepath).write_text(config_txt)
 
+    def check_if_asset_exists(self, channel, filename):
+
+        found_match = False
+        for i in range(len(self.config)):
+            tmp_config = self.config[i]
+
+            if (
+                (
+                    tmp_config['channel'] == channel
+                ) and (
+                    tmp_config['filename'] == filename
+                )
+            ):
+                # pop the current config
+                found_match = True
+        
+                return found_match, i
+        return False, None
+        
+    def add_asset(self, update: bool = False, **data_config):
+        """add an asset to data config"""
+
+
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if (update==False) and found_match:
+            logger.error("model artifact already exists. To update, run 'datasets update' instead.")
+            exit(0)
+        elif update and found_match:
+            current_config = self.config.pop(i)
+            current_config.update(data_config)
+        elif update and (found_match == False):
+            logger.error("model artifact does not exists. To create, run 'models create' instead.")
+            exit(0)
+        else:
+            current_config = data_config
+
+        self.config.append(data_config)
+
+    def remove(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config.get('channel'),
+            filename=data_config.get('filename')
+        )
+
+        if found_match:
+            self.config.pop(i)
+        else:
+            logger.error("model artifact does not exists, so nothing to remove.")
+
+    def get(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config['channel'],
+            filename=data_config['filename']
+        )
+
+        if found_match:
+            return self.config[i]
+        else:
+            logger.error("model artifact does not exists. To create, run 'models create' instead.")
+            exit(0)
+
     def ask_for_model_channels(self):
         """prompt user for hyperparameters
         """
@@ -527,7 +700,7 @@ class ModelConfigManager(BaseConfigManager):
         while True:
 
             echo_msg = click.style(
-                "Add a model channel. ",
+                "Add a model. ",
                 fg='bright_blue'
             ) + "(Expects channel/filename). Hit enter to continue."
 
@@ -540,14 +713,24 @@ class ModelConfigManager(BaseConfigManager):
 
             # pylint: disable=no-else-break
             if channel_filename_pair == "end":
+
                 logger.debug("\nUpdated model channels")
+
                 self.pretty_print()
 
                 break
 
-            elif "/" in channel_filename_pair and channel_filename_pair != "channel/filename":
+            elif "/" in channel_filename_pair and channel_filename_pair != 'channel/filename':
+
                 channel, filename = channel_filename_pair.split("/", 1)
-                logger.debug("Adding data/{}/{}".format(channel, filename))
+
+                logger.debug((
+                    "Adding model/{CHANNEL}/{FILE_NAME}".format(
+                        CHANNEL=channel,
+                        FILE_NAME=filename
+                    )
+                ))
+
                 self.config.append({
                     'channel': channel,
                     'filename': filename
@@ -555,3 +738,68 @@ class ModelConfigManager(BaseConfigManager):
 
             else:
                 logger.warning("Expected format as channel/filename. Skipping")
+
+class RemotesConfigManager(BaseConfigManager):
+    """Remotes Config Manager for mldock
+    """
+    file_ignores = []
+    def __init__(self, config: dict):
+        self.config = config
+
+    def check_if_asset_exists(self, name):
+
+        found_match = False
+        for i in range(len(self.config)):
+            tmp_config = self.config[i]
+
+            if tmp_config['name'] == name:
+                # pop the current config
+                found_match = True
+        
+                return found_match, i
+        return False, None
+        
+    def add_remote(self, update: bool = False, **data_config):
+        """add an asset to data config"""
+
+        if data_config.get('path', None) is None:
+            self.ask_for_remote_path()
+
+        found_match, i = self.check_if_asset_exists(
+            name=data_config.get('name')
+        )
+
+        if (update==False) and found_match:
+            logger.error("remote already exists. Check your .mldock/config file to view and edit remotes.")
+            exit(0)
+        elif update and found_match:
+            current_config = self.config.pop(i)
+            current_config.update(data_config)
+        elif update and (found_match == False):
+            logger.error("remote does not exists. Check your .mldock/config file to view and edit remotes.")
+            exit(0)
+        else:
+            current_config = data_config
+
+        self.config.append(data_config)
+
+    def remove(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            channel=data_config['name']
+        )
+
+        if found_match:
+            self.config.pop(i)
+        else:
+            logger.error("remote does not exists. Check your .mldock/config file to view and edit remotes.")
+
+    def get(self, **data_config):
+        found_match, i = self.check_if_asset_exists(
+            name=data_config['name']
+        )
+
+        if found_match:
+            return self.config[i]
+        else:
+            logger.error("remote does not exists. Check your .mldock/config file to view and edit remotes.")
+            exit(0)

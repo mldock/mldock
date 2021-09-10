@@ -158,11 +158,17 @@ def init(obj, project_directory, **kwargs):
             available_templates=available_templates
         )
 
+        if not no_prompt:
+            mldock_manager.setup_config()
+
+        # get mldock config
+        mldock_config = mldock_manager.get_config()
+
         if template is not None:
             mldock_manager.update_config(template=template)
 
         if params is not None:
-            hyperparameters = {}
+            hyperparameters = mldock_config.get('hyperparameters', {})
             for param in params:
                 key_, value_ = param
                 hyperparameters.update(
@@ -171,7 +177,7 @@ def init(obj, project_directory, **kwargs):
             mldock_manager.update_config(hyperparameters=hyperparameters)
 
         if env_vars is not None:
-            environment = {}
+            environment = mldock_config.get('environment', {})
             for env_var in env_vars:
                 key_, value_ = env_var
                 environment.update(
@@ -179,17 +185,11 @@ def init(obj, project_directory, **kwargs):
                 )
             mldock_manager.update_config(environment=environment)
 
-        if not no_prompt:
-            mldock_manager.setup_config()
-
         # finally delete original
 
         path_to_payload = Path(project_directory, "payload.json")
         if not path_to_payload.exists():
             path_to_payload.write_text(json.dumps({"feature1": 10, "feature2":"groupA"}))
-
-        # get sagify_module_path name
-        mldock_config = mldock_manager.get_config()
 
         src_directory = os.path.join(
             project_directory,

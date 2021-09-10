@@ -4,7 +4,8 @@ from pathlib import Path
 import click
 from clickclick import choice
 
-from mldock.api.logs import parse_grok, get_all_file_objects, infer_filesystem_type
+from mldock.api.logs import parse_grok, get_all_file_objects
+from mldock.api.assets import infer_filesystem_type
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger('mldock')

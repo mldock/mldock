@@ -14,6 +14,8 @@ from mldock.command.registry import registry
 from mldock.command.templates import templates
 from mldock.command.logs import logs
 from mldock.command.packages import packages
+from mldock.command.models import models
+from mldock.command.datasets import datasets
 from mldock.log import configure_logger
 
 click.disable_unicode_literals_warning = True
@@ -47,6 +49,8 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(templates)
     cli_group.add_command(logs)
     cli_group.add_command(packages)
+    cli_group.add_command(models)
+    cli_group.add_command(datasets)
 
 add_commands(cli)
 

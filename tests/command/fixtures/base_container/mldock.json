@@ -15,15 +15,8 @@
             "filename": "training.csv"
         }
     ],
-    "hyperparameters": {
-        "factors": 10,
-        "iterations": 10,
-        "regularization": 0.1
-    },
-    "environment": {
-        "experiment_id": 4,
-        "CSV_RESPONSE_HEADER": false
-    },
+    "hyperparameters": {},
+    "environment": {},
     "model": [
         {
             "channel": "iris",

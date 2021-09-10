@@ -31,7 +31,7 @@ def init():
     help='Configuration name you wish to reset',
     required=True,
     type=click.Choice(
-        ['local', 'workspace', 'templates', 'all'],
+        ['local', 'workspace', 'templates', 'all', 'remotes'],
         case_sensitive=False
     )
 )
@@ -40,7 +40,7 @@ def reset(obj, config_name):
     """reset configurations"""
     config_manager = CliConfigureManager()
     if config_name == 'all':
-        for config in ['local', 'workspace', 'templates']:
+        for config in ['local', 'workspace', 'templates', 'remotes']:
             config_manager.reset(config)
     else:
         config_manager.reset(config_name)
@@ -106,6 +106,23 @@ def templates(obj):
         click.echo(click.style(state["message"], fg='white'), nl=True)
 
 @click.command()
+@click.pass_obj
+def remotes(obj):
+    """Configure for remotes development tools"""
+
+    config_manager = CliConfigureManager(create=True)
+    config_manager.setup_remotes_config()
+    config_manager.write_file()
+
+    reset_terminal()
+    logger.info(obj['logo'])
+    states = config_manager.get_state()
+
+    for state in states:
+        click.echo(click.style(state["name"], bg='blue'), nl=True)
+        click.echo(click.style(state["message"], fg='white'), nl=True)
+
+@click.command()
 def show():
     """Configure for local development tools"""
     try:
@@ -135,6 +152,7 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(workspace)
     cli_group.add_command(local)
     cli_group.add_command(templates)
+    cli_group.add_command(remotes)
     cli_group.add_command(show)
     cli_group.add_command(reset)
 

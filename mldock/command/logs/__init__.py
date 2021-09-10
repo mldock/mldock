@@ -8,7 +8,8 @@ from mldock.command.logs.metrics import metrics as metrics_commands
 from mldock.command.logs.params import params as params_commands
 from mldock.command.logs.grok import grok
 from mldock.command.logs.errors import errors
-from mldock.api.logs import read_file_stream, get_all_file_objects, infer_filesystem_type
+from mldock.api.logs import read_file_stream, get_all_file_objects
+from mldock.api.assets import infer_filesystem_type
 
 
 click.disable_unicode_literals_warning = True

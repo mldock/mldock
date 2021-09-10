@@ -53,11 +53,18 @@ class BaseTrainingContainer:
                 # Write out an error file. This will be returned as the failureReason in the
                 # DescribeTrainingJob result.
                 trc = traceback.format_exc()
-                log_file_path = Path(self.container_environment.output_data_dir, 'failure')
+                log_file_path = Path(
+                    self.container_environment.output_data_dir,
+                    'failure'
+                )
                 with open(log_file_path, 'w') as file_:
-                    file_.write('Exception during training: ' + str(exception) + '\n' + trc)
+                    file_.write(
+                        f'Exception during training: {str(exception)}\n{trc}'
+                )
                 # Printing this causes the exception to be in the training job logs, as well.
-                self.container_logger.error('Exception during training: ' + str(exception) + '\n' + trc)
+                self.container_logger.error(
+                    f'Exception during training: {str(exception)}\n{trc}'
+                )
                 raise
             finally:
                 self.cleanup()
@@ -115,11 +122,18 @@ class BaseServingContainer:
                 # Write out an error file. This will be returned as the failureReason in the
                 # DescribeTrainingJob result.
                 trc = traceback.format_exc()
-                log_file_path = Path(self.container_environment.output_data_dir, 'failure')
+                log_file_path = Path(
+                    self.container_environment.output_data_dir,
+                    'failure'
+                )
                 with open(log_file_path, 'w') as file_:
-                    file_.write('Exception during training: ' + str(exception) + '\n' + trc)
+                    file_.write(
+                        f'Exception during training: {str(exception)}\n{trc}'
+                )
                 # Printing this causes the exception to be in the training job logs, as well.
-                self.container_logger.error('Exception during training: ' + str(exception) + '\n' + trc)
+                self.container_logger.error(
+                    f'Exception during training: {str(exception)}\n{trc}'
+                )
                 raise
             finally:
                 self.cleanup_worker()
