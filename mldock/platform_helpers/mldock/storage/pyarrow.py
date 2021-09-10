@@ -53,8 +53,12 @@ def download_assets(file_system, fs_base_path, local_path, storage_location):
 
     if isinstance(file_system, fs.LocalFileSystem):
         file_selector = fs.FileSelector(
-            file_system,
+            fs_base_path,
             recursive=True
+        )
+
+        file_selector = file_system.get_file_info(
+            file_selector
         )
     else:
         file_selector = file_system.glob(
@@ -62,6 +66,8 @@ def download_assets(file_system, fs_base_path, local_path, storage_location):
         )
 
     for file in file_selector:
+        if isinstance(file, fs.FileInfo):
+            file = file.path
         src_path = Path(file)
         file_name = src_path.name
         dst_path = Path(local_path, file_name)

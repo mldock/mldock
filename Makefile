@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 TIMESTAMP := $(shell date +%Y-%m-%d_%H-%M-%S)
-COVERAGE_THRESHOLD ?= 60
+COVERAGE_THRESHOLD ?= 55
 
 git-prune:
 	git fetch --prune
@@ -26,7 +26,7 @@ test: install-requirements install-cli
 
 lint: install-requirements install-cli
 	pip install pylint;
-	pylint --fail-under=9.3 --rcfile=.pylintrc $(python_package)
+	pylint --fail-under=9.0 --rcfile=.pylintrc $(python_package)
 
 clean:
 	find . -type f -name "*.py[co]" -delete;
