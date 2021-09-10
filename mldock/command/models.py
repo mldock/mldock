@@ -379,7 +379,7 @@ def push(channel, name, project_directory):
                 fs_base_path=fs_base_path,
                 local_path=Path(project_directory, 'model', model['channel']).as_posix(),
                 storage_location=Path('model', model['remote_path']).as_posix(),
-                zip=model.get('compression', None) == 'zip'
+                zip_artifacts=model.get('compression', None) == 'zip'
             )
             spinner.stop()
 

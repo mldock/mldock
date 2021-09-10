@@ -78,7 +78,7 @@ class AWSEnvironment(base.BaseEnvironment):
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
                     storage_location='.',
-                    zip=True
+                    zip_artifacts=True
                 )
 
             except AssertionError:
@@ -147,7 +147,7 @@ class AWSEnvironment(base.BaseEnvironment):
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
                     storage_location='.',
-                    zip=True
+                    zip_artifacts=True
                 )
 
             except AssertionError:

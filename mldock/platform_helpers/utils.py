@@ -379,7 +379,7 @@ def list_objects_at_server_path(repository, sha, server_path):
         templates = []
         for content in contents:
             templates.append(Path(content.path).name)
-        
+
         return templates
 
     except (GithubException, IOError):

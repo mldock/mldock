@@ -1,4 +1,4 @@
-
+"""PYARROW STORAGE HELPERS"""
 import tempfile
 from pathlib import Path
 import logging
@@ -8,10 +8,17 @@ from mldock.platform_helpers import utils
 
 logger = logging.getLogger('mldock')
 
-def upload_assets(file_system, fs_base_path, local_path, storage_location, zip: bool = False):
+def upload_assets(
+    file_system,
+    fs_base_path,
+    local_path,
+    storage_location,
+    zip_artifacts: bool = False
+):
     """Uploads logs to specified file-system"""
 
-    if zip:
+    if zip_artifacts:
+        # pylint: disable=consider-using-with
         tmp_dir = tempfile.TemporaryDirectory()
         utils.zip_folder(local_path, Path(tmp_dir.name, "artifacts.zip"), rm_original=False)
         local_path = tmp_dir.name
@@ -39,7 +46,7 @@ def upload_assets(file_system, fs_base_path, local_path, storage_location, zip: 
         else:
             file_system.upload(src_path.as_posix(), dst_path.as_posix())
 
-    if zip:
+    if zip_artifacts:
         tmp_dir.cleanup()
 
 def download_assets(file_system, fs_base_path, local_path, storage_location):
