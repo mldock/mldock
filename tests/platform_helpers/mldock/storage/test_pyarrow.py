@@ -30,7 +30,7 @@ class TestPyarrow:
                     fs_base_path=tmp_dir2,
                     local_path=tmp_dir1,
                     storage_location='example',
-                    zip=False
+                    zip_artifacts=False
                 )
 
                 files = [f.name for f in Path(tmp_dir2).glob("**/*") if f.is_file()]
