@@ -1,6 +1,7 @@
 """LOCAL COMMANDS"""
 import os
 import sys
+import json
 from pathlib import Path
 import logging
 import subprocess
@@ -128,6 +129,12 @@ def build(project_directory, no_cache, tag, stage):
         logger.error(exception)
         raise
 
+from enum import Enum
+
+class AuthType(Enum):
+
+    BEARER = "bearer"
+
 @click.command()
 @click.option(
     '--payload',
@@ -145,7 +152,30 @@ def build(project_directory, no_cache, tag, stage):
     )
 )
 @click.option(
-    '--content-type',
+    '--request-content-type',
+    default='application/json',
+    help='format of payload',
+    type=click.Choice(
+        ['application/json', 'text/csv', 'image/jpeg'],
+        case_sensitive=False
+    )
+)
+@click.option(
+    '--response',
+    help='Path to payload',
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=False,
+        readable=True,
+        resolve_path=False,
+        allow_dash=False,
+        path_type=None
+    )
+)
+@click.option(
+    '--response-content-type',
     default='application/json',
     help='format of payload',
     type=click.Choice(
@@ -159,22 +189,33 @@ def build(project_directory, no_cache, tag, stage):
     type=str,
     default='http://127.0.0.1:8080/invocations'
 )
-def predict(payload, content_type, host):
+@click.option(
+    '--headers',
+    help='(Optional) Authentication to use for request',
+    type=click.STRING,
+    multiple=True
+)
+def predict(payload, host, **kwargs):
     """
     Command to execute prediction request against ml endpoint
     """
+    headers = {}
+
+    for header in kwargs.get('headers'):
+        headers.update(json.loads(header))
+
     with ProgressLogger(group='Predict', text='Running Request', spinner='dots'):
         if payload is None:
             logger.info("\nPayload cannot be None. Please provide path to payload file.")
         else:
-            if content_type in ['application/json']:
-                pretty_output = predict_request.send_json(filepath=payload, host=host)
-            elif content_type in ['text/csv']:
-                pretty_output = predict_request.send_csv(filepath=payload, host=host)
-            elif content_type in ['image/jpeg']:
-                pretty_output = predict_request.send_image_jpeg(filepath=payload, host=host)
-            else:
-                raise Exception("Content-type is not supported.")
+            pretty_output = predict_request.handle_prediction(
+                host=host,
+                request=payload,
+                response_file=kwargs.get("response"),
+                request_content_type=kwargs.get("request_content_type", "application/json"),
+                response_content_type=kwargs.get("response_content_type", "application/json"),
+                headers=headers
+            )
             logger.info(pretty_output)
 
 @click.command()
