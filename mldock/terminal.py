@@ -9,46 +9,47 @@ from gettext import ngettext
 import click
 from halo import Halo
 
-logger = logging.getLogger('mldock')
+logger = logging.getLogger("mldock")
+
 
 def pretty_build_logs(line: dict):
     """
-        Format logs and return prettified log message
-        args:
-            line (dict): log record from docker build logs iterator
+    Format logs and return prettified log message
+    args:
+        line (dict): log record from docker build logs iterator
     """
     # pylint: disable=logging-format-interpolation
     if line is None:
         return None
 
-    error = line.get('error', None)
-    error_detail = line.get('errorDetail', None)
+    error = line.get("error", None)
+    error_detail = line.get("errorDetail", None)
 
     if error is not None:
-        logger.error('{ERROR}\n{ERROR_DETAIL}'.format(
-                ERROR=error,
-                ERROR_DETAIL=error_detail
-            )
+        logger.error(
+            "{ERROR}\n{ERROR_DETAIL}".format(ERROR=error, ERROR_DETAIL=error_detail)
         )
 
-    stream = line.get('stream', '')
+    stream = line.get("stream", "")
 
     return " ==> {MESSAGE}".format(MESSAGE=stream)
 
+
 class ProgressLogger:
     """
-        A terminal based progress context manager.
+    A terminal based progress context manager.
 
-        starts the progress spinner, and passes the object back.
-        finally raises success or failure if exception is raised.
+    starts the progress spinner, and passes the object back.
+    finally raises success or failure if exception is raised.
     """
-    def __init__(self, **kwargs):
-        self.group = kwargs.pop('group', None)
-        if self.group is None:
-            self.group = kwargs.get('text', None)
 
-        self.on_success = kwargs.pop('on_success', None)
-        self.on_failure = kwargs.pop('on_failure', None)
+    def __init__(self, **kwargs):
+        self.group = kwargs.pop("group", None)
+        if self.group is None:
+            self.group = kwargs.get("text", None)
+
+        self.on_success = kwargs.pop("on_success", None)
+        self.on_failure = kwargs.pop("on_failure", None)
 
         if len(self.group) > 0:
             self.group = self.group + " "
@@ -68,7 +69,7 @@ class ProgressLogger:
             if self.on_failure is not None:
                 error_msg = self.on_failure
             self.spinner.fail(error_msg)
-            return False # reraise the exception
+            return False  # reraise the exception
 
         success_msg = "{}Complete".format(self.group)
         if self.on_success is not None:
@@ -76,19 +77,21 @@ class ProgressLogger:
         self.spinner.succeed(success_msg)
         return True
 
+
 class ChoiceWithNumbers(click.Choice):
     """Extends the click.Choice class to allow user to make choice by number"""
+
     def convert(
         self,
         value: [int, float, str],
         param: t.Optional["Parameter"],
-        ctx: t.Optional["Context"]
+        ctx: t.Optional["Context"],
     ):
         """
-            Match through normalization and case sensitivity
-            first do token_normalize_func, then lowercase
-            preserve original `value` to produce an accurate message in
-            `self.fail`
+        Match through normalization and case sensitivity
+        first do token_normalize_func, then lowercase
+        preserve original `value` to produce an accurate message in
+        `self.fail`
         """
         normed_value = value
         normed_choices = {choice: choice for choice in self.choices}
@@ -131,28 +134,23 @@ class ChoiceWithNumbers(click.Choice):
         # pylint askes for this, even though it will never reach this point.
         return None
 
+
 def style_2_level_detail(major_detail, minor_detail):
     """Styling for two level detail"""
-    format_minor_detail = click.style(
-        "({})".format(minor_detail),
-        fg='bright_green'
-    )
-    return "{} {}".format(
-        major_detail,
-        format_minor_detail
-    )
+    format_minor_detail = click.style("({})".format(minor_detail), fg="bright_green")
+    return "{} {}".format(major_detail, format_minor_detail)
+
 
 def style_dropdown(group_name: str, options: list, default: str = None):
     """Styling prompt with choice options as a drop down list"""
     options = options.copy()
     for i, option in enumerate(options):
-        option_formatted = "[{id}] {option}".format(id=i+1, option=option)
+        option_formatted = "[{id}] {option}".format(id=i + 1, option=option)
         if option == default:
-            option_formatted = click.style(option_formatted, fg='bright_blue')
+            option_formatted = click.style(option_formatted, fg="bright_blue")
         options[i] = option_formatted
 
     option_msg = "\n".join(options)
     return "(Select {group_name} from list)\n\n{option_msg}\n=>".format(
-        group_name=click.style(group_name, fg='bright_blue'),
-        option_msg=option_msg
+        group_name=click.style(group_name, fg="bright_blue"), option_msg=option_msg
     )

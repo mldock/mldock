@@ -8,21 +8,27 @@ import click
 from mldock.config_managers.core import WorkingDirectoryManager
 from mldock.config_managers.container import MLDockConfigManager
 from mldock.platform_helpers import utils
-from mldock.config_managers.cli import \
-    PackageConfigManager, HyperparameterConfigManager, \
-        InputDataConfigManager, StageConfigManager, \
-            ModelConfigManager, EnvironmentConfigManager, CliConfigureManager
+from mldock.config_managers.cli import (
+    PackageConfigManager,
+    HyperparameterConfigManager,
+    InputDataConfigManager,
+    StageConfigManager,
+    ModelConfigManager,
+    EnvironmentConfigManager,
+    CliConfigureManager,
+)
 
 from mldock.api.templates import init_from_template, check_available_templates
 
 click.disable_unicode_literals_warning = True
-logger=logging.getLogger('mldock')
-MLDOCK_CONFIG_NAME='mldock.json'
+logger = logging.getLogger("mldock")
+MLDOCK_CONFIG_NAME = "mldock.json"
 
 
 def reset_terminal():
     """clears the terminal view frame"""
     click.clear()
+
 
 @click.group()
 def container():
@@ -30,12 +36,13 @@ def container():
     Commands to create, update and manage container projects and templates.
     """
 
+
 @click.command()
 @click.option(
-    '--project_directory',
-    '--dir',
-    '-d',
-    help='mldock container project.',
+    "--project_directory",
+    "--dir",
+    "-d",
+    help="mldock container project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -45,48 +52,42 @@ def container():
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.option(
-    '--no-prompt',
+    "--no-prompt",
     is_flag=True,
-    help='Do not prompt user, instead use the mldock config to initialize the container.'
+    help="Do not prompt user, instead use the mldock config to initialize the container.",
 )
 @click.option(
-    '--container-only',
-    is_flag=True,
-    help='Only inject new container assets.'
+    "--container-only", is_flag=True, help="Only inject new container assets."
 )
 @click.option(
-    '--template',
+    "--template",
     default=None,
-    help='Directory containing mldock supported container to use to initialize the container.'
+    help="Directory containing mldock supported container to use to initialize the container.",
 )
+@click.option("--requirements", default=None, help="path to requirements file.")
 @click.option(
-    '--requirements',
-    default=None,
-    help='path to requirements file.'
-)
-@click.option(
-    '--params',
-    '-p',
-    help='(Optional) Hyperparameter to be added in config.',
+    "--params",
+    "-p",
+    help="(Optional) Hyperparameter to be added in config.",
     nargs=2,
     type=click.Tuple([str, str]),
-    multiple=True
+    multiple=True,
 )
 @click.option(
-    '--env_vars',
-    '-e',
-    help='(Optional) Environment Variables to be added in config.',
+    "--env_vars",
+    "-e",
+    help="(Optional) Environment Variables to be added in config.",
     nargs=2,
     type=click.Tuple([str, str]),
-    multiple=True
+    multiple=True,
 )
 @click.option(
-    '--trainer-script',
-    help='provide a path to your trainer script.',
+    "--trainer-script",
+    help="provide a path to your trainer script.",
     type=click.Path(
         exists=False,
         file_okay=True,
@@ -95,12 +96,12 @@ def container():
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.option(
-    '--prediction-script',
-    help='provide a path to your prediction script.',
+    "--prediction-script",
+    help="provide a path to your prediction script.",
     type=click.Path(
         exists=False,
         file_okay=True,
@@ -109,30 +110,32 @@ def container():
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.pass_obj
 def init(obj, project_directory, **kwargs):
     """
     Command to initialize mldock enabled container project
     """
-    no_prompt = kwargs.get('no_prompt', False)
-    container_only = kwargs.get('container_only', False)
-    template = kwargs.get('template', 'generic')
-    requirements = kwargs.get('requirements', None)
-    params = kwargs.get('params', None)
-    env_vars = kwargs.get('env_vars', None)
-    trainer_script = kwargs.get('trainer_script', None)
-    prediction_script = kwargs.get('prediction_script', None)
+    no_prompt = kwargs.get("no_prompt", False)
+    container_only = kwargs.get("container_only", False)
+    template = kwargs.get("template", "generic")
+    requirements = kwargs.get("requirements", None)
+    params = kwargs.get("params", None)
+    env_vars = kwargs.get("env_vars", None)
+    trainer_script = kwargs.get("trainer_script", None)
+    prediction_script = kwargs.get("prediction_script", None)
 
     reset_terminal()
-    mldock_package_path = obj['mldock_package_path']
+    mldock_package_path = obj["mldock_package_path"]
     try:
-        click.secho("Initializing MLDock project configuration", bg='blue', nl=True)
+        click.secho("Initializing MLDock project configuration", bg="blue", nl=True)
 
-        if not Path(project_directory, 'mldock.json').is_file():
-            create_new = click.prompt('No MLDOCK project found. Create?', type=bool, default='no')
+        if not Path(project_directory, "mldock.json").is_file():
+            create_new = click.prompt(
+                "No MLDOCK project found. Create?", type=bool, default="no"
+            )
         else:
             create_new = False
 
@@ -142,20 +145,21 @@ def init(obj, project_directory, **kwargs):
 
         # get configured template server metadata
         # if not set, default to package default templates
-        templates_root = templates.get('templates_root', Path(mldock_package_path, 'templates'))
+        templates_root = templates.get(
+            "templates_root", Path(mldock_package_path, "templates")
+        )
         # if not set, default to local
-        template_server = templates.get('server_type', 'local')
+        template_server = templates.get("server_type", "local")
 
         # get available templates
         available_templates = check_available_templates(
-            templates_root=templates_root,
-            template_server=template_server
+            templates_root=templates_root, template_server=template_server
         )
 
         mldock_manager = MLDockConfigManager(
             filepath=Path(project_directory, MLDOCK_CONFIG_NAME),
             create=create_new,
-            available_templates=available_templates
+            available_templates=available_templates,
         )
 
         if not no_prompt:
@@ -168,60 +172,57 @@ def init(obj, project_directory, **kwargs):
             mldock_manager.update_config(template=template)
 
         if params is not None:
-            hyperparameters = mldock_config.get('hyperparameters', {})
+            hyperparameters = mldock_config.get("hyperparameters", {})
             for param in params:
                 key_, value_ = param
-                hyperparameters.update(
-                    {key_: value_}
-                )
+                hyperparameters.update({key_: value_})
             mldock_manager.update_config(hyperparameters=hyperparameters)
 
         if env_vars is not None:
-            environment = mldock_config.get('environment', {})
+            environment = mldock_config.get("environment", {})
             for env_var in env_vars:
                 key_, value_ = env_var
-                environment.update(
-                    {key_: value_}
-                )
+                environment.update({key_: value_})
             mldock_manager.update_config(environment=environment)
 
         # finally delete original
 
         path_to_payload = Path(project_directory, "payload.json")
         if not path_to_payload.exists():
-            path_to_payload.write_text(json.dumps({"feature1": 10, "feature2":"groupA"}))
+            path_to_payload.write_text(
+                json.dumps({"feature1": 10, "feature2": "groupA"})
+            )
 
         src_directory = os.path.join(
-            project_directory,
-            mldock_config.get("mldock_module_dir", "src")
+            project_directory, mldock_config.get("mldock_module_dir", "src")
         )
 
         _ = WorkingDirectoryManager(base_dir=project_directory)
 
         # create stages config
         stage_config_manager = StageConfigManager(
-            config=mldock_config.get('stages', {})
+            config=mldock_config.get("stages", {})
         )
         # set input data channels
         input_data_channels = InputDataConfigManager(
-            config=mldock_config.get('data', []),
-            base_path=Path(project_directory, 'data')
+            config=mldock_config.get("data", []),
+            base_path=Path(project_directory, "data"),
         )
 
         # set model channels
         model_channels = ModelConfigManager(
-            config=mldock_config.get('model', []),
-            base_path=Path(project_directory, 'model')
+            config=mldock_config.get("model", []),
+            base_path=Path(project_directory, "model"),
         )
 
         # set hyperparameters
         hyperparameters = HyperparameterConfigManager(
-            config=mldock_config.get('hyperparameters', {})
+            config=mldock_config.get("hyperparameters", {})
         )
 
         # set environment variables
         environment = EnvironmentConfigManager(
-            config=mldock_config.get('environment', {})
+            config=mldock_config.get("environment", {})
         )
 
         if not no_prompt:
@@ -238,7 +239,9 @@ def init(obj, project_directory, **kwargs):
             mldock_manager.update_model_channels(models=model_channels.get_config())
             # update hyperparameters
             hyperparameters.ask_for_hyperparameters()
-            mldock_manager.update_hyperparameters(hyperparameters=hyperparameters.get_config())
+            mldock_manager.update_hyperparameters(
+                hyperparameters=hyperparameters.get_config()
+            )
             # update environments
             environment.ask_for_env_vars()
             mldock_manager.update_env_vars(environment=environment.get_config())
@@ -255,42 +258,41 @@ def init(obj, project_directory, **kwargs):
             container_only=container_only,
             template_server=template_server,
             trainer_script=trainer_script,
-            prediction_script=prediction_script
+            prediction_script=prediction_script,
         )
 
         # always setup requirements in src/
-        package_dir = mldock_manager.get_config().get('requirements_dir', 'src/requirements.txt')
+        package_dir = mldock_manager.get_config().get(
+            "requirements_dir", "src/requirements.txt"
+        )
         requirement_file = Path(project_directory, package_dir)
         if requirements is not None:
             logger.info(f"Copying {requirements} => {requirement_file.as_posix()}")
-            utils.copy_file(
-                requirements,
-                requirement_file
-            )
+            utils.copy_file(requirements, requirement_file)
 
         package_manager = PackageConfigManager(
-            filepath=requirement_file,
-            create=(requirement_file.is_file() == False)
+            filepath=requirement_file, create=(requirement_file.is_file() == False)
         )
         package_manager.write_file()
 
         states = mldock_manager.get_state()
 
         for state in states:
-            click.echo(click.style(state["name"], bg='blue'), nl=True)
-            click.echo(click.style(state["message"], fg='white'), nl=True)
+            click.echo(click.style(state["name"], bg="blue"), nl=True)
+            click.echo(click.style(state["message"], fg="white"), nl=True)
 
         logger.info("\nlocal container volume is ready! ヽ(´▽`)/")
     except Exception as exception:
         logger.error(exception)
         raise
 
+
 @click.command()
 @click.option(
-    '--project_directory',
-    '--dir',
-    '-d',
-    help='mldock container project.',
+    "--project_directory",
+    "--dir",
+    "-d",
+    help="mldock container project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -300,8 +302,8 @@ def init(obj, project_directory, **kwargs):
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.pass_obj
 def update(obj, project_directory):
@@ -322,27 +324,27 @@ def update(obj, project_directory):
 
         # create stages config
         stage_config_manager = StageConfigManager(
-            config=mldock_config.get('stages', {})
+            config=mldock_config.get("stages", {})
         )
         # set input data channels
         input_data_channels = InputDataConfigManager(
-            config=mldock_config.get('data', []),
-            base_path=Path(project_directory, 'data')
+            config=mldock_config.get("data", []),
+            base_path=Path(project_directory, "data"),
         )
         # set model channels
         model_channels = ModelConfigManager(
-            config=mldock_config.get('model', []),
-            base_path=Path(project_directory, 'model')
+            config=mldock_config.get("model", []),
+            base_path=Path(project_directory, "model"),
         )
 
         # set hyperparameters
         hyperparameters = HyperparameterConfigManager(
-            config=mldock_config.get('hyperparameters', {})
+            config=mldock_config.get("hyperparameters", {})
         )
 
         # set environment variables
         environment = EnvironmentConfigManager(
-            config=mldock_config.get('environment', {})
+            config=mldock_config.get("environment", {})
         )
 
         stage_config_manager.ask_for_stages()
@@ -358,7 +360,9 @@ def update(obj, project_directory):
         mldock_manager.update_model_channels(models=model_channels.get_config())
         # update hyperparameters
         hyperparameters.ask_for_hyperparameters()
-        mldock_manager.update_hyperparameters(hyperparameters=hyperparameters.get_config())
+        mldock_manager.update_hyperparameters(
+            hyperparameters=hyperparameters.get_config()
+        )
         # update environments
         environment.ask_for_env_vars()
         mldock_manager.update_env_vars(environment=environment.get_config())
@@ -370,20 +374,21 @@ def update(obj, project_directory):
         states = mldock_manager.get_state()
 
         for state in states:
-            click.echo(click.style(state["name"], bg='blue'), nl=True)
-            click.echo(click.style(state["message"], fg='white'), nl=True)
+            click.echo(click.style(state["name"], bg="blue"), nl=True)
+            click.echo(click.style(state["message"], fg="white"), nl=True)
 
         logger.info("\nlocal container was updated! ヽ(´▽`)/")
     except Exception as exception:
         logger.error(exception)
         raise
 
+
 @click.command()
 @click.option(
-    '--project_directory',
-    '--dir',
-    '-d',
-    help='mldock container project.',
+    "--project_directory",
+    "--dir",
+    "-d",
+    help="mldock container project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -393,8 +398,8 @@ def update(obj, project_directory):
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 def summary(project_directory):
     """
@@ -408,21 +413,23 @@ def summary(project_directory):
         states = mldock_manager.get_state()
 
         for state in states:
-            click.echo(click.style(state["name"], bg='blue'), nl=True)
-            click.echo(click.style(state["message"], fg='white'), nl=True)
+            click.echo(click.style(state["name"], bg="blue"), nl=True)
+            click.echo(click.style(state["message"], fg="white"), nl=True)
 
     except Exception as exception:
         logger.error(exception)
         raise
 
+
 def add_commands(cli_group: click.group):
     """
-        add commands to cli group
-        args:
-            cli (click.group)
+    add commands to cli group
+    args:
+        cli (click.group)
     """
     cli_group.add_command(init)
     cli_group.add_command(update)
     cli_group.add_command(summary)
+
 
 add_commands(container)

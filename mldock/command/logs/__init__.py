@@ -13,12 +13,14 @@ from mldock.api.assets import infer_filesystem_type
 
 
 click.disable_unicode_literals_warning = True
-logger = logging.getLogger('mldock')
-MLDOCK_CONFIG_NAME = 'mldock.json'
+logger = logging.getLogger("mldock")
+MLDOCK_CONFIG_NAME = "mldock.json"
+
 
 def reset_terminal():
     """clears the terminal view frame"""
     click.clear()
+
 
 @click.group()
 def logs():
@@ -26,21 +28,12 @@ def logs():
     Commands to manage and interact with logs.
     """
 
+
 @click.command()
-@click.option(
-    '--log-path',
-    type=str,
-    help='a grok pattern'
-)
-@click.option(
-    '--log-file',
-    type=str,
-    default='logs.txt',
-    help='file name'
-)
+@click.option("--log-path", type=str, help="a grok pattern")
+@click.option("--log-file", type=str, default="logs.txt", help="file name")
 def show(log_path, log_file):
     """show errors for all runs as a table"""
-
 
     file_system, log_path = infer_filesystem_type(log_path)
 
@@ -48,7 +41,7 @@ def show(log_path, log_file):
 
     log_runs = [Path(log).parents[0].name for log in logs_data]
 
-    state = choice('Select a run', log_runs, default=None)
+    state = choice("Select a run", log_runs, default=None)
 
     for log in logs_data:
         if Path(log).parents[0].name == state:
@@ -60,16 +53,18 @@ def show(log_path, log_file):
     reset_terminal()
     print(log_data)
 
+
 def add_commands(cli_group: click.group):
     """
-        add commands to cli group
-        args:
-            cli (click.group)
+    add commands to cli group
+    args:
+        cli (click.group)
     """
     cli_group.add_command(show)
     cli_group.add_command(metrics_commands)
     cli_group.add_command(params_commands)
     cli_group.add_command(grok)
     cli_group.add_command(errors)
+
 
 add_commands(logs)

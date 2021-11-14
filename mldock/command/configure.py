@@ -3,15 +3,16 @@ from pathlib import Path
 import logging
 import click
 
-from mldock.config_managers.cli import \
-    CliConfigureManager
+from mldock.config_managers.cli import CliConfigureManager
 
 click.disable_unicode_literals_warning = True
-logger=logging.getLogger('mldock')
+logger = logging.getLogger("mldock")
+
 
 def reset_terminal():
     """clears the terminal view frame"""
     click.clear()
+
 
 @click.group()
 def configure():
@@ -19,40 +20,43 @@ def configure():
     Commands to configure mldock cli.
     """
 
+
 @click.command()
 def init():
     """Configure  development tools"""
     config_manager = CliConfigureManager(create=True)
     config_manager.write_file()
 
+
 @click.command()
 @click.option(
-    '-c', '--config-name',
-    help='Configuration name you wish to reset',
+    "-c",
+    "--config-name",
+    help="Configuration name you wish to reset",
     required=True,
     type=click.Choice(
-        ['local', 'workspace', 'templates', 'all', 'remotes'],
-        case_sensitive=False
-    )
+        ["local", "workspace", "templates", "all", "remotes"], case_sensitive=False
+    ),
 )
 @click.pass_obj
 def reset(obj, config_name):
     """reset configurations"""
     config_manager = CliConfigureManager()
-    if config_name == 'all':
-        for config in ['local', 'workspace', 'templates', 'remotes']:
+    if config_name == "all":
+        for config in ["local", "workspace", "templates", "remotes"]:
             config_manager.reset(config)
     else:
         config_manager.reset(config_name)
     config_manager.write_file()
 
     reset_terminal()
-    logger.info(obj['logo'])
+    logger.info(obj["logo"])
     states = config_manager.get_state()
 
     for state in states:
-        click.echo(click.style(state["name"], bg='blue'), nl=True)
-        click.echo(click.style(state["message"], fg='white'), nl=True)
+        click.echo(click.style(state["name"], bg="blue"), nl=True)
+        click.echo(click.style(state["message"], fg="white"), nl=True)
+
 
 @click.command()
 @click.pass_obj
@@ -64,12 +68,13 @@ def workspace(obj):
     config_manager.write_file()
 
     reset_terminal()
-    logger.info(obj['logo'])
+    logger.info(obj["logo"])
     states = config_manager.get_state()
 
     for state in states:
-        click.echo(click.style(state["name"], bg='blue'), nl=True)
-        click.echo(click.style(state["message"], fg='white'), nl=True)
+        click.echo(click.style(state["name"], bg="blue"), nl=True)
+        click.echo(click.style(state["message"], fg="white"), nl=True)
+
 
 @click.command()
 @click.pass_obj
@@ -81,12 +86,13 @@ def local(obj):
     config_manager.write_file()
 
     reset_terminal()
-    logger.info(obj['logo'])
+    logger.info(obj["logo"])
     states = config_manager.get_state()
 
     for state in states:
-        click.echo(click.style(state["name"], bg='blue'), nl=True)
-        click.echo(click.style(state["message"], fg='white'), nl=True)
+        click.echo(click.style(state["name"], bg="blue"), nl=True)
+        click.echo(click.style(state["message"], fg="white"), nl=True)
+
 
 @click.command()
 @click.pass_obj
@@ -98,12 +104,13 @@ def templates(obj):
     config_manager.write_file()
 
     reset_terminal()
-    logger.info(obj['logo'])
+    logger.info(obj["logo"])
     states = config_manager.get_state()
 
     for state in states:
-        click.echo(click.style(state["name"], bg='blue'), nl=True)
-        click.echo(click.style(state["message"], fg='white'), nl=True)
+        click.echo(click.style(state["name"], bg="blue"), nl=True)
+        click.echo(click.style(state["message"], fg="white"), nl=True)
+
 
 @click.command()
 @click.pass_obj
@@ -115,12 +122,13 @@ def remotes(obj):
     config_manager.write_file()
 
     reset_terminal()
-    logger.info(obj['logo'])
+    logger.info(obj["logo"])
     states = config_manager.get_state()
 
     for state in states:
-        click.echo(click.style(state["name"], bg='blue'), nl=True)
-        click.echo(click.style(state["message"], fg='white'), nl=True)
+        click.echo(click.style(state["name"], bg="blue"), nl=True)
+        click.echo(click.style(state["message"], fg="white"), nl=True)
+
 
 @click.command()
 def show():
@@ -131,10 +139,10 @@ def show():
         states = config_manager.get_state()
 
         for state in states:
-            click.echo(click.style(state["name"], bg='blue'), nl=True)
-            click.echo(click.style(state["message"], fg='white'), nl=True)
+            click.echo(click.style(state["name"], bg="blue"), nl=True)
+            click.echo(click.style(state["message"], fg="white"), nl=True)
     except FileNotFoundError as exception:
-        if Path(exception.filename).name == 'mldock':
+        if Path(exception.filename).name == "mldock":
             logger.error(
                 "File not found. Please run 'mldock configure local' "
                 "to generate cli configuration."
@@ -142,11 +150,12 @@ def show():
         else:
             raise
 
+
 def add_commands(cli_group: click.group):
     """
-        add commands to cli group
-        args:
-            cli (click.group)
+    add commands to cli group
+    args:
+        cli (click.group)
     """
     cli_group.add_command(init)
     cli_group.add_command(workspace)
@@ -155,5 +164,6 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(remotes)
     cli_group.add_command(show)
     cli_group.add_command(reset)
+
 
 add_commands(configure)

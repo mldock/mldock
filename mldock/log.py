@@ -8,14 +8,16 @@ import click
 
 PY2 = sys.version_info[0] == 2
 
+
 class ColorFormatter(logging.Formatter):
     """ColorFormatter for logging.Logger"""
+
     colors = {
-        'error': dict(fg='red'),
-        'exception': dict(fg='red'),
-        'critical': dict(fg='red'),
-        'debug': dict(fg='blue'),
-        'warning': dict(fg='yellow')
+        "error": dict(fg="red"),
+        "exception": dict(fg="red"),
+        "critical": dict(fg="red"),
+        "debug": dict(fg="blue"),
+        "warning": dict(fg="yellow"),
     }
 
     def format(self, record):
@@ -24,29 +26,30 @@ class ColorFormatter(logging.Formatter):
             level = record.levelname.lower()
             msg = record.msg
             if level in self.colors:
-                prefix = click.style('{}: '.format(level),
-                                     **self.colors[level])
+                prefix = click.style("{}: ".format(level), **self.colors[level])
                 if not PY2 and isinstance(msg, bytes):
-                    msg = msg.decode(sys.getfilesystemencoding(),
-                                     'replace')
+                    msg = msg.decode(sys.getfilesystemencoding(), "replace")
                 elif not isinstance(msg, (str, bytes)):
                     msg = str(msg)
-                msg = '\n'.join(prefix + x for x in msg.splitlines())
+                msg = "\n".join(prefix + x for x in msg.splitlines())
             return msg
         return logging.Formatter.format(self, record)
 
+
 class ClickHandler(logging.Handler):
     """Click log format handler based on logging.Handler"""
+
     def emit(self, record):
         """log record emitter"""
         # pylint: disable=broad-except
         try:
             msg = self.format(record)
             level = record.levelname.lower()
-            err = level in ('warning', 'error', 'exception', 'critical')
+            err = level in ("warning", "error", "exception", "critical")
             click.echo(msg, err=err)
         except Exception:
             self.handleError(record)
+
 
 def _normalize_logger(logger, log_level):
     """normalize logger based on log_level."""
@@ -55,6 +58,7 @@ def _normalize_logger(logger, log_level):
 
     logger.setLevel(log_level)
     return logger
+
 
 def configure_logger(logger, verbose=False):
     """configure a new logger in either DEBUG or INFO based on verbose flag."""

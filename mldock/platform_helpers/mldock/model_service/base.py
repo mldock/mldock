@@ -1,24 +1,26 @@
 """MODEL BASE CLASS"""
 from abc import ABCMeta, abstractmethod
 
+
 class ModelService:
     """
     ModelService wraps up all preprocessing, inference and postprocessing
     functions used by model service. It is defined in a flexible manner to
     be easily extended to support different frameworks.
     """
+
     __metaclass__ = ABCMeta
 
     model = None
 
     def __init__(self, model_path: str):
         """
-            Internal initialize ModelService.
+        Internal initialize ModelService.
 
-            args:
-                model_path (str): path to model
-            return:
-                model object
+        args:
+            model_path (str): path to model
+        return:
+            model object
         """
         self.model = self.load_model(model_path)
 
@@ -26,10 +28,10 @@ class ModelService:
     @abstractmethod
     def load_model(model_path: str):
         """
-            (Abstract) load model
+        (Abstract) load model
 
-            args:
-                model_path(str): path to model
+        args:
+            model_path(str): path to model
         """
         # pylint: disable=unnecessary-pass
         pass
@@ -38,12 +40,12 @@ class ModelService:
     @abstractmethod
     def predict(input_data):
         """
-            (Abstract) Predict method
+        (Abstract) Predict method
 
-            args:
-                input : iterable of records model takes at prediction time.
-            return:
-                iterable of outputs from model
+        args:
+            input : iterable of records model takes at prediction time.
+        return:
+            iterable of outputs from model
         """
         # pylint: disable=unnecessary-pass
         pass
@@ -52,12 +54,12 @@ class ModelService:
     @abstractmethod
     def input_transform(input_data, **kwargs):
         """
-            (Abstract) Output Transform
+        (Abstract) Output Transform
 
-            args:
-                input: raw iterable from request
-            return:
-                input transformed data
+        args:
+            input: raw iterable from request
+        return:
+            input transformed data
         """
         # pylint: disable=unnecessary-pass
         pass
@@ -66,12 +68,12 @@ class ModelService:
     @abstractmethod
     def output_transform(predictions, **kwargs):
         """
-            (Abstract) Output Transform
+        (Abstract) Output Transform
 
-            args:
-                predictions: predictions returned from model.predict
-            return:
-                output transformed predictions
+        args:
+            predictions: predictions returned from model.predict
+        return:
+            output transformed predictions
         """
         # pylint: disable=unnecessary-pass
         pass

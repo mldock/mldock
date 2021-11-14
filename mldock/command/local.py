@@ -7,28 +7,34 @@ import logging
 import subprocess
 import click
 
-from mldock.config_managers.cli import \
-    CliConfigureManager
+from mldock.config_managers.cli import CliConfigureManager
 import mldock.api.predict as predict_request
-from mldock.terminal import \
-    ChoiceWithNumbers, style_dropdown, style_2_level_detail, \
-        ProgressLogger, pretty_build_logs
+from mldock.terminal import (
+    ChoiceWithNumbers,
+    style_dropdown,
+    style_2_level_detail,
+    ProgressLogger,
+    pretty_build_logs,
+)
 from mldock.platform_helpers.mldock import utils as mldock_utils
 from mldock.config_managers.container import MLDockConfigManager
-from mldock.api.local import \
-    search_mldock_containers, docker_build, train_model, deploy_model
+from mldock.api.local import (
+    search_mldock_containers,
+    docker_build,
+    train_model,
+    deploy_model,
+)
 
 click.disable_unicode_literals_warning = True
-logger = logging.getLogger('mldock')
-MLDOCK_CONFIG_NAME = 'mldock.json'
+logger = logging.getLogger("mldock")
+MLDOCK_CONFIG_NAME = "mldock.json"
+
 
 def run_script_interactively(cmd, **kwargs):
     """Basic runner script for local interactive script execution"""
-    output = subprocess.check_output(
-        cmd,
-        **kwargs
-    )
+    output = subprocess.check_output(cmd, **kwargs)
     logger.info(output)
+
 
 def python_executable():
     """Return the real path for the Python executable, if it exists.
@@ -37,8 +43,11 @@ def python_executable():
         (str): The real path of the current Python executable.
     """
     if not sys.executable:
-        raise RuntimeError("Failed to retrieve the real path for the Python executable binary")
+        raise RuntimeError(
+            "Failed to retrieve the real path for the Python executable binary"
+        )
     return sys.executable
+
 
 @click.group()
 def local():
@@ -46,12 +55,13 @@ def local():
     Commands for local development
     """
 
+
 @click.command()
 @click.option(
-    '--project_directory',
-    '--dir',
-    '-d',
-    help='mldock container project.',
+    "--project_directory",
+    "--dir",
+    "-d",
+    help="mldock container project.",
     required=True,
     type=click.Path(
         exists=True,
@@ -61,15 +71,14 @@ def local():
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
-@click.option('--no-cache', help='builds container from scratch', is_flag=True)
-@click.option('--tag', help='docker tag', type=str, default='latest')
-@click.option('--stage', help='environment to stage.')
+@click.option("--no-cache", help="builds container from scratch", is_flag=True)
+@click.option("--tag", help="docker tag", type=str, default="latest")
+@click.option("--stage", help="environment to stage.")
 def build(project_directory, no_cache, tag, stage):
-    """Command to build container locally
-    """
+    """Command to build container locally"""
     mldock_manager = MLDockConfigManager(
         filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
@@ -86,29 +95,30 @@ def build(project_directory, no_cache, tag, stage):
         project_directory,
         mldock_config.get("mldock_module_dir", "src"),
         container_dir,
-        "Dockerfile"
+        "Dockerfile",
     )
     requirements_file_path = os.path.join(
-        project_directory,
-        mldock_config.get("requirements_dir", "requirements.txt")
+        project_directory, mldock_config.get("requirements_dir", "requirements.txt")
     )
 
     with ProgressLogger(
-        group='Stages',
-        text='Retrieving Stages',
-        spinner='dots',
-        on_success='Stages Retrieved'
+        group="Stages",
+        text="Retrieving Stages",
+        spinner="dots",
+        on_success="Stages Retrieved",
     ) as spinner:
         stages = mldock_config.get("stages", None)
 
         if stage is not None:
-            tag = stages[stage]['tag']
+            tag = stages[stage]["tag"]
 
         if tag is None:
-            raise Exception("tag is not valid. Either choose a stage or set a tag manually")
+            raise Exception(
+                "tag is not valid. Either choose a stage or set a tag manually"
+            )
 
     try:
-        with ProgressLogger(group='Build', text='Building', spinner='dots') as spinner:
+        with ProgressLogger(group="Build", text="Building", spinner="dots") as spinner:
             logs = docker_build(
                 image_name=image_name,
                 dockerfile_path=dockerfile_path,
@@ -117,7 +127,7 @@ def build(project_directory, no_cache, tag, stage):
                 requirements_file_path=requirements_file_path,
                 no_cache=no_cache,
                 docker_tag=tag,
-                container_platform=template_name
+                container_platform=template_name,
             )
             for line in logs:
 
@@ -129,16 +139,19 @@ def build(project_directory, no_cache, tag, stage):
         logger.error(exception)
         raise
 
+
 from enum import Enum
+
 
 class AuthType(Enum):
 
     BEARER = "bearer"
 
+
 @click.command()
 @click.option(
-    '--payload',
-    help='Path to payload',
+    "--payload",
+    help="Path to payload",
     required=True,
     type=click.Path(
         exists=True,
@@ -148,21 +161,20 @@ class AuthType(Enum):
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.option(
-    '--request-content-type',
-    default='application/json',
-    help='format of payload',
+    "--request-content-type",
+    default="application/json",
+    help="format of payload",
     type=click.Choice(
-        ['application/json', 'text/csv', 'image/jpeg'],
-        case_sensitive=False
-    )
+        ["application/json", "text/csv", "image/jpeg"], case_sensitive=False
+    ),
 )
 @click.option(
-    '--response',
-    help='Path to payload',
+    "--response",
+    help="Path to payload",
     type=click.Path(
         exists=True,
         file_okay=True,
@@ -171,29 +183,28 @@ class AuthType(Enum):
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.option(
-    '--response-content-type',
-    default='application/json',
-    help='format of payload',
+    "--response-content-type",
+    default="application/json",
+    help="format of payload",
     type=click.Choice(
-        ['application/json', 'text/csv', 'image/jpeg'],
-        case_sensitive=False
-    )
+        ["application/json", "text/csv", "image/jpeg"], case_sensitive=False
+    ),
 )
 @click.option(
-    '--host',
-    help='host url at which model is served',
+    "--host",
+    help="host url at which model is served",
     type=str,
-    default='http://127.0.0.1:8080/invocations'
+    default="http://127.0.0.1:8080/invocations",
 )
 @click.option(
-    '--headers',
-    help='(Optional) Authentication to use for request',
+    "--headers",
+    help="(Optional) Authentication to use for request",
     type=click.STRING,
-    multiple=True
+    multiple=True,
 )
 def predict(payload, host, **kwargs):
     """
@@ -201,29 +212,36 @@ def predict(payload, host, **kwargs):
     """
     headers = {}
 
-    for header in kwargs.get('headers'):
+    for header in kwargs.get("headers"):
         headers.update(json.loads(header))
 
-    with ProgressLogger(group='Predict', text='Running Request', spinner='dots'):
+    with ProgressLogger(group="Predict", text="Running Request", spinner="dots"):
         if payload is None:
-            logger.info("\nPayload cannot be None. Please provide path to payload file.")
+            logger.info(
+                "\nPayload cannot be None. Please provide path to payload file."
+            )
         else:
             pretty_output = predict_request.handle_prediction(
                 host=host,
                 request=payload,
                 response_file=kwargs.get("response"),
-                request_content_type=kwargs.get("request_content_type", "application/json"),
-                response_content_type=kwargs.get("response_content_type", "application/json"),
-                headers=headers
+                request_content_type=kwargs.get(
+                    "request_content_type", "application/json"
+                ),
+                response_content_type=kwargs.get(
+                    "response_content_type", "application/json"
+                ),
+                headers=headers,
             )
             logger.info(pretty_output)
 
+
 @click.command()
 @click.option(
-    '--project_directory',
-    '--dir',
-    '-d',
-    help='mldock container project.',
+    "--project_directory",
+    "--dir",
+    "-d",
+    help="mldock container project.",
     required=True,
     type=click.Path(
         exists=True,
@@ -233,37 +251,37 @@ def predict(payload, host, **kwargs):
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.option(
-    '--params',
-    '-p',
-    help='(Optional) Hyperparameter override when running container.',
+    "--params",
+    "-p",
+    help="(Optional) Hyperparameter override when running container.",
     nargs=2,
     type=click.Tuple([str, str]),
-    multiple=True
+    multiple=True,
 )
 @click.option(
-    '--env_vars',
-    '-e',
-    help='(Optional) Environment Variables override when running container.',
+    "--env_vars",
+    "-e",
+    help="(Optional) Environment Variables override when running container.",
     nargs=2,
     type=click.Tuple([str, str]),
-    multiple=True
+    multiple=True,
 )
-@click.option('--tag', help='docker tag', type=str, default='latest')
-@click.option('--stage', help='environment to stage.')
-@click.option('--interactive', help='run workflow without docker', is_flag=True)
+@click.option("--tag", help="docker tag", type=str, default="latest")
+@click.option("--stage", help="environment to stage.")
+@click.option("--interactive", help="run workflow without docker", is_flag=True)
 def train(project_directory, **kwargs):
     """
     Command to run training locally on localhost
     """
-    params = kwargs.get('params', None)
-    env_vars = kwargs.get('env_vars', None)
-    tag = kwargs.get('tag', None)
-    stage = kwargs.get('stage', None)
-    interactive = kwargs.get('interactive', False)
+    params = kwargs.get("params", None)
+    env_vars = kwargs.get("env_vars", None)
+    tag = kwargs.get("tag", None)
+    stage = kwargs.get("stage", None)
+    interactive = kwargs.get("interactive", False)
 
     mldock_manager = MLDockConfigManager(
         filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
@@ -273,56 +291,48 @@ def train(project_directory, **kwargs):
     image_name = mldock_config.get("image_name", None)
 
     with ProgressLogger(
-        group='Stages',
-        text='Retrieving Stages',
-        spinner='dots',
-        on_success='Stages Retrieved'
+        group="Stages",
+        text="Retrieving Stages",
+        spinner="dots",
+        on_success="Stages Retrieved",
     ) as spinner:
-        stages = mldock_config.get("stages", 'null')
+        stages = mldock_config.get("stages", "null")
 
         if stage is not None:
-            tag = stages[stage]['tag']
+            tag = stages[stage]["tag"]
 
         if tag is None:
-            raise Exception("tag is not valid. Either choose a stage or set a tag manually")
-
-    with ProgressLogger(
-        group='Environment',
-        text='Retrieving Environment Varaiables',
-        spinner='dots',
-        on_success='Environment Ready'
-    ) as spinner:
-        project_env_vars = mldock_config.get('environment', {})
-        for env_var in env_vars:
-            key_, value_ = env_var
-            project_env_vars.update(
-                {key_: value_}
+            raise Exception(
+                "tag is not valid. Either choose a stage or set a tag manually"
             )
 
-        hyperparameters = mldock_config.get('hyperparameters', {})
+    with ProgressLogger(
+        group="Environment",
+        text="Retrieving Environment Varaiables",
+        spinner="dots",
+        on_success="Environment Ready",
+    ) as spinner:
+        project_env_vars = mldock_config.get("environment", {})
+        for env_var in env_vars:
+            key_, value_ = env_var
+            project_env_vars.update({key_: value_})
+
+        hyperparameters = mldock_config.get("hyperparameters", {})
 
         # override hyperparameters
         for param in params:
             key_, value_ = param
-            hyperparameters.update(
-                {key_: value_}
-            )
+            hyperparameters.update({key_: value_})
 
         env_vars = mldock_utils.collect_mldock_environment_variables(
-            stage=stage,
-            hyperparameters=hyperparameters,
-            **project_env_vars
+            stage=stage, hyperparameters=hyperparameters, **project_env_vars
         )
 
         config_manager = CliConfigureManager()
-        env_vars.update(
-            config_manager.local.get('environment', {})
-        )
+        env_vars.update(config_manager.local.get("environment", {}))
 
     with ProgressLogger(
-        group='Training',
-        text='Running Training',
-        spinner='dots'
+        group="Training", text="Running Training", spinner="dots"
     ) as spinner:
 
         spinner.info("Training Environment = {}".format(env_vars))
@@ -334,18 +344,18 @@ def train(project_directory, **kwargs):
             base_ml_path = project_directory
             # must update /opt/ml working directory before running
             # perhaps setting from environment would be the best
-            env_vars.update({
-                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
-                'MLDOCK_INPUT_DIR': '.',
-            })
+            env_vars.update(
+                {
+                    "MLDOCK_BASE_DIR": Path(base_ml_path).absolute().as_posix(),
+                    "MLDOCK_INPUT_DIR": ".",
+                }
+            )
 
             # subprocess only supports 'ascii' supported str for environment variables
             env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
-            script_path = 'src/container/training/train.py'
+            script_path = "src/container/training/train.py"
             run_script_interactively(
-                [python_executable(), script_path],
-                cwd=base_ml_path,
-                env=env_vars
+                [python_executable(), script_path], cwd=base_ml_path, env=env_vars
             )
         else:
             spinner.info("Running docker container")
@@ -356,16 +366,16 @@ def train(project_directory, **kwargs):
                 image_name=image_name,
                 entrypoint="src/container/executor.sh",
                 cmd="train",
-                env=env_vars
+                env=env_vars,
             )
 
 
 @click.command()
 @click.option(
-    '--project_directory',
-    '--dir',
-    '-d',
-    help='mldock container project.',
+    "--project_directory",
+    "--dir",
+    "-d",
+    help="mldock container project.",
     required=True,
     type=click.Path(
         exists=True,
@@ -375,42 +385,44 @@ def train(project_directory, **kwargs):
         readable=True,
         resolve_path=False,
         allow_dash=False,
-        path_type=None
-    )
+        path_type=None,
+    ),
 )
 @click.option(
-    '--params',
-    '-p',
-    help='(Optional) Hyperparameter override when running container.',
+    "--params",
+    "-p",
+    help="(Optional) Hyperparameter override when running container.",
     nargs=2,
     type=click.Tuple([str, str]),
-    multiple=True
+    multiple=True,
 )
 @click.option(
-    '--env_vars',
-    '-e',
-    help='(Optional) Environment Variables override when running container.',
+    "--env_vars",
+    "-e",
+    help="(Optional) Environment Variables override when running container.",
     nargs=2,
     type=click.Tuple([str, str]),
-    multiple=True
+    multiple=True,
 )
-@click.option('--tag', help='docker tag', type=str, default='latest')
-@click.option('--port', help='host url at which model is served', type=str, default='8080')
-@click.option('--stage', help='environment to stage.')
-@click.option('--interactive', help='run workflow without docker', is_flag=True)
+@click.option("--tag", help="docker tag", type=str, default="latest")
+@click.option(
+    "--port", help="host url at which model is served", type=str, default="8080"
+)
+@click.option("--stage", help="environment to stage.")
+@click.option("--interactive", help="run workflow without docker", is_flag=True)
 @click.pass_obj
 def deploy(obj, project_directory, **kwargs):
     """
     Command to deploy ml container on localhost
     """
-    params = kwargs.get('params', None)
-    env_vars = kwargs.get('env_vars', None)
-    tag = kwargs.get('tag', None)
-    port = kwargs.get('port', None)
-    stage = kwargs.get('stage', None)
-    interactive = kwargs.get('interactive', False)
+    params = kwargs.get("params", None)
+    env_vars = kwargs.get("env_vars", None)
+    tag = kwargs.get("tag", None)
+    port = kwargs.get("port", None)
+    stage = kwargs.get("stage", None)
+    interactive = kwargs.get("interactive", False)
 
-    verbose = obj.get('verbose', False)
+    verbose = obj.get("verbose", False)
     mldock_manager = MLDockConfigManager(
         filepath=os.path.join(project_directory, MLDOCK_CONFIG_NAME)
     )
@@ -419,53 +431,49 @@ def deploy(obj, project_directory, **kwargs):
     image_name = mldock_config.get("image_name", None)
 
     with ProgressLogger(
-        group='Stages',
-        text='Retrieving Stages',
-        spinner='dots',
-        on_success='Stages Retrieved'
+        group="Stages",
+        text="Retrieving Stages",
+        spinner="dots",
+        on_success="Stages Retrieved",
     ) as spinner:
         stages = mldock_config.get("stages", None)
 
         if stage is not None:
-            tag = stages[stage]['tag']
+            tag = stages[stage]["tag"]
 
         if tag is None:
-            raise Exception("tag is not valid. Either choose a stage or set a tag manually")
+            raise Exception(
+                "tag is not valid. Either choose a stage or set a tag manually"
+            )
 
-    project_env_vars = mldock_config.get('environment', {})
+    project_env_vars = mldock_config.get("environment", {})
 
     for env_var in env_vars:
         key_, value_ = env_var
         print(key_, value_)
-        project_env_vars.update(
-            {key_: value_}
-        )
+        project_env_vars.update({key_: value_})
 
-    hyperparameters = mldock_config.get('hyperparameters', {})
+    hyperparameters = mldock_config.get("hyperparameters", {})
 
     # override hyperparameters
     for param in params:
         key_, value_ = param
         print(key_, value_)
-        hyperparameters.update(
-            {key_: value_}
-        )
+        hyperparameters.update({key_: value_})
 
     env_vars = mldock_utils.collect_mldock_environment_variables(
         stage=stage,
-        hyperparameters=mldock_config.get('hyperparameters', {}),
+        hyperparameters=mldock_config.get("hyperparameters", {}),
         **project_env_vars
     )
 
     config_manager = CliConfigureManager()
-    env_vars.update(
-        config_manager.local.get('environment', {})
-    )
+    env_vars.update(config_manager.local.get("environment", {}))
 
     with ProgressLogger(
-        group='Deploy',
-        text='Deploying model to {} @ localhost'.format(port),
-        spinner='dots'
+        group="Deploy",
+        text="Deploying model to {} @ localhost".format(port),
+        spinner="dots",
     ) as spinner:
         spinner.info("Deployment Environment = {}".format(env_vars))
         spinner.start()
@@ -477,20 +485,20 @@ def deploy(obj, project_directory, **kwargs):
             # must update /opt/ml working directory before running
             # perhaps setting from environment would be the best
             # check out the python runner from sagemaker_training
-            env_vars.update({
-                'MLDOCK_BASE_DIR': Path(base_ml_path).absolute().as_posix(),
-                'MLDOCK_INPUT_DIR': '.'
-            })
+            env_vars.update(
+                {
+                    "MLDOCK_BASE_DIR": Path(base_ml_path).absolute().as_posix(),
+                    "MLDOCK_INPUT_DIR": ".",
+                }
+            )
 
             # subprocess only supports 'ascii' supported str for environment variables
             env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
 
-            script_path = 'src/container/prediction/serve.py'
+            script_path = "src/container/prediction/serve.py"
 
             run_script_interactively(
-                [python_executable(), script_path],
-                cwd=base_ml_path,
-                env=env_vars
+                [python_executable(), script_path], cwd=base_ml_path, env=env_vars
             )
         else:
             spinner.info("Running docker container")
@@ -504,8 +512,9 @@ def deploy(obj, project_directory, **kwargs):
                 entrypoint="src/container/executor.sh",
                 cmd="serve",
                 env=env_vars,
-                verbose=verbose
+                verbose=verbose,
             )
+
 
 @click.command()
 def stop():
@@ -517,20 +526,20 @@ def stop():
         containers = search_mldock_containers()
 
         tags = [
-            style_2_level_detail(
-                major_detail=c.image.tags[0],
-                minor_detail=c.name
-             ) for c in containers
-        ] + ['abort']
+            style_2_level_detail(major_detail=c.image.tags[0], minor_detail=c.name)
+            for c in containers
+        ] + ["abort"]
         # newline break
         click.echo("")
-        click.secho("Running MLDock containers:", bg='blue', nl=True)
+        click.secho("Running MLDock containers:", bg="blue", nl=True)
         container_tag = click.prompt(
-            text=style_dropdown(group_name="container name", options=tags, default='abort'),
+            text=style_dropdown(
+                group_name="container name", options=tags, default="abort"
+            ),
             type=ChoiceWithNumbers(tags, case_sensitive=False),
             show_default=False,
-            default='abort',
-            show_choices=False
+            default="abort",
+            show_choices=False,
         )
 
         for container in containers:
@@ -538,10 +547,9 @@ def stop():
                 if image_tag in container_tag:
                     # make newline
                     click.echo("")
-                    project_container_tag = click.style(container_tag, fg='bright_blue')
+                    project_container_tag = click.style(container_tag, fg="bright_blue")
                     if click.confirm(
-                        "Stop the running container = {}?".format(
-                            project_container_tag)
+                        "Stop the running container = {}?".format(project_container_tag)
                     ):
                         container.kill()
 
@@ -554,14 +562,15 @@ def stop():
 
 def add_commands(cli_group: click.group):
     """
-        add commands to cli group
-        args:
-            cli (click.group)
+    add commands to cli group
+    args:
+        cli (click.group)
     """
     cli_group.add_command(build)
     cli_group.add_command(predict)
     cli_group.add_command(train)
     cli_group.add_command(deploy)
     cli_group.add_command(stop)
+
 
 add_commands(local)
