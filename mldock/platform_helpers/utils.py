@@ -19,7 +19,8 @@ import base64
 from github import GithubException
 from github.GithubException import UnknownObjectException
 
-logger = logging.getLogger('mldock')
+logger = logging.getLogger("mldock")
+
 
 def _mkdir(dir_path: str):
     """make directory structure
@@ -28,6 +29,7 @@ def _mkdir(dir_path: str):
         dir_path (str): directory path to build
     """
     Path(dir_path).mkdir(parents=True, exist_ok=True)
+
 
 def _iter_nested_dir(root_dir: str) -> Iterator[str]:
     """Iterate through nested folders.
@@ -39,8 +41,9 @@ def _iter_nested_dir(root_dir: str) -> Iterator[str]:
         Iterator[str]: path iterator
     """
     rootdir = Path(root_dir)
-    for path in rootdir.glob('**/*'):
+    for path in rootdir.glob("**/*"):
         yield path
+
 
 def _delete_file(file_path):
     """Delete a file
@@ -57,11 +60,13 @@ def _delete_file(file_path):
 
     os.remove(path)
 
-def _check_if_cloud_scheme(url: str, scheme: str = 's3') -> bool:
+
+def _check_if_cloud_scheme(url: str, scheme: str = "s3") -> bool:
     parsed_url = urlparse(url)
     return parsed_url.scheme == scheme
 
-def parse_url(url: str, scheme: str = 's3'):
+
+def parse_url(url: str, scheme: str = "s3"):
     """Returns an (s3 bucket, key name/prefix) tuple from a url with an s3
     scheme.
     Args:
@@ -75,22 +80,22 @@ def parse_url(url: str, scheme: str = 's3'):
     if parsed_url.scheme != scheme:
         raise ValueError(
             "Expecting '{}' scheme, got: {} in {}.".format(
-                scheme,
-                parsed_url.scheme,
-                url
+                scheme, parsed_url.scheme, url
             )
         )
     return parsed_url.netloc, parsed_url.path.lstrip("/")
 
+
 def zip_folder(dir_path, output_file, rm_original=True):
     """zip in directory and optionally throw away unzipped"""
 
-    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED) as zipf:
         for file in _iter_nested_dir(dir_path):
             if file.name != Path(output_file).name and file.is_file():
                 zipf.write(os.path.join(file), arcname=file.relative_to(dir_path))
                 if rm_original:
                     _delete_file(file)
+
 
 def zip_folder_as_tarfile(dir_path, output_file, rm_original=True):
     """zip folder as tarfile and optionally throw away original files"""
@@ -101,13 +106,13 @@ def zip_folder_as_tarfile(dir_path, output_file, rm_original=True):
                 if rm_original:
                     _delete_file(file)
 
+
 def unzip_file(filename, output_dir, rm_zipped=True):
     """unzip in directory and optionally throw away zipped"""
-    with zipfile.ZipFile(filename, 'r', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(filename, "r", zipfile.ZIP_DEFLATED) as zipf:
         logger.debug(
             "Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
-                ZIP_FILE=filename,
-                OUTPUT_DIR=output_dir
+                ZIP_FILE=filename, OUTPUT_DIR=output_dir
             )
         )
         zipf.extractall(output_dir)
@@ -115,12 +120,13 @@ def unzip_file(filename, output_dir, rm_zipped=True):
             logger.debug("Removing {}".format(filename))
             _delete_file(filename)
 
+
 def unzip_file_from_tarfile(filename, output_dir, rm_zipped=True):
     """untar in directory and optionally throw away zipped"""
     with tarfile.open(filename, "r:gz") as tar:
-        logger.debug("Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
-                ZIP_FILE=filename,
-                OUTPUT_DIR=output_dir
+        logger.debug(
+            "Unzipping {ZIP_FILE} => {OUTPUT_DIR}".format(
+                ZIP_FILE=filename, OUTPUT_DIR=output_dir
             )
         )
         tar.extractall(output_dir)
@@ -128,21 +134,25 @@ def unzip_file_from_tarfile(filename, output_dir, rm_zipped=True):
             logger.debug("Removing {FILE_PATH}".format(FILE_PATH=filename))
             _delete_file(filename)
 
+
 def strip_scheme(url: str):
     """strip scheme from url"""
     parsed = urlparse(url)
     scheme = "{SCHEME}://".format(SCHEME=parsed.scheme)
-    return parsed.geturl().replace(scheme, '', 1)
+    return parsed.geturl().replace(scheme, "", 1)
+
 
 def get_bucket_and_path_from_scheme(url: str):
     """strip scheme from url"""
     parsed = urlparse(url)
     return parsed.netloc, parsed.path
 
+
 def get_scheme(path: str):
     """get the scheme of the given path"""
     parsed = urlparse(path)
     return parsed.scheme
+
 
 def _read_json(file_path):
     """Read a JSON file.
@@ -154,17 +164,20 @@ def _read_json(file_path):
     with open(file_path, "r") as file_:
         return json.load(file_)
 
+
 def _write_json(obj, file_path):
     """Write a serializeable object as a JSON file."""
     with open(file_path, "w") as file_:
         json.dump(obj, file_, indent=4)
-        file_.write('\n')
+        file_.write("\n")
 
-def _write_file(file_path: str, parents: bool =True):
+
+def _write_file(file_path: str, parents: bool = True):
     """write a file"""
     if parents is True:
         mkpath(str(Path(file_path).parents[0].absolute()))
-    write_file(str(Path(file_path).absolute()), '')
+    write_file(str(Path(file_path).absolute()), "")
+
 
 def _rename_file(base_path, current_filename, new_filename):
     """renames filename for a given base_path, saving the file in the same base_path
@@ -176,6 +189,7 @@ def _rename_file(base_path, current_filename, new_filename):
     """
     Path(base_path, current_filename).rename(Path(base_path, new_filename))
 
+
 def _create_empty_file(base_path, filename):
     """renames filename for a given base_path, saving the file in the same base_path
 
@@ -185,6 +199,7 @@ def _create_empty_file(base_path, filename):
         new_filename ([type]): new name for the renamed file
     """
     Path(base_path, filename).touch(exist_ok=True)
+
 
 def _copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
     """[summary]
@@ -203,19 +218,13 @@ def _copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
             logger.debug("No file found. Assuming already deleted.")
     _ = copy_tree(source_path, destination_path)
 
-def copy_file_to_new_file(
-    infile,
-    outfile,
-    **kwargs
-):
+
+def copy_file_to_new_file(infile, outfile, **kwargs):
     """Copy a file respecting verbose, dry-run and force flags.  (The
     former two default to whatever is in the Distribution object, and
     the latter defaults to false for commands that don't define it.)"""
-    return copy_file(
-        infile,
-        outfile,
-        **kwargs
-    )
+    return copy_file(infile, outfile, **kwargs)
+
 
 @contextlib.contextmanager
 def set_env(**environ):
@@ -240,6 +249,7 @@ def set_env(**environ):
         os.environ.clear()
         os.environ.update(old_environ)
 
+
 def get_env_vars(environment, regex, flat=True):
     """Get all environ vars matching contains='<PREFIX>'"""
     if flat:
@@ -249,37 +259,36 @@ def get_env_vars(environment, regex, flat=True):
 
     regex_pattern = re.compile(regex)
 
-    for key,value in environment.items():
+    for key, value in environment.items():
         result = regex_pattern.match(key)
         if result:
             # get all keys matching the regex
             if flat:
-                filtered_env_vars.append({'key': key, 'value': value})
+                filtered_env_vars.append({"key": key, "value": value})
             else:
                 filtered_env_vars.update({key: value})
     return filtered_env_vars
 
-def get_sdk_credentials_volume_mount(
-    auth_type='gcloud',
-    **kwargs
-):
+
+def get_sdk_credentials_volume_mount(auth_type="gcloud", **kwargs):
     """
-        configures a volume mount for providing provider resource
-        permissions.
+    configures a volume mount for providing provider resource
+    permissions.
     """
 
-    if auth_type == 'gcloud':
-        host_path = kwargs.get('host_path', '~/.config/gcloud')
-        container_path = kwargs.get('container_path', '/root/.config/gcloud')
-    elif auth_type == 'awscli':
-        host_path = kwargs.get('host_path', '~/.aws')
-        container_path = kwargs.get('container_path', '/root/.aws')
+    if auth_type == "gcloud":
+        host_path = kwargs.get("host_path", "~/.config/gcloud")
+        container_path = kwargs.get("container_path", "/root/.config/gcloud")
+    elif auth_type == "awscli":
+        host_path = kwargs.get("host_path", "~/.aws")
+        container_path = kwargs.get("container_path", "/root/.aws")
     else:
         raise Exception("AUTH_TYPE = {} is not currently supported.")
 
     host_volume = Path(os.path.expanduser(host_path)).absolute().as_posix()
-    container_bind = {'bind': container_path, 'mode': 'rw'}
+    container_bind = {"bind": container_path, "mode": "rw"}
     return {host_volume: container_bind}
+
 
 def get_sha_for_tag(repository, tag):
     """
@@ -293,8 +302,9 @@ def get_sha_for_tag(repository, tag):
     tags = repository.get_tags()
     matched_tags = [match for match in tags if match.name == tag]
     if not matched_tags:
-        raise ValueError('No Tag or Branch exists with that name')
+        raise ValueError("No Tag or Branch exists with that name")
     return matched_tags[0].commit.sha
+
 
 def download_directory(repository, sha, server_path, local_prefix, relative_to):
     """
@@ -307,14 +317,14 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
         for content in contents:
             logger.debug("Downloading {CONTENT_PATH}".format(CONTENT_PATH=content.path))
             local_path = Path(local_prefix, Path(content.path).relative_to(relative_to))
-            if content.type == 'dir':
+            if content.type == "dir":
                 local_path.mkdir(parents=True, exist_ok=True)
                 download_directory(
                     repository=repository,
                     sha=sha,
                     server_path=content.path,
                     local_prefix=local_prefix,
-                    relative_to=relative_to
+                    relative_to=relative_to,
                 )
             else:
                 file_content = repository.get_contents(content.path, ref=sha)
@@ -322,7 +332,7 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
 
                 # set executables with chmod +x
                 # given that mldock containers always have the "executor.sh"
-                if local_path.name == 'executor.sh':
+                if local_path.name == "executor.sh":
                     local_path.touch(0o777)
                 else:
                     local_path.touch()
@@ -341,17 +351,17 @@ def download_directory(repository, sha, server_path, local_prefix, relative_to):
             new_error = (
                 "Server path = '{SERVER_PATH}' was "
                 "not found in repository = '{REPOSITORY_NAME}'.".format(
-                    SERVER_PATH=server_path,
-                    REPOSITORY_NAME=repository.name
+                    SERVER_PATH=server_path, REPOSITORY_NAME=repository.name
                 )
             )
             logger.error(new_error)
             sys.exit(-1)
         raise
 
+
 def download_from_git(github, start_dir, org, repo, branch, **kwargs):
     """Download the server path from git remote directory"""
-    root = kwargs.get('root', '.')
+    root = kwargs.get("root", ".")
     organization = github.get_organization(org)
     repository = organization.get_repo(repo)
     sha = get_sha_for_tag(repository, branch)
@@ -363,10 +373,11 @@ def download_from_git(github, start_dir, org, repo, branch, **kwargs):
         sha,
         server_path=Path(root, start_dir).as_posix(),
         local_prefix=tmp_dir,
-        relative_to=root
+        relative_to=root,
     )
 
     return tmp_dir
+
 
 def list_objects_at_server_path(repository, sha, server_path):
     """
@@ -388,16 +399,15 @@ def list_objects_at_server_path(repository, sha, server_path):
         exc_type, _, _ = sys.exc_info()
         raise
 
+
 def list_templates(github, start_dir, org, repo, branch, **kwargs):
     """Download the server path from git remote directory"""
-    root = kwargs.get('root', '.')
+    root = kwargs.get("root", ".")
     organization = github.get_organization(org)
     repository = organization.get_repo(repo)
     sha = get_sha_for_tag(repository, branch)
 
     ## download to tmp
     return list_objects_at_server_path(
-        repository,
-        sha,
-        server_path=Path(root, start_dir).as_posix()
+        repository, sha, server_path=Path(root, start_dir).as_posix()
     )

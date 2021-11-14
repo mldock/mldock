@@ -21,6 +21,7 @@ import json
 
 import numpy as np
 
+
 def array_to_npy(array_like):
     """Convert an array-like object to the NPY format.
     To understand what an array-like object is, please see:
@@ -33,6 +34,7 @@ def array_to_npy(array_like):
     buffer = io.BytesIO()
     np.save(buffer, array_like)
     return buffer.getvalue()
+
 
 def array_to_csv(array_like, quoted=True):
     """Convert an array like object to CSV.
@@ -53,20 +55,21 @@ def array_to_csv(array_like, quoted=True):
     if quoted:
         np.savetxt(stream, data, delimiter=",", fmt='"%s"')
     else:
-        np.savetxt(stream, data, delimiter=",", fmt='%s')
+        np.savetxt(stream, data, delimiter=",", fmt="%s")
     return stream.getvalue()
+
 
 def array_to_json(array_like):
     """
-        Convert an array-like object to JSON.
+    Convert an array-like object to JSON.
 
-        To understand what an array-like object is, please see:
-        https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
-        Args:
-            array_like (np.array or Iterable or int or float): Array-like object to be
-                                                            converted to JSON.
-        Returns:
-            (str): Object serialized to JSON.
+    To understand what an array-like object is, please see:
+    https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
+    Args:
+        array_like (np.array or Iterable or int or float): Array-like object to be
+                                                        converted to JSON.
+    Returns:
+        (str): Object serialized to JSON.
     """
 
     def default(_array_like):

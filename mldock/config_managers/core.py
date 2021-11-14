@@ -13,11 +13,12 @@ import click
 from mldock.platform_helpers import utils
 
 
-logger=logging.getLogger('mldock')
+logger = logging.getLogger("mldock")
+
 
 class WorkingDirectoryManager:
-    """Base config manager with basic read, write and update functionality.
-    """
+    """Base config manager with basic read, write and update functionality."""
+
     def __init__(self, base_dir):
         self.base_dir = base_dir
         prompt_input = True
@@ -35,9 +36,10 @@ class WorkingDirectoryManager:
         return self.base_dir
 
     def make_asset_dirs(self):
-        """Create the directory structure, if not exists
-        """
-        logger.debug("Creating assets directories in working dir {} .".format(self.base_dir))
+        """Create the directory structure, if not exists"""
+        logger.debug(
+            "Creating assets directories in working dir {} .".format(self.base_dir)
+        )
 
         self.input_data_dir.mkdir(parents=False, exist_ok=True)
         self.input_config_dir.mkdir(parents=False, exist_ok=True)
@@ -59,27 +61,28 @@ class WorkingDirectoryManager:
     @property
     def input_data_dir(self):
         """Get input data directory path"""
-        return Path(self.base_dir, 'data')
+        return Path(self.base_dir, "data")
 
     @property
     def input_config_dir(self):
         """Get input config directory path"""
-        return Path(self.base_dir, 'config')
+        return Path(self.base_dir, "config")
 
     @property
     def model_dir(self):
         """Get model directory path"""
-        return Path(self.base_dir, 'model')
+        return Path(self.base_dir, "model")
 
     @property
     def output_data_dir(self):
         """Get output data directory path"""
-        return Path(self.base_dir, 'output')
+        return Path(self.base_dir, "output")
+
 
 class BaseConfigManager:
-    """Base config manager with basic read, write and update functionality.
-    """
-    config :dict = {}
+    """Base config manager with basic read, write and update functionality."""
+
+    config: dict = {}
     filepath: str = None
 
     @staticmethod
@@ -89,7 +92,7 @@ class BaseConfigManager:
         Args:
             path (str): path to file
         """
-        with open(path, 'a') as file_:
+        with open(path, "a") as file_:
             json.dump({}, file_)
 
     @staticmethod
@@ -113,11 +116,13 @@ class BaseConfigManager:
                 # create file
                 self.touch(file_name)
             else:
-                logger.error((
-                    "file not found: '{DIRECTORY_PATH}/'. Please create.".format(
-                        DIRECTORY_PATH=Path(file_name).parents[0]
+                logger.error(
+                    (
+                        "file not found: '{DIRECTORY_PATH}/'. Please create.".format(
+                            DIRECTORY_PATH=Path(file_name).parents[0]
+                        )
                     )
-                ))
+                )
                 sys.exit(1)
 
     def load_config(self, file_name: str, create: bool) -> dict:
@@ -128,18 +133,17 @@ class BaseConfigManager:
         Returns:
             dict: config
         """
-        self.check_if_exists_else_create(
-            file_name=file_name, create=create
-        )
+        self.check_if_exists_else_create(file_name=file_name, create=create)
 
         with open(file_name, "r") as file_:
             config = json.load(file_)
             return config
 
     def pretty_print(self):
-        """pretty prints a json config to terminal
-        """
-        pretty_config = json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True)
+        """pretty prints a json config to terminal"""
+        pretty_config = json.dumps(
+            self.config, indent=4, separators=(",", ": "), sort_keys=True
+        )
         logger.debug("{}\n".format(pretty_config))
 
     def write_file(self):
@@ -149,7 +153,7 @@ class BaseConfigManager:
         :param docker_tag: [str], the Docker tag for the image
         :param image_name: [str], The name of the Docker image
         """
-        with open(self.filepath, 'w') as config_file:
+        with open(self.filepath, "w") as config_file:
             json.dump(self.config, config_file, indent=4, sort_keys=True)
 
     def get_config(self) -> dict:

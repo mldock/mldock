@@ -16,11 +16,11 @@ from mldock.config_managers.core import BaseConfigManager
 from mldock.platform_helpers.mldock import utils as mldock_utils
 from mldock.platform_helpers import utils
 
-logger = logging.getLogger('mldock')
+logger = logging.getLogger("mldock")
+
 
 class MLDockConfigManager(BaseConfigManager):
-    """Hyperparameter Config Manager for mldock
-    """
+    """Hyperparameter Config Manager for mldock"""
 
     config = {
         "image_name": None,
@@ -41,7 +41,7 @@ class MLDockConfigManager(BaseConfigManager):
         # dealing with weird os related path formats
         super().__init__()
         self.filepath = filepath
-        self.available_templates = kwargs.get('available_templates', None)
+        self.available_templates = kwargs.get("available_templates", None)
 
         config = self.load_config(self.filepath, create=create)
 
@@ -62,18 +62,20 @@ class MLDockConfigManager(BaseConfigManager):
                 # create file
                 self.touch(file_name)
             else:
-                logger.error((
-                    "No MLDOCK container project found with "
-                    "dir = '{CONTAINER_DIR}/'. Re-run `mldock container init` "
-                    "and Confirm 'yes' to create.".format(
-                        CONTAINER_DIR=Path(file_name).parents[0]
+                logger.error(
+                    (
+                        "No MLDOCK container project found with "
+                        "dir = '{CONTAINER_DIR}/'. Re-run `mldock container init` "
+                        "and Confirm 'yes' to create.".format(
+                            CONTAINER_DIR=Path(file_name).parents[0]
+                        )
                     )
-                ))
+                )
                 sys.exit(1)
 
     def setup_config(self):
         """run setup for configuration"""
-        click.secho("Base Setup", bg='blue')
+        click.secho("Base Setup", bg="blue")
         self.ask_for_image_name()
         self.ask_for_template_name()
         self.ask_for_mldock_module_dir()
@@ -85,22 +87,18 @@ class MLDockConfigManager(BaseConfigManager):
         self.config.update(kwargs)
 
     def ask_for_image_name(self):
-        """prompt user for image name
-        """
+        """prompt user for image name"""
         image_name = click.prompt(
-            text=click.style("Set your image name: ", fg='bright_blue'),
-            default=self.config.get('image_name', self.image_name_default)
+            text=click.style("Set your image name: ", fg="bright_blue"),
+            default=self.config.get("image_name", self.image_name_default),
         )
 
-        self.config.update({
-            'image_name':image_name
-        })
+        self.config.update({"image_name": image_name})
 
     def ask_for_template_name(self):
-        """prompt user for container template name
-        """
+        """prompt user for container template name"""
 
-        click.secho("Set container template name", bg='blue', nl=True)
+        click.secho("Set container template name", bg="blue", nl=True)
         # would be awesome to fetch this from the template dir
         options = self.available_templates
 
@@ -108,45 +106,37 @@ class MLDockConfigManager(BaseConfigManager):
             text=style_dropdown(
                 group_name="template name",
                 options=options,
-                default=self.config.get('template', 'generic')
+                default=self.config.get("template", "generic"),
             ),
             type=ChoiceWithNumbers(options, case_sensitive=False),
             show_default=True,
-            default=self.config.get('template', 'generic'),
-            show_choices=False
+            default=self.config.get("template", "generic"),
+            show_choices=False,
         )
 
-        self.config.update({
-            'template': template_name
-        })
+        self.config.update({"template": template_name})
 
     def ask_for_container_dir_name(self):
-        """prompt user for container dir name
-        """
+        """prompt user for container dir name"""
         container_dir_name = click.prompt(
-            text=click.style("Set your container dir name: ", fg='bright_blue'),
-            default=self.config.get('container_dir', 'container')
+            text=click.style("Set your container dir name: ", fg="bright_blue"),
+            default=self.config.get("container_dir", "container"),
         )
 
-        self.config.update({
-            'container_dir': container_dir_name
-        })
+        self.config.update({"container_dir": container_dir_name})
 
     def ask_for_mldock_module_dir(self):
-        """prompt user for mldock module dir
-        """
+        """prompt user for mldock module dir"""
 
         mldock_module_dir = click.prompt(
-            text=click.style("Set mldock module dir: ", fg='bright_blue'),
-            default=self.config.get('mldock_module_dir', 'src')
+            text=click.style("Set mldock module dir: ", fg="bright_blue"),
+            default=self.config.get("mldock_module_dir", "src"),
         )
 
-        self.config.update({
-            'mldock_module_dir': mldock_module_dir
-        })
+        self.config.update({"mldock_module_dir": mldock_module_dir})
 
     @staticmethod
-    def _format_data_node_item(item, base_path='data'):
+    def _format_data_node_item(item, base_path="data"):
 
         new_key = item["channel"]
         new_value = os.path.join(base_path, item["channel"], item["filename"])
@@ -156,8 +146,8 @@ class MLDockConfigManager(BaseConfigManager):
 
         output = []
 
-        for item in self.config['data']:
-            output.append(self._format_data_node_item(item, base_path='data'))
+        for item in self.config["data"]:
+            output.append(self._format_data_node_item(item, base_path="data"))
 
         return "\n".join(output)
 
@@ -165,8 +155,8 @@ class MLDockConfigManager(BaseConfigManager):
 
         output = []
 
-        for item in self.config['model']:
-            output.append(self._format_data_node_item(item, base_path='model'))
+        for item in self.config["model"]:
+            output.append(self._format_data_node_item(item, base_path="model"))
 
         return "\n".join(output)
 
@@ -174,8 +164,8 @@ class MLDockConfigManager(BaseConfigManager):
 
         output = []
 
-        for key_, value_ in self.config['stages'].items():
-            image_and_tag = "{}:{}".format(self.config['image_name'], value_["tag"])
+        for key_, value_ in self.config["stages"].items():
+            image_and_tag = "{}:{}".format(self.config["image_name"], value_["tag"])
             output.append("\t{} : {}".format(key_, image_and_tag))
 
         return "\n".join(output)
@@ -191,8 +181,7 @@ class MLDockConfigManager(BaseConfigManager):
         return "\n".join(output)
 
     def get_state(self):
-        """pretty prints a json config to terminal
-        """
+        """pretty prints a json config to terminal"""
         config = self.config.copy()
 
         config.pop("stages")
@@ -204,10 +193,10 @@ class MLDockConfigManager(BaseConfigManager):
         formatted_model_node = self._format_model_node()
         environment = {}
         for key_, value_ in config.pop("environment").items():
-            mldock_key = mldock_utils._format_key_as_mldock_env_var(key_, prefix='mldock')
-            environment.update(
-                {mldock_key: value_}
+            mldock_key = mldock_utils._format_key_as_mldock_env_var(
+                key_, prefix="mldock"
             )
+            environment.update({mldock_key: value_})
 
         states = []
 
@@ -215,69 +204,63 @@ class MLDockConfigManager(BaseConfigManager):
         states.append({"name": "Data Channels", "message": formatted_data_node})
         states.append({"name": "Model Channels", "message": formatted_model_node})
         states.append({"name": "Stages", "message": formatted_stages})
-        states.append({"name": "Hyperparameters", "message": self._format_nodes(hyperparameters)})
-        states.append({"name": "Environment Variables", "message": self._format_nodes(environment)})
+        states.append(
+            {"name": "Hyperparameters", "message": self._format_nodes(hyperparameters)}
+        )
+        states.append(
+            {
+                "name": "Environment Variables",
+                "message": self._format_nodes(environment),
+            }
+        )
 
         return states
 
     def ask_for_requirements_file_name(self):
-        """prompt user for image name
-        """
+        """prompt user for image name"""
         requirements_file_name = click.prompt(
-            text=click.style("Set full path to requirements: ", fg='bright_blue'),
-            default=self.config.get('requirements_dir', 'requirements.txt')
+            text=click.style("Set full path to requirements: ", fg="bright_blue"),
+            default=self.config.get("requirements_dir", "requirements.txt"),
         )
 
-        self.config.update({
-            'requirements_dir': requirements_file_name
-        })
+        self.config.update({"requirements_dir": requirements_file_name})
 
     def update_stages(self, stages: dict):
         """update stages node in .mldock config"""
-        self.config.update(
-            {'stages': stages}
-        )
+        self.config.update({"stages": stages})
 
     def update_env_vars(self, environment: dict):
         """
-            Update environment node in .mldock config
+        Update environment node in .mldock config
 
-            Args:
-                environment (dict): key,value dictionaries
+        Args:
+            environment (dict): key,value dictionaries
         """
-        self.config.update(
-            {'environment': environment}
-        )
+        self.config.update({"environment": environment})
 
     def update_hyperparameters(self, hyperparameters: dict):
         """
-            Update hyperparameter node in .mldock config
+        Update hyperparameter node in .mldock config
 
-            Args:
-                hyperparameters (dict): key,value dictionaries
+        Args:
+            hyperparameters (dict): key,value dictionaries
         """
-        self.config.update(
-            {'hyperparameters': hyperparameters}
-        )
+        self.config.update({"hyperparameters": hyperparameters})
 
     def update_data_channels(self, data: dict):
         """
-            Update data node in .mldock config
+        Update data node in .mldock config
 
-            Args:
-                data (dict): key,value dictionaries
+        Args:
+            data (dict): key,value dictionaries
         """
-        self.config.update(
-            {'data': data}
-        )
+        self.config.update({"data": data})
 
     def update_model_channels(self, models: dict):
         """
-            Update data node in .mldock config
+        Update data node in .mldock config
 
-            Args:
-                data (dict): key,value dictionaries
+        Args:
+            data (dict): key,value dictionaries
         """
-        self.config.update(
-            {'model': models}
-        )
+        self.config.update({"model": models})

@@ -20,10 +20,11 @@ from mldock.log import configure_logger
 
 click.disable_unicode_literals_warning = True
 
-CLI_VERSION = 'Version: cli {}'.format(__version__)
+CLI_VERSION = "Version: cli {}".format(__version__)
+
 
 @click.group()
-@click.version_option(message='{}\n{}'.format(MLDOCK_LOGO, CLI_VERSION))
+@click.version_option(message="{}\n{}".format(MLDOCK_LOGO, CLI_VERSION))
 @click.option("-v", "--verbose", count=True, help="Turn on debug logging")
 @click.pass_context
 def cli(ctx, verbose):
@@ -31,16 +32,21 @@ def cli(ctx, verbose):
     A CLI that helps put machine learning in places that empower ml developers
     """
     mldock_package_path = os.path.dirname(os.path.realpath(__file__))
-    logger=configure_logger('mldock', verbose=verbose)
+    logger = configure_logger("mldock", verbose=verbose)
     logger.info(MLDOCK_LOGO)
     logger.info(CLI_VERSION)
-    ctx.obj = {'verbose': verbose, 'mldock_package_path': mldock_package_path, 'logo': MLDOCK_LOGO}
+    ctx.obj = {
+        "verbose": verbose,
+        "mldock_package_path": mldock_package_path,
+        "logo": MLDOCK_LOGO,
+    }
+
 
 def add_commands(cli_group: click.group):
     """
-        add commands to cli group
-        args:
-            cli (click.group)
+    add commands to cli group
+    args:
+        cli (click.group)
     """
     cli_group.add_command(configure)
     cli_group.add_command(container)
@@ -52,8 +58,9 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(models)
     cli_group.add_command(datasets)
 
+
 add_commands(cli)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # pylint: disable=no-value-for-parameter
     cli()

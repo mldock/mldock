@@ -6,35 +6,28 @@ from pyarrow import fs
 
 from mldock.platform_helpers import utils
 
-logger = logging.getLogger('mldock')
+logger = logging.getLogger("mldock")
+
 
 def upload_assets(
-    file_system,
-    fs_base_path,
-    local_path,
-    storage_location,
-    zip_artifacts: bool = False
+    file_system, fs_base_path, local_path, storage_location, zip_artifacts: bool = False
 ):
     """Uploads logs to specified file-system"""
 
     if zip_artifacts:
         # pylint: disable=consider-using-with
         tmp_dir = tempfile.TemporaryDirectory()
-        utils.zip_folder(local_path, Path(tmp_dir.name, "artifacts.zip"), rm_original=False)
+        utils.zip_folder(
+            local_path, Path(tmp_dir.name, "artifacts.zip"), rm_original=False
+        )
         local_path = tmp_dir.name
 
     # create full artifacts base path
-    artifacts_base_path = Path(
-        fs_base_path,
-        storage_location
-    )
+    artifacts_base_path = Path(fs_base_path, storage_location)
 
     local = fs.LocalFileSystem()
 
-    file_selector = fs.FileSelector(
-        local_path,
-        recursive=True
-    )
+    file_selector = fs.FileSelector(local_path, recursive=True)
     for file in local.get_file_info(file_selector):
         src_path = Path(file.path)
         file_name = src_path.name
@@ -49,28 +42,19 @@ def upload_assets(
     if zip_artifacts:
         tmp_dir.cleanup()
 
+
 def download_assets(file_system, fs_base_path, local_path, storage_location):
     """Uploads logs to specified file-system"""
 
     # create full artifacts base path
-    artifacts_base_path = Path(
-        fs_base_path,
-        storage_location
-    )
+    artifacts_base_path = Path(fs_base_path, storage_location)
 
     if isinstance(file_system, fs.LocalFileSystem):
-        file_selector = fs.FileSelector(
-            fs_base_path,
-            recursive=True
-        )
+        file_selector = fs.FileSelector(fs_base_path, recursive=True)
 
-        file_selector = file_system.get_file_info(
-            file_selector
-        )
+        file_selector = file_system.get_file_info(file_selector)
     else:
-        file_selector = file_system.glob(
-            Path(artifacts_base_path, "**").as_posix()
-        )
+        file_selector = file_system.glob(Path(artifacts_base_path, "**").as_posix())
 
     for file in file_selector:
         if isinstance(file, fs.FileInfo):
@@ -87,10 +71,10 @@ def download_assets(file_system, fs_base_path, local_path, storage_location):
             logger.info(src_path.as_posix())
             file_system.download(src_path.as_posix(), dst_path.as_posix())
 
-            if Path(file).suffix == '.zip':
+            if Path(file).suffix == ".zip":
 
                 utils.unzip_file(dst_path, local_path, rm_zipped=True)
 
-            elif Path(file).suffix == '.gz':
+            elif Path(file).suffix == ".gz":
 
                 utils.unzip_file_from_tarfile(dst_path, local_path, rm_zipped=True)
