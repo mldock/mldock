@@ -89,7 +89,7 @@ def send_image_jpeg(data, host, **kwargs):
 
 
 def handle_request(host, file_path, content_type, **kwargs):
-
+    """handles and sends the request"""
     if content_type == "application/json":
 
         with open(file_path, "r") as file_:
@@ -153,7 +153,7 @@ def handle_prediction(
     response_content_type: str = "application/json",
     **kwargs
 ):
-
+    """handles prediction workflow from handling the request to handling the response"""
     # handle request (load to obj, convert, send, get response)
     response_obj = handle_request(
         host=host,
