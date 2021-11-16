@@ -1,4 +1,4 @@
-"""Test Container commands"""
+"""Test Project commands"""
 import os
 from pathlib import Path
 from mock import patch
@@ -22,7 +22,7 @@ def mldock_config_aws():
         'template': 'generic'
     }
 
-class TestContainerCommands:
+class TestProjectCommands:
 
     @staticmethod
     def test_command_init_w_no_prompt_runs_successfully():
@@ -47,7 +47,7 @@ class TestContainerCommands:
                 args=['configure', 'local'],
                 input='2\n\n'
             )
-            result = runner.invoke(cli=cli, args=['container', 'init', '--dir', mldock_project, '--no-prompt'])
+            result = runner.invoke(cli=cli, args=['project', 'init', '--dir', mldock_project, '--no-prompt'])
 
         assert result.exit_code == 0, result.output
 
@@ -75,7 +75,7 @@ class TestContainerCommands:
             )
             result = runner.invoke(
                 cli=cli,
-                args=['container', 'init', '--dir', mldock_project],
+                args=['project', 'init', '--dir', mldock_project],
                 input='my_app\ngeneric\nsrc\ncontainer\nrequirements.txt\n\n\n\n\n'
             )
 
@@ -103,7 +103,7 @@ class TestContainerCommands:
             )
             result = runner.invoke(
                 cli=cli,
-                args=['container', 'init', '--dir', mldock_project, '--template', 'generic', '--no-prompt'],
+                args=['project', 'init', '--dir', mldock_project, '--template', 'generic', '--no-prompt'],
                 input='yes\n'
             )
 
@@ -143,7 +143,7 @@ class TestContainerCommands:
             )
             result = runner.invoke(
                 cli=cli,
-                args=['container', 'init', '--dir', tmp_dir, '--template', 'generic', '--no-prompt'],
+                args=['project', 'init', '--dir', tmp_dir, '--template', 'generic', '--no-prompt'],
                 input='\n'
             )
 
@@ -172,7 +172,7 @@ class TestContainerCommands:
             result = runner.invoke(
                 cli=cli,
                 args=[
-                    'container', 'init',
+                    'project', 'init',
                     '--dir', mldock_project,
                     '--template', 'generic',
                     '--no-prompt',
