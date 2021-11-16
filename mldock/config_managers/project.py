@@ -1,5 +1,5 @@
 """
-    Project Container Config manager
+    Container Project Config manager
 
     Config Managers that create and update the container project config.
     Currently supported:
@@ -65,7 +65,7 @@ class MLDockConfigManager(BaseConfigManager):
                 logger.error(
                     (
                         "No MLDOCK container project found with "
-                        "dir = '{CONTAINER_DIR}/'. Re-run `mldock container init` "
+                        "dir = '{CONTAINER_DIR}/'. Re-run `mldock project init` "
                         "and Confirm 'yes' to create.".format(
                             CONTAINER_DIR=Path(file_name).parents[0]
                         )
@@ -96,9 +96,9 @@ class MLDockConfigManager(BaseConfigManager):
         self.config.update({"image_name": image_name})
 
     def ask_for_template_name(self):
-        """prompt user for container template name"""
+        """prompt user for container project template name"""
 
-        click.secho("Set container template name", bg="blue", nl=True)
+        click.secho("Set container project template name", bg="blue", nl=True)
         # would be awesome to fetch this from the template dir
         options = self.available_templates
 

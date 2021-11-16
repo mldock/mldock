@@ -17,7 +17,7 @@ from mldock.terminal import (
     pretty_build_logs,
 )
 from mldock.platform_helpers.mldock import utils as mldock_utils
-from mldock.config_managers.container import MLDockConfigManager
+from mldock.config_managers.project import MLDockConfigManager
 from mldock.api.local import (
     search_mldock_containers,
     docker_build,

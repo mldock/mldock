@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from mldock.config_managers.cli import ModelConfigManager, CliConfigureManager
-from mldock.config_managers.container import MLDockConfigManager
+from mldock.config_managers.project import MLDockConfigManager
 from mldock.terminal import ProgressLogger
 from mldock.platform_helpers.mldock.storage.pyarrow import (
     upload_assets,

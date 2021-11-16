@@ -6,7 +6,7 @@ import click
 from mldock.platform_helpers.docker.auth import login_and_authenticate
 from mldock.api.local import docker_build
 from mldock.api.registry import push_image_to_repository, pull_image_from_repository
-from mldock.config_managers.container import MLDockConfigManager
+from mldock.config_managers.project import MLDockConfigManager
 from mldock.terminal import ProgressLogger, pretty_build_logs
 
 click.disable_unicode_literals_warning = True

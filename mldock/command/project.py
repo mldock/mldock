@@ -6,7 +6,7 @@ import logging
 import click
 
 from mldock.config_managers.core import WorkingDirectoryManager
-from mldock.config_managers.container import MLDockConfigManager
+from mldock.config_managers.project import MLDockConfigManager
 from mldock.platform_helpers import utils
 from mldock.config_managers.cli import (
     PackageConfigManager,
@@ -31,9 +31,9 @@ def reset_terminal():
 
 
 @click.group()
-def container():
+def project():
     """
-    Commands to create, update and manage container projects and templates.
+    Commands to create, update and manage project projects and templates.
     """
 
 
@@ -42,7 +42,7 @@ def container():
     "--project_directory",
     "--dir",
     "-d",
-    help="mldock container project.",
+    help="mldock project project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -58,7 +58,7 @@ def container():
 @click.option(
     "--no-prompt",
     is_flag=True,
-    help="Do not prompt user, instead use the mldock config to initialize the container.",
+    help="Do not prompt user, instead use the mldock config to initialize the project.",
 )
 @click.option(
     "--container-only", is_flag=True, help="Only inject new container assets."
@@ -66,7 +66,7 @@ def container():
 @click.option(
     "--template",
     default=None,
-    help="Directory containing mldock supported container to use to initialize the container.",
+    help="Directory containing mldock supported project template to use to initialize the new project.",
 )
 @click.option("--requirements", default=None, help="path to requirements file.")
 @click.option(
@@ -281,7 +281,7 @@ def init(obj, project_directory, **kwargs):
             click.echo(click.style(state["name"], bg="blue"), nl=True)
             click.echo(click.style(state["message"], fg="white"), nl=True)
 
-        logger.info("\nlocal container volume is ready! ヽ(´▽`)/")
+        logger.info("\nlocal project volume is ready! ヽ(´▽`)/")
     except Exception as exception:
         logger.error(exception)
         raise
@@ -308,7 +308,7 @@ def init(obj, project_directory, **kwargs):
 @click.pass_obj
 def update(obj, project_directory):
     """
-    Command to update mldock container.
+    Command to update mldock project.
     """
     reset_terminal()
     try:
@@ -377,7 +377,7 @@ def update(obj, project_directory):
             click.echo(click.style(state["name"], bg="blue"), nl=True)
             click.echo(click.style(state["message"], fg="white"), nl=True)
 
-        logger.info("\nlocal container was updated! ヽ(´▽`)/")
+        logger.info("\nlocal project was updated! ヽ(´▽`)/")
     except Exception as exception:
         logger.error(exception)
         raise
@@ -403,7 +403,7 @@ def update(obj, project_directory):
 )
 def summary(project_directory):
     """
-    Command to show summary for mldock container
+    Command to show summary for mldock container project
     """
     try:
         mldock_manager = MLDockConfigManager(
@@ -432,4 +432,4 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(summary)
 
 
-add_commands(container)
+add_commands(project)
