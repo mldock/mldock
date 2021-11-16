@@ -32,7 +32,7 @@ class TestLocalCommands:
                 args=['configure', 'local'],
                 input='2\n\n'
             )
-            _ = runner.invoke(cli=cli, args=['container', 'init', '--dir', tmp_dir, '--no-prompt'])
+            _ = runner.invoke(cli=cli, args=['project', 'init', '--dir', tmp_dir, '--no-prompt'])
 
             result = runner.invoke(cli=cli, args=['local', 'build', '--dir', tmp_dir])
 
@@ -62,7 +62,7 @@ class TestLocalCommands:
                 args=['configure', 'local'],
                 input='2\n\n'
             )
-            _ = runner.invoke(cli=cli, args=['container', 'init', '--dir', tmp_dir, '--no-prompt'])
+            _ = runner.invoke(cli=cli, args=['project', 'init', '--dir', tmp_dir, '--no-prompt'])
 
             _ = runner.invoke(cli=cli, args=['local', 'build', '--dir', tmp_dir])
 
