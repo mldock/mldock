@@ -65,7 +65,7 @@ def models():
 @click.option(
     "--compression",
     help="type of file based on mimetypes",
-    type=click.Choice(["zip", None], case_sensitive=False),
+    type=click.Choice(["zip"], case_sensitive=False),
 )
 def create(
     channel, name, project_directory, remote, remote_path, mime_type, compression
@@ -103,6 +103,17 @@ def create(
             config=mldock_config.get("model", []),
             base_path=Path(project_directory, "model"),
         )
+
+        model = model_channels.get(
+            channel=channel,
+            filename=name
+        )
+
+        if compression is None:
+            compression = model.get("compression", None)
+
+        if remote is None:
+            remote = model.get("remote", None)
 
         model_channels.add_asset(
             channel=channel,
@@ -162,7 +173,7 @@ def create(
 @click.option(
     "--compression",
     help="type of file based on mimetypes",
-    type=click.Choice(["zip", None], case_sensitive=False),
+    type=click.Choice(["zip"], case_sensitive=False),
 )
 def update(
     channel, name, project_directory, remote, remote_path, mime_type, compression
@@ -200,6 +211,23 @@ def update(
             config=mldock_config.get("model", []),
             base_path=Path(project_directory, "model"),
         )
+
+        model = model_channels.get(
+            channel=channel,
+            filename=name
+        )
+
+        if mime_type is None:
+            mime_type = model.get("type", None)
+
+        if compression is None:
+            compression = model.get("compression", None)
+        
+        if remote_path is None:
+            remote_path = model.get("remote_path", None)
+
+        if remote is None:
+            remote = model.get("remote", None)
 
         model_channels.add_asset(
             channel=channel,

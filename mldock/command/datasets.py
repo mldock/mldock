@@ -63,7 +63,7 @@ def datasets():
 @click.option(
     "--compression",
     help="type of file based on mimetypes",
-    type=click.Choice(["zip", None], case_sensitive=False),
+    type=click.Choice(["zip"], case_sensitive=False),
 )
 def create(
     channel, name, project_directory, remote, remote_path, mime_type, compression
@@ -101,6 +101,17 @@ def create(
             config=mldock_config.get("data", []),
             base_path=Path(project_directory, "data"),
         )
+
+        dataset = input_data_channels.get(
+            channel=channel,
+            filename=name,
+        )
+
+        if compression is None:
+            compression = dataset.get("compression", None)
+
+        if remote is None:
+            remote = dataset.get("remote", None)
 
         input_data_channels.add_asset(
             channel=channel,
@@ -158,7 +169,7 @@ def create(
 @click.option(
     "--compression",
     help="type of file based on mimetypes",
-    type=click.Choice(["zip", None], case_sensitive=False),
+    type=click.Choice(["zip"], case_sensitive=False),
 )
 def update(
     channel, name, project_directory, remote, remote_path, mime_type, compression
@@ -177,14 +188,6 @@ def update(
                 )
             )
 
-        if mime_type is None:
-            mime_type = mimetypes.guess_type(name)
-            if isinstance(mime_type, (list, tuple)):
-                mime_type = mime_type[0]
-
-        if remote_path is None:
-            remote_path = channel
-
         mldock_manager = MLDockConfigManager(
             filepath=Path(project_directory, MLDOCK_CONFIG_NAME)
         )
@@ -196,6 +199,23 @@ def update(
             config=mldock_config.get("data", []),
             base_path=Path(project_directory, "data"),
         )
+
+        dataset = input_data_channels.get(
+            channel=channel,
+            filename=name,
+        )
+
+        if mime_type is None:
+            mime_type = dataset.get("type", None)
+
+        if compression is None:
+            compression = dataset.get("compression", None)
+        
+        if remote_path is None:
+            remote_path = dataset.get("remote_path", None)
+
+        if remote is None:
+            remote = dataset.get("remote", None)
 
         input_data_channels.add_asset(
             channel=channel,

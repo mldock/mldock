@@ -461,6 +461,18 @@ class InputDataConfigManager(BaseConfigManager):
                 return found_match, i
         return False, None
 
+    def find_all_for_given_channel(self, channel):
+
+        datasets = []
+        for i in range(len(self.config)):
+            tmp_config = self.config[i]
+
+            if (tmp_config["channel"] == channel):
+
+                datasets.append(tmp_config)
+
+        return datasets
+
     def add_asset(self, update: bool = False, **data_config):
         """add an asset to data config"""
 
@@ -503,6 +515,19 @@ class InputDataConfigManager(BaseConfigManager):
 
         if found_match:
             return self.config[i]
+        else:
+            logger.error(
+                "dataset artifact does not exists. To create, run 'datasets create' instead."
+            )
+            exit(0)
+
+    def get_all(self, **data_config):
+        datasets = self.find_all_for_given_channel(
+            channel=data_config["channel"]
+        )
+
+        if len(datasets) > 0:
+            return datasets
         else:
             logger.error(
                 "dataset artifact does not exists. To create, run 'datasets create' instead."
@@ -591,6 +616,18 @@ class ModelConfigManager(BaseConfigManager):
                 return found_match, i
         return False, None
 
+    def find_all_for_given_channel(self, channel):
+
+        datasets = []
+        for i in range(len(self.config)):
+            tmp_config = self.config[i]
+
+            if (tmp_config["channel"] == channel):
+
+                datasets.append(tmp_config)
+
+        return datasets
+
     def add_asset(self, update: bool = False, **data_config):
         """add an asset to data config"""
 
@@ -626,9 +663,9 @@ class ModelConfigManager(BaseConfigManager):
         else:
             logger.error("model artifact does not exists, so nothing to remove.")
 
-    def get(self, **data_config):
+    def get(self, **model_config):
         found_match, i = self.check_if_asset_exists(
-            channel=data_config["channel"], filename=data_config["filename"]
+            channel=model_config["channel"], filename=model_config["filename"]
         )
 
         if found_match:
@@ -636,6 +673,19 @@ class ModelConfigManager(BaseConfigManager):
         else:
             logger.error(
                 "model artifact does not exists. To create, run 'models create' instead."
+            )
+            exit(0)
+
+    def get_all(self, **model_config):
+        models = self.find_all_for_given_channel(
+            channel=model_config["channel"]
+        )
+
+        if len(models) > 0:
+            return models
+        else:
+            logger.error(
+                "dataset artifact does not exists. To create, run 'datasets create' instead."
             )
             exit(0)
 
