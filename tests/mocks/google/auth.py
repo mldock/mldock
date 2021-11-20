@@ -1,6 +1,4 @@
-
 class Credentials(object):
-
     @staticmethod
     def refresh(request, **kwargs):
 
@@ -8,10 +6,12 @@ class Credentials(object):
 
     @property
     def token(self):
-        return 'PASSWORD'
+        return "PASSWORD"
+
 
 def default(scopes: list, **kwargs):
-    return Credentials(), 'myproject'
+    return Credentials(), "myproject"
+
 
 class Request(object):
     pass

@@ -21,7 +21,10 @@ import numpy as np
 import pytest
 from six import BytesIO
 
-from mldock.platform_helpers.mldock.inference.content_encoders import numpy as numpy_encoders
+from mldock.platform_helpers.mldock.inference.content_encoders import (
+    numpy as numpy_encoders,
+)
+
 
 class TestNumpyEncoders:
     """Tests the numpy encoder methods"""
@@ -34,7 +37,7 @@ class TestNumpyEncoders:
             [42.0, 6.0, 9.0],
             ["42", "6", "9"],
             [u"42", u"6", u"9"],
-            {42: {"6": 9.0}}
+            {42: {"6": 9.0}},
         ],
     )
     def test_array_to_npy(target):
@@ -43,11 +46,15 @@ class TestNumpyEncoders:
 
         actual = numpy_encoders.array_to_npy(input_data)
 
-        np.testing.assert_equal(np.load(BytesIO(actual), allow_pickle=True), np.array(target))
+        np.testing.assert_equal(
+            np.load(BytesIO(actual), allow_pickle=True), np.array(target)
+        )
 
         actual = numpy_encoders.array_to_npy(target)
 
-        np.testing.assert_equal(np.load(BytesIO(actual), allow_pickle=True), np.array(target))
+        np.testing.assert_equal(
+            np.load(BytesIO(actual), allow_pickle=True), np.array(target)
+        )
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -71,8 +78,8 @@ class TestNumpyEncoders:
     @pytest.mark.parametrize(
         "target, expected, quoted",
         [
-            ([42.0, 6.0, 9.0], '42.0\n6.0\n9.0\n', False),
-            (["42", "6", "9"], '42\n6\n9\n', False),
+            ([42.0, 6.0, 9.0], "42.0\n6.0\n9.0\n", False),
+            (["42", "6", "9"], "42\n6\n9\n", False),
             ([42, 6, 9], '"42"\n"6"\n"9"\n', True),
             ([42.0, 6.0, 9.0], '"42.0"\n"6.0"\n"9.0"\n', True),
             (["42", "6", "9"], '"42"\n"6"\n"9"\n', True),
@@ -86,5 +93,7 @@ class TestNumpyEncoders:
         actual = numpy_encoders.array_to_csv(target, quoted=quoted)
         np.testing.assert_equal(actual, expected)
 
-        actual = numpy_encoders.array_to_csv(np.array(target).astype(str), quoted=quoted)
+        actual = numpy_encoders.array_to_csv(
+            np.array(target).astype(str), quoted=quoted
+        )
         np.testing.assert_equal(actual, expected)

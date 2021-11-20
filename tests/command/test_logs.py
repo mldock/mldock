@@ -10,6 +10,7 @@ from click.testing import CliRunner
 from mldock.__main__ import cli
 from mldock.platform_helpers import utils
 
+
 @pytest.fixture
 def log_data():
 
@@ -31,10 +32,10 @@ class TestLocalCommands:
     def __create_textfile(my_path, log_data):
         """creates textfile and seeds it with msg"""
         # This currently assumes the path to the file exists.
-        with open(my_path, 'w+') as file:
+        with open(my_path, "w+") as file:
             file.write(log_data)
 
-    @patch('mldock.api.logs.print_table')
+    @patch("mldock.api.logs.print_table")
     def test_logs_metrics_grok_successful(self, mock_print_table, log_data):
         """test logs metrics groks logs as aspected"""
         runner = CliRunner()
@@ -47,23 +48,22 @@ class TestLocalCommands:
         tmp_experiment_dir.mkdir(parents=True, exist_ok=True)
 
         # create textfile of logs
-        txtfile = Path(tmp_experiment_dir, 'logs.txt').as_posix()
+        txtfile = Path(tmp_experiment_dir, "logs.txt").as_posix()
         self.__create_textfile(txtfile, log_data=log_data)
 
         # run CLI command
         result = runner.invoke(
-            cli=cli,
-            args=['logs', 'metrics', 'show', '--log-path', tmp_dir.name]
+            cli=cli, args=["logs", "metrics", "show", "--log-path", tmp_dir.name]
         )
 
         # mock print_table and get args it was passed
         args, _ = mock_print_table.call_args
-        validation = {'experiment', 'test~accuracy', 'run_id', 'train:accuracy'}
+        validation = {"experiment", "test~accuracy", "run_id", "train:accuracy"}
 
         assert args[0] == validation, "Failed to parse metric names correctly"
         assert result.exit_code == 0, result.output
 
-    @patch('mldock.api.logs.print_table')
+    @patch("mldock.api.logs.print_table")
     def test_logs_params_grok_successful(self, mock_print_table, log_data):
         """test logs params groks logs as aspected"""
         runner = CliRunner()
@@ -76,18 +76,17 @@ class TestLocalCommands:
         tmp_experiment_dir.mkdir(parents=True, exist_ok=True)
 
         # create textfile of logs
-        txtfile = Path(tmp_experiment_dir, 'logs.txt').as_posix()
+        txtfile = Path(tmp_experiment_dir, "logs.txt").as_posix()
         self.__create_textfile(txtfile, log_data=log_data)
 
         # run CLI command
         result = runner.invoke(
-            cli=cli,
-            args=['logs', 'params', 'show', '--log-path', tmp_dir.name]
+            cli=cli, args=["logs", "params", "show", "--log-path", tmp_dir.name]
         )
 
         # mock print_table and get args it was passed
         args, _ = mock_print_table.call_args
-        validation = {'test#iterations', 'experiment', 'run_id', 'train:ESTIMATORS'}
+        validation = {"test#iterations", "experiment", "run_id", "train:ESTIMATORS"}
 
         assert args[0] == validation, "Failed to parse param names correctly"
         assert result.exit_code == 0, result.output

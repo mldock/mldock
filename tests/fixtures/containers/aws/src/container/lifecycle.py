@@ -13,16 +13,20 @@ from src.assets import TrainingContainer, ServingContainer
 environment = AWSEnvironment()
 
 # Set debug level
-if environment.environment_variables('MLDOCK_LOGS_LEVEL', None) == 'debug':
-    log_emit_level=logging.DEBUG
+if environment.environment_variables("MLDOCK_LOGS_LEVEL", None) == "debug":
+    log_emit_level = logging.DEBUG
 else:
-    log_emit_level=logging.INFO
+    log_emit_level = logging.INFO
 
 logging.basicConfig(level=log_emit_level)
-logger = logging.getLogger('mldock')
+logger = logging.getLogger("mldock")
 
 # init Training Container
-training_container = TrainingContainer(container_environment=environment, container_logger=logger)
+training_container = TrainingContainer(
+    container_environment=environment, container_logger=logger
+)
 
 # init Serving Container
-serving_container = ServingContainer(container_environment=environment, container_logger=logger)
+serving_container = ServingContainer(
+    container_environment=environment, container_logger=logger
+)

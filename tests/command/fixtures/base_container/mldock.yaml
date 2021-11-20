@@ -1,0 +1,21 @@
+container_dir: container
+data:
+- channel: training
+  filename: training.csv
+environment: {}
+hyperparameters: {}
+image_name: my_app
+mldock_module_dir: src
+model:
+- channel: iris
+  filename: model.pkl
+requirements_dir: requirements.txt
+stages:
+  test:
+    tag: latest
+routines:
+  deploy:
+    - python src/container/prediction/serve.py
+  train':
+    - python src/container/training/train.py
+template: generic

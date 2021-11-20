@@ -25,9 +25,12 @@ test: install-requirements install-cli
 	coverage report --fail-under=${COVERAGE_THRESHOLD}
 
 lint: install-requirements install-cli
-	pip install pylint black;
-	python -m black $(python_package)
+	pip install pylint;
 	pylint --fail-under=8.5 --rcfile=.pylintrc $(python_package)
+
+code-format: install-requirements install-cli
+	pip install black;
+	python -m black $(python_package) tests
 
 clean:
 	find . -type f -name "*.py[co]" -delete;

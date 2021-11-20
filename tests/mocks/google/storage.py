@@ -1,9 +1,11 @@
 from pathlib import Path
 from dataclasses import dataclass
 
+
 @dataclass
 class GSBucketObject:
     """Class for mocking the google storage bucket object blob."""
+
     name: str
     bucket: str
 
@@ -15,9 +17,11 @@ class GSBucketObject:
     def upload_from_filename(local_path):
         print("upload_to_filename: {}".format(local_path))
 
+
 @dataclass
 class GSBucket:
     """Class for mocking the google storage bucket object."""
+
     name: str
     objects: list
 
@@ -31,5 +35,3 @@ class GSBucket:
     def blob(self, prefix):
         print("running this blob")
         return GSBucketObject(bucket=self, name=prefix)
-
-

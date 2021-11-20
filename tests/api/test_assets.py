@@ -5,6 +5,7 @@ import gcsfs
 import s3fs
 from mldock.api.assets import infer_filesystem_type
 
+
 class TestAssetsAPI:
     """Test logs API utilities"""
 
@@ -38,6 +39,6 @@ class TestAssetsAPI:
                 r"is not currently supported. "
                 r"Available options = 's3' or 'gs' "
                 r"or local filesystem path"
-            )
+            ),
         ):
             _ = infer_filesystem_type("fake://fake/file/path")

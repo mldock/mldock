@@ -2,7 +2,7 @@
 import sys
 import os
 import contextlib
-import json
+import yaml
 from urllib.parse import urlparse
 from pathlib import Path
 import tarfile
@@ -162,15 +162,14 @@ def _read_json(file_path):
         (dict[object, object]): A dictionary representation of the JSON file.
     """
     with open(file_path, "r") as file_:
-        return json.load(file_)
+        return yaml.load(file_)
 
 
 def _write_json(obj, file_path):
     """Write a serializeable object as a JSON file."""
     with open(file_path, "w") as file_:
-        json.dump(obj, file_, indent=4)
+        yaml.dump(obj, file_, indent=4)
         file_.write("\n")
-
 
 def _write_file(file_path: str, parents: bool = True):
     """write a file"""

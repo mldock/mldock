@@ -18,18 +18,23 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from mldock.platform_helpers.mldock.inference.content_decoders import numpy as numpy_decoders
+from mldock.platform_helpers.mldock.inference.content_decoders import (
+    numpy as numpy_decoders,
+)
+
 
 @pytest.fixture
 def image_bytes():
     """reads image as bytes string"""
-    with open('tests/api/fixtures/eight.png', 'rb') as file_:
+    with open("tests/api/fixtures/eight.png", "rb") as file_:
         return io.BytesIO(file_.read())
+
 
 @pytest.fixture
 def image_array():
     """reads image as bytes string"""
-    return np.asarray(Image.open('tests/api/fixtures/eight.png'))
+    return np.asarray(Image.open("tests/api/fixtures/eight.png"))
+
 
 class TestNumpyDecoders:
     """Tests the numpy decoder methods"""
@@ -43,7 +48,13 @@ class TestNumpyDecoders:
     @staticmethod
     @pytest.mark.parametrize(
         "target",
-        ([42, 6, 9], [42.0, 6.0, 9.0], ["42", "6", "9"], [u"42", u"6", u"9"], {42: {"6": 9.0}}),
+        (
+            [42, 6, 9],
+            [42.0, 6.0, 9.0],
+            ["42", "6", "9"],
+            [u"42", u"6", u"9"],
+            {42: {"6": 9.0}},
+        ),
     )
     def test_npy_to_numpy(target):
         buffer = io.BytesIO()
