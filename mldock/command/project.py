@@ -23,7 +23,7 @@ from mldock.api.templates import init_from_template, check_available_templates
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 
 def reset_terminal():
@@ -133,7 +133,7 @@ def init(obj, project_directory, **kwargs):
     try:
         click.secho("Initializing MLDock project configuration", bg="blue", nl=True)
 
-        if not Path(project_directory, "mldock.json").is_file():
+        if not Path(project_directory, MLDOCK_CONFIG_NAME).is_file():
             create_new = click.prompt(
                 "No MLDOCK project found. Create?", type=bool, default="no"
             )

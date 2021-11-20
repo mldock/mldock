@@ -29,7 +29,7 @@ from mldock.api.runner import run_script_as_interactive
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 @click.group()
 def local():

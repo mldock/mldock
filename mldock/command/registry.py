@@ -11,7 +11,7 @@ from mldock.terminal import ProgressLogger, pretty_build_logs
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 
 def reset_terminal():

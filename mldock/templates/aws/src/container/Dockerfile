@@ -41,13 +41,7 @@ ARG target_dir_name
 WORKDIR /opt/program/
 
 # Here we get all python packages.
-RUN pip install fastapi uvicorn[standard]
-# in development of helpers, COPY setup.py and install
-COPY ./mldock /opt/program/mldock
-COPY ./README.md /opt/program/README.md
-COPY ./setup.py /opt/program/setup.py
-COPY ./setup.cfg /opt/program/setup.cfg
-RUN python -m pip install -e .[aws]
+RUN pip install fastapi uvicorn[standard] mldock[aws]
 
 # install project specfic requirements
 COPY ${requirements_file_path} /opt/program/mldock-requirements.txt
