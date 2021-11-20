@@ -33,6 +33,10 @@ class MLDockConfigManager(BaseConfigManager):
         "hyperparameters": {},
         "model": [],
         "stages": {},
+        "routines": {
+            "train": ["python src/container/training/train.py"],
+            "deploy": ["python src/container/prediction/serve.py"]
+        }
     }
 
     available_templates = None
@@ -170,6 +174,17 @@ class MLDockConfigManager(BaseConfigManager):
 
         return "\n".join(output)
 
+    def _format_routine_node(self):
+
+        output = []
+
+        for key_, value_ in self.config["routines"].items():
+            steps = "\n\t\t".join(value_)
+            steps = f"\n\t\t {steps}"
+            output.append("\t{}{}".format(key_, steps))
+
+        return "\n".join(output)
+
     @staticmethod
     def _format_nodes(config):
 
@@ -186,11 +201,18 @@ class MLDockConfigManager(BaseConfigManager):
 
         config.pop("stages")
         formatted_stages = self._format_stage_node()
+
+        config.pop("routines")
+        formatted_routines = self._format_routine_node()
+
         hyperparameters = config.pop("hyperparameters")
+
         config.pop("data")
         formatted_data_node = self._format_data_node()
+
         config.pop("model")
         formatted_model_node = self._format_model_node()
+
         environment = {}
         for key_, value_ in config.pop("environment").items():
             mldock_key = mldock_utils._format_key_as_mldock_env_var(
@@ -204,6 +226,7 @@ class MLDockConfigManager(BaseConfigManager):
         states.append({"name": "Data Channels", "message": formatted_data_node})
         states.append({"name": "Model Channels", "message": formatted_model_node})
         states.append({"name": "Stages", "message": formatted_stages})
+        states.append({"name": "Routines", "message": formatted_routines})
         states.append(
             {"name": "Hyperparameters", "message": self._format_nodes(hyperparameters)}
         )
@@ -228,6 +251,10 @@ class MLDockConfigManager(BaseConfigManager):
     def update_stages(self, stages: dict):
         """update stages node in .mldock config"""
         self.config.update({"stages": stages})
+
+    def update_routines(self, stages: dict):
+        """update stages node in .mldock config"""
+        self.config.update({"routines": stages})
 
     def update_env_vars(self, environment: dict):
         """

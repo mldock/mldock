@@ -16,6 +16,7 @@ from mldock.config_managers.cli import (
     ModelConfigManager,
     EnvironmentConfigManager,
     CliConfigureManager,
+    RoutinesConfigManager
 )
 
 from mldock.api.templates import init_from_template, check_available_templates
@@ -203,6 +204,12 @@ def init(obj, project_directory, **kwargs):
         stage_config_manager = StageConfigManager(
             config=mldock_config.get("stages", {})
         )
+
+        # create routine config
+        routine_config_manager = RoutinesConfigManager(
+            config=mldock_config.get("routines", {})
+        )
+
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get("data", []),
@@ -226,23 +233,31 @@ def init(obj, project_directory, **kwargs):
         )
 
         if not no_prompt:
+            # ask for stages
             stage_config_manager.ask_for_stages()
-            # update stages
             mldock_manager.update_stages(stages=stage_config_manager.get_config())
-            # update input data channels
+
+            # ask for routines
+            routine_config_manager.ask_for_routines()
+            mldock_manager.update_routines(stages=routine_config_manager.get_config())
+
+            # ask for input data channels
             input_data_channels.ask_for_input_data_channels()
             input_data_channels.write_gitignore()
             mldock_manager.update_data_channels(data=input_data_channels.get_config())
-            # update model channels
+
+            # ask for model channels
             model_channels.ask_for_model_channels()
             model_channels.write_gitignore()
             mldock_manager.update_model_channels(models=model_channels.get_config())
-            # update hyperparameters
+
+            # ask for hyperparameters
             hyperparameters.ask_for_hyperparameters()
             mldock_manager.update_hyperparameters(
                 hyperparameters=hyperparameters.get_config()
             )
-            # update environments
+
+            # ask for environments
             environment.ask_for_env_vars()
             mldock_manager.update_env_vars(environment=environment.get_config())
 
@@ -326,6 +341,11 @@ def update(obj, project_directory):
         stage_config_manager = StageConfigManager(
             config=mldock_config.get("stages", {})
         )
+
+        routine_config_manager = RoutinesConfigManager(
+            config=mldock_config.get("routines", {})
+        )
+
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get("data", []),
@@ -348,22 +368,29 @@ def update(obj, project_directory):
         )
 
         stage_config_manager.ask_for_stages()
-        # update stages
         mldock_manager.update_stages(stages=stage_config_manager.get_config())
-        # update input data channels
+
+        # ask for routines
+        routine_config_manager.ask_for_routines()
+        mldock_manager.update_routines(stages=routine_config_manager.get_config())
+
+        # ask for input data channels
         input_data_channels.ask_for_input_data_channels()
         input_data_channels.write_gitignore()
         mldock_manager.update_data_channels(data=input_data_channels.get_config())
-        # update model channels
+
+        # ask for model channels
         model_channels.ask_for_model_channels()
         model_channels.write_gitignore()
         mldock_manager.update_model_channels(models=model_channels.get_config())
-        # update hyperparameters
+
+        # ask for hyperparameters
         hyperparameters.ask_for_hyperparameters()
         mldock_manager.update_hyperparameters(
             hyperparameters=hyperparameters.get_config()
         )
-        # update environments
+
+        # ask for environments
         environment.ask_for_env_vars()
         mldock_manager.update_env_vars(environment=environment.get_config())
 
