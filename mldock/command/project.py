@@ -170,7 +170,16 @@ def init(obj, project_directory, **kwargs):
         mldock_config = mldock_manager.get_config()
 
         if template is not None:
-            mldock_manager.update_config(template=template)
+            mldock_manager.update_config(
+                template=template
+            )
+
+        mldock_manager.update_config(
+            routines={
+                "train": ["python src/container/training/train.py"],
+                "deploy": ["python src/container/prediction/serve.py"]
+            }
+        )
 
         if params is not None:
             hyperparameters = mldock_config.get("hyperparameters", {})

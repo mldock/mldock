@@ -32,11 +32,7 @@ class MLDockConfigManager(BaseConfigManager):
         "environment": {},
         "hyperparameters": {},
         "model": [],
-        "stages": {},
-        "routines": {
-            "train": ["python src/container/training/train.py"],
-            "deploy": ["python src/container/prediction/serve.py"]
-        }
+        "stages": {}
     }
 
     available_templates = None
