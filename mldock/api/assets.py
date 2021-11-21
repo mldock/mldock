@@ -16,12 +16,12 @@ def infer_filesystem_type(path: str):
         path: path without scheme
     """
 
-    if utils._check_if_cloud_scheme(path, scheme=""):
+    if utils.check_if_cloud_scheme(path, scheme=""):
         file_system = fs.LocalFileSystem()
-    elif utils._check_if_cloud_scheme(path, scheme="s3"):
+    elif utils.check_if_cloud_scheme(path, scheme="s3"):
         path_without_scheme = utils.strip_scheme(path)
         file_system, path = s3fs.S3FileSystem(), path_without_scheme
-    elif utils._check_if_cloud_scheme(path, scheme="gs"):
+    elif utils.check_if_cloud_scheme(path, scheme="gs"):
         path_without_scheme = utils.strip_scheme(path)
         file_system, path = gcsfs.GCSFileSystem(), path_without_scheme
     else:

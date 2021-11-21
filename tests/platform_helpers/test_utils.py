@@ -38,7 +38,7 @@ class TestUtilsStorage:
             file_path = Path(tempdir, "TEST_FILE.txt")
             file_path.touch()
 
-            utils._delete_file(file_path)
+            utils.delete_file(file_path)
 
             assert (
                 Path(tempdir, "TEST_FILE.txt").is_file() == False
@@ -51,7 +51,7 @@ class TestUtilsStorage:
             # create file
             file_path = Path(tempdir, "TESTPATH")
 
-            utils._mkdir(dir_path=file_path)
+            utils.mkdir(dir_path=file_path)
 
             assert Path(
                 tempdir, "TESTPATH"
@@ -64,9 +64,9 @@ class TestUtilsStorage:
             # create file
             file_path = Path(tempdir, "TESTPATH")
 
-            utils._mkdir(dir_path=file_path)
+            utils.mkdir(dir_path=file_path)
 
-            nested_files = [p.as_posix() for p in utils._iter_nested_dir(tempdir)]
+            nested_files = [p.as_posix() for p in utils.iter_nested_dir(tempdir)]
 
             assert nested_files == [
                 file_path.as_posix()
@@ -77,7 +77,7 @@ class TestUtilsStorage:
         """tests method for checking that string is a s3 url"""
         url = "gs://bucket/my/path/to/file.txt"
 
-        assert utils._check_if_cloud_scheme(
+        assert utils.check_if_cloud_scheme(
             url, scheme="gs"
         ), "Fail. check for gs url scheme was not successful"
 
@@ -109,7 +109,7 @@ class TestUtilsStorage:
             # create file
             file_path = Path(tempdir, "TEST_PATH")
 
-            utils._mkdir(dir_path=file_path)
+            utils.mkdir(dir_path=file_path)
             Path(file_path, "TEST_FILE.txt").touch()
 
             output_file = Path(file_path, "zipped.zip")
@@ -117,7 +117,7 @@ class TestUtilsStorage:
             # create and zip folder as .zip
             utils.zip_folder(file_path, output_file, rm_original=True)
 
-            output_file_list = [p.as_posix() for p in utils._iter_nested_dir(file_path)]
+            output_file_list = [p.as_posix() for p in utils.iter_nested_dir(file_path)]
 
             assert (
                 output_file.is_file()
@@ -133,7 +133,7 @@ class TestUtilsStorage:
             # create file
             file_path = Path(tempdir, "TESTPATH")
 
-            utils._mkdir(dir_path=file_path)
+            utils.mkdir(dir_path=file_path)
             Path(file_path, "TEST_FILE.txt").touch()
 
             output_file = Path(file_path, "zipped.tar.gz")
@@ -141,7 +141,7 @@ class TestUtilsStorage:
             # create and zip folder as .tar.gz
             utils.zip_folder_as_tarfile(file_path, output_file, rm_original=True)
 
-            output_file_list = [p.as_posix() for p in utils._iter_nested_dir(file_path)]
+            output_file_list = [p.as_posix() for p in utils.iter_nested_dir(file_path)]
 
             assert (
                 output_file.is_file()
@@ -157,7 +157,7 @@ class TestUtilsStorage:
             # create file
             file_path = Path(tempdir, "TEST_PATH")
 
-            utils._mkdir(dir_path=file_path)
+            utils.mkdir(dir_path=file_path)
             Path(file_path, "TEST_FILE.txt").touch()
 
             output_file = Path(file_path, "zipped.zip")
@@ -167,7 +167,7 @@ class TestUtilsStorage:
 
             utils.unzip_file(output_file, file_path, rm_zipped=True)
 
-            output_file_list = [p.name for p in utils._iter_nested_dir(file_path)]
+            output_file_list = [p.name for p in utils.iter_nested_dir(file_path)]
 
             assert output_file_list == [
                 "TEST_FILE.txt"
@@ -180,7 +180,7 @@ class TestUtilsStorage:
             # create file
             file_path = Path(tempdir, "TESTPATH")
 
-            utils._mkdir(dir_path=file_path)
+            utils.mkdir(dir_path=file_path)
             Path(file_path, "TEST_FILE.txt").touch()
 
             output_file = Path(file_path, "zipped.tar.gz")
@@ -190,7 +190,7 @@ class TestUtilsStorage:
 
             utils.unzip_file_from_tarfile(output_file, file_path, rm_zipped=True)
 
-            output_file_list = [p.name for p in utils._iter_nested_dir(file_path)]
+            output_file_list = [p.name for p in utils.iter_nested_dir(file_path)]
 
             assert output_file_list == [
                 "TEST_FILE.txt"

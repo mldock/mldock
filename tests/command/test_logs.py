@@ -8,7 +8,6 @@ from mock import patch
 from click.testing import CliRunner
 
 from mldock.__main__ import cli
-from mldock.platform_helpers import utils
 
 
 @pytest.fixture

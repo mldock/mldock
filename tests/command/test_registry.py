@@ -26,13 +26,13 @@ class TestRegistryCommands:
 
         with tempfile.TemporaryDirectory() as tmp_dir:
 
-            utils._copy_boilerplate_to_dst(
+            utils.copy_boilerplate_to_dst(
                 src="tests/command/fixtures/base_container",
                 dst=tmp_dir,
                 remove_first=True,
             )
 
-            mldock_config = utils._read_json(
+            mldock_config = utils.read_json(
                 "tests/command/fixtures/base_container/mldock.json"
             )
 

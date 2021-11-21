@@ -8,7 +8,6 @@ import click
 
 PY2 = sys.version_info[0] == 2
 
-
 class ColorFormatter(logging.Formatter):
     """ColorFormatter for logging.Logger"""
 
@@ -51,7 +50,7 @@ class ClickHandler(logging.Handler):
             self.handleError(record)
 
 
-def _normalize_logger(logger, log_level):
+def normalize_logger(logger, log_level):
     """normalize logger based on log_level."""
     if not isinstance(logger, logging.Logger):
         logger = logging.getLogger(logger)
@@ -64,7 +63,7 @@ def configure_logger(logger, verbose=False):
     """configure a new logger in either DEBUG or INFO based on verbose flag."""
     log_level = logging.DEBUG if verbose else logging.INFO
 
-    logger = _normalize_logger(logger, log_level)
+    logger = normalize_logger(logger, log_level)
     _default_handler = ClickHandler()
     _default_handler.formatter = ColorFormatter()
     logger.handlers = [_default_handler]

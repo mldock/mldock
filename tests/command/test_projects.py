@@ -41,7 +41,7 @@ class TestProjectsCommands:
 
             mldock_project = Path(tmp_dir, "my_app")
 
-            utils._copy_boilerplate_to_dst(
+            utils.copy_boilerplate_to_dst(
                 src="tests/command/fixtures/base_container",
                 dst=mldock_project,
                 remove_first=True,
@@ -66,7 +66,7 @@ class TestProjectsCommands:
 
             mldock_project = Path(tmp_dir, "my_app")
 
-            utils._copy_boilerplate_to_dst(
+            utils.copy_boilerplate_to_dst(
                 src="tests/command/fixtures/base_container",
                 dst=mldock_project,
                 remove_first=True,
@@ -115,7 +115,7 @@ class TestProjectsCommands:
 
             assert mldock_filepath.is_file(), "Failed. No mldock.yaml was found"
 
-            mldock_config = utils._read_json(mldock_filepath)
+            mldock_config = utils.read_json(mldock_filepath)
             mldock_config_aws.update({"image_name": "my_app"})
 
         assert isinstance(
@@ -211,7 +211,7 @@ class TestProjectsCommands:
 
             assert mldock_filepath.is_file(), "Failed. No mldock.yaml was found"
 
-            mldock_config = utils._read_json(mldock_filepath)
+            mldock_config = utils.read_json(mldock_filepath)
 
             mldock_config_aws.update({"image_name": "my_app"})
 

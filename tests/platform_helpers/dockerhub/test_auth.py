@@ -1,6 +1,6 @@
 """Test dockerhub authentication"""
 from mldock.platform_helpers.dockerhub import auth
-from mldock.platform_helpers.utils import set_env
+from mldock.platform_helpers import utils
 
 
 class TestDockerhubAuth:
@@ -14,7 +14,7 @@ class TestDockerhubAuth:
         }
         valid_vars = [{"key": key, "value": value} for key, value in env_vars.items()]
 
-        with set_env(**env_vars):
+        with utils.set_env(**env_vars):
 
             username, password, registry, repository = auth.get_dockerhub_credentials()
 

@@ -58,7 +58,7 @@ class MLDockConfigManager(BaseConfigManager):
         if not self.file_exists(file_name):
             if create:
                 # deal with possiblity of nested directory
-                utils._mkdir(Path(file_name).parents[0])
+                utils.mkdir(Path(file_name).parents[0])
                 # create file
                 self.touch(file_name)
             else:
@@ -211,7 +211,7 @@ class MLDockConfigManager(BaseConfigManager):
 
         environment = {}
         for key_, value_ in config.pop("environment").items():
-            mldock_key = mldock_utils._format_key_as_mldock_env_var(
+            mldock_key = mldock_utils.format_key_as_mldock_env_var(
                 key_, prefix="mldock"
             )
             environment.update({mldock_key: value_})

@@ -22,7 +22,7 @@ from github.GithubException import UnknownObjectException
 logger = logging.getLogger("mldock")
 
 
-def _mkdir(dir_path: str):
+def mkdir(dir_path: str):
     """make directory structure
 
     Args:
@@ -31,7 +31,7 @@ def _mkdir(dir_path: str):
     Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 
-def _iter_nested_dir(root_dir: str) -> Iterator[str]:
+def iter_nested_dir(root_dir: str) -> Iterator[str]:
     """Iterate through nested folders.
 
     Args:
@@ -45,7 +45,7 @@ def _iter_nested_dir(root_dir: str) -> Iterator[str]:
         yield path
 
 
-def _delete_file(file_path):
+def delete_file(file_path):
     """Delete a file
 
     Args:
@@ -61,7 +61,7 @@ def _delete_file(file_path):
     os.remove(path)
 
 
-def _check_if_cloud_scheme(url: str, scheme: str = "s3") -> bool:
+def check_if_cloud_scheme(url: str, scheme: str = "s3") -> bool:
     parsed_url = urlparse(url)
     return parsed_url.scheme == scheme
 
@@ -90,21 +90,21 @@ def zip_folder(dir_path, output_file, rm_original=True):
     """zip in directory and optionally throw away unzipped"""
 
     with zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for file in _iter_nested_dir(dir_path):
+        for file in iter_nested_dir(dir_path):
             if file.name != Path(output_file).name and file.is_file():
                 zipf.write(os.path.join(file), arcname=file.relative_to(dir_path))
                 if rm_original:
-                    _delete_file(file)
+                    delete_file(file)
 
 
 def zip_folder_as_tarfile(dir_path, output_file, rm_original=True):
     """zip folder as tarfile and optionally throw away original files"""
     with tarfile.open(output_file, "w:gz") as tar:
-        for file in _iter_nested_dir(dir_path):
+        for file in iter_nested_dir(dir_path):
             if file.name != Path(output_file).name and file.is_file():
                 tar.add(file, arcname=file.relative_to(dir_path))
                 if rm_original:
-                    _delete_file(file)
+                    delete_file(file)
 
 
 def unzip_file(filename, output_dir, rm_zipped=True):
@@ -118,7 +118,7 @@ def unzip_file(filename, output_dir, rm_zipped=True):
         zipf.extractall(output_dir)
         if rm_zipped:
             logger.debug("Removing {}".format(filename))
-            _delete_file(filename)
+            delete_file(filename)
 
 
 def unzip_file_from_tarfile(filename, output_dir, rm_zipped=True):
@@ -132,7 +132,7 @@ def unzip_file_from_tarfile(filename, output_dir, rm_zipped=True):
         tar.extractall(output_dir)
         if rm_zipped:
             logger.debug("Removing {FILE_PATH}".format(FILE_PATH=filename))
-            _delete_file(filename)
+            delete_file(filename)
 
 
 def strip_scheme(url: str):
@@ -154,7 +154,7 @@ def get_scheme(path: str):
     return parsed.scheme
 
 
-def _read_json(file_path):
+def read_json(file_path):
     """Read a JSON file.
     Args:
         path (str): Path to the file.
@@ -165,20 +165,20 @@ def _read_json(file_path):
         return yaml.safe_load(file_)
 
 
-def _write_json(obj, file_path):
+def write_json(obj, file_path):
     """Write a serializeable object as a JSON file."""
     with open(file_path, "w") as file_:
         yaml.dump(obj, file_, indent=4)
         file_.write("\n")
 
-def _write_file(file_path: str, parents: bool = True):
+def write_file(file_path: str, parents: bool = True):
     """write a file"""
     if parents is True:
         mkpath(str(Path(file_path).parents[0].absolute()))
     write_file(str(Path(file_path).absolute()), "")
 
 
-def _rename_file(base_path, current_filename, new_filename):
+def rename_file(base_path, current_filename, new_filename):
     """renames filename for a given base_path, saving the file in the same base_path
 
     Args:
@@ -189,7 +189,7 @@ def _rename_file(base_path, current_filename, new_filename):
     Path(base_path, current_filename).rename(Path(base_path, new_filename))
 
 
-def _create_empty_file(base_path, filename):
+def create_empty_file(base_path, filename):
     """renames filename for a given base_path, saving the file in the same base_path
 
     Args:
@@ -200,7 +200,7 @@ def _create_empty_file(base_path, filename):
     Path(base_path, filename).touch(exist_ok=True)
 
 
-def _copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
+def copy_boilerplate_to_dst(src: str, dst: str, remove_first=False):
     """[summary]
 
     Args:

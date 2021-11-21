@@ -4,7 +4,7 @@
 import base64
 import boto3
 
-from mldock.platform_helpers.utils import strip_scheme
+from mldock.platform_helpers import utils
 
 
 def get_aws_ecr(region: str):
@@ -33,6 +33,6 @@ def get_aws_ecr(region: str):
 
     registry = token["authorizationData"][0]["proxyEndpoint"]
 
-    cloud_repository = strip_scheme(registry)
+    cloud_repository = utils.strip_scheme(registry)
     # return docker credentials
     return username, password, registry, cloud_repository

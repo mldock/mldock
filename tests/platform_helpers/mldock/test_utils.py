@@ -1,9 +1,5 @@
-from mldock.platform_helpers.mldock.utils import (
-    _format_dictionary_as_env_vars,
-    _format_key_as_mldock_env_var,
-    collect_mldock_environment_variables,
-)
 
+from mldock.platform_helpers.mldock import utils
 
 class TestUtils:
 
@@ -31,7 +27,7 @@ class TestUtils:
     def test_format_key_as_mldock_env_var():
         """test format key for environment vars"""
 
-        result = _format_key_as_mldock_env_var(key="run_id", prefix="mldock")
+        result = utils.format_key_as_mldock_env_var(key="run_id", prefix="mldock")
 
         assert result == "MLDOCK_RUN_ID", "Failed, Keys were not in MLDOCK format"
 
@@ -39,7 +35,7 @@ class TestUtils:
     def test_format_key_as_mldock_env_var_skips_where_already_prefixed():
         """test format key for environment vars"""
 
-        result = _format_key_as_mldock_env_var(key="mldock_run_id", prefix="mldock")
+        result = utils.format_key_as_mldock_env_var(key="mldock_run_id", prefix="mldock")
 
         assert result == "MLDOCK_RUN_ID", "Failed, Keys were not in MLDOCK format"
 
@@ -47,14 +43,14 @@ class TestUtils:
     def test_format_key_as_mldock_env_var_handles_none_correctly():
         """test format key for environment vars"""
 
-        result = _format_key_as_mldock_env_var(key="run_id", prefix=None)
+        result = utils.format_key_as_mldock_env_var(key="run_id", prefix=None)
 
         assert result == "RUN_ID", "Failed, Keys were not in MLDOCK format"
 
     def test_format_dictionary_as_env_vars(self):
         """test format key for environment vars"""
 
-        result = _format_dictionary_as_env_vars(
+        result = utils.format_dictionary_as_env_vars(
             obj=self.sample_hyperparameters, group="mldock"
         )
 
@@ -65,7 +61,7 @@ class TestUtils:
     def test_collect_mldock_environment_variables(self):
         """test format key for environment vars"""
 
-        result = collect_mldock_environment_variables(
+        result = utils.collect_mldock_environment_variables(
             stage="dev",
             hyperparameters=self.sample_hyperparameters["hyperparameters"],
             environment=self.sample_environment,

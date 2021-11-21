@@ -117,7 +117,7 @@ class ExperimentTracker:
     def write_metadata(self):
         """write metadata file to experiment tmp location"""
         self.manifest.update({"params": self.params, "metrics": self.metrics})
-        utils._write_json(
+        utils.write_json(
             obj=self.manifest, file_path=Path(self.artifact_dir, "manifest.json")
         )
 

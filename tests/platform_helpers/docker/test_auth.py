@@ -2,7 +2,7 @@
 import pytest
 
 from mldock.platform_helpers.docker import auth
-from mldock.platform_helpers.utils import set_env
+from mldock.platform_helpers import utils
 
 from tests.mocks import docker as mock_docker
 from tests.mocks.aws import boto3 as mock_boto3
@@ -33,7 +33,7 @@ class TestDockerAuth:
         }
         valid_vars = [{"key": key, "value": value} for key, value in env_vars.items()]
 
-        with set_env(**env_vars):
+        with utils.set_env(**env_vars):
 
             (client, metadata) = auth.login_and_authenticate(
                 provider="dockerhub", region=None
