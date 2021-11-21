@@ -18,18 +18,23 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from mldock.platform_helpers.mldock.inference.content_decoders.image import numpy as numpy_image_decoders
+from mldock.platform_helpers.mldock.inference.content_decoders.image import (
+    numpy as numpy_image_decoders,
+)
+
 
 @pytest.fixture
 def image_bytes():
     """reads image as bytes string"""
-    with open('tests/api/fixtures/eight.png', 'rb') as file_:
+    with open("tests/api/fixtures/eight.png", "rb") as file_:
         return file_.read()
+
 
 @pytest.fixture
 def image_array():
     """reads image as bytes string"""
-    return np.asarray(Image.open('tests/api/fixtures/eight.png'))
+    return np.asarray(Image.open("tests/api/fixtures/eight.png"))
+
 
 class TestNumpyImageDecoders:
     """Tests the numpy decoder methods"""

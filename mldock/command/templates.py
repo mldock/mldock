@@ -7,7 +7,7 @@ from mldock.platform_helpers import utils
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 
 @click.group()
@@ -69,7 +69,7 @@ def create(name, project_directory, out):
 
         destination_src_path = Path(destination_path, "src")
 
-        utils._copy_boilerplate_to_dst(mldock_src_path, destination_src_path)
+        utils.copy_boilerplate_to_dst(mldock_src_path, destination_src_path)
     except Exception as exception:
         logger.error(exception)
         raise

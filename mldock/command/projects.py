@@ -16,13 +16,14 @@ from mldock.config_managers.cli import (
     ModelConfigManager,
     EnvironmentConfigManager,
     CliConfigureManager,
+    RoutinesConfigManager
 )
 
 from mldock.api.templates import init_from_template, check_available_templates
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 
 def reset_terminal():
@@ -31,9 +32,9 @@ def reset_terminal():
 
 
 @click.group()
-def project():
+def projects():
     """
-    Commands to create, update and manage project projects and templates.
+    Commands to create, update and manage projects and templates.
     """
 
 
@@ -42,7 +43,7 @@ def project():
     "--project_directory",
     "--dir",
     "-d",
-    help="mldock project project.",
+    help="path to mldock project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -58,7 +59,7 @@ def project():
 @click.option(
     "--no-prompt",
     is_flag=True,
-    help="Do not prompt user, instead use the mldock config to initialize the project.",
+    help="Do not prompt user, instead use the default mldock config to initialize a new project.",
 )
 @click.option(
     "--container-only", is_flag=True, help="Only inject new container assets."
@@ -66,7 +67,7 @@ def project():
 @click.option(
     "--template",
     default=None,
-    help="Directory containing mldock supported project template to use to initialize the new project.",
+    help="Directory containing mldock supported project template to use to initialize a new project.",
 )
 @click.option("--requirements", default=None, help="path to requirements file.")
 @click.option(
@@ -116,7 +117,7 @@ def project():
 @click.pass_obj
 def init(obj, project_directory, **kwargs):
     """
-    Command to initialize mldock enabled container project
+    Command to initialize a new mldock enabled container project
     """
     no_prompt = kwargs.get("no_prompt", False)
     container_only = kwargs.get("container_only", False)
@@ -132,7 +133,7 @@ def init(obj, project_directory, **kwargs):
     try:
         click.secho("Initializing MLDock project configuration", bg="blue", nl=True)
 
-        if not Path(project_directory, "mldock.json").is_file():
+        if not Path(project_directory, MLDOCK_CONFIG_NAME).is_file():
             create_new = click.prompt(
                 "No MLDOCK project found. Create?", type=bool, default="no"
             )
@@ -169,7 +170,16 @@ def init(obj, project_directory, **kwargs):
         mldock_config = mldock_manager.get_config()
 
         if template is not None:
-            mldock_manager.update_config(template=template)
+            mldock_manager.update_config(
+                template=template
+            )
+
+        mldock_manager.update_config(
+            routines={
+                "train": ["python src/container/training/train.py"],
+                "deploy": ["python src/container/prediction/serve.py"]
+            }
+        )
 
         if params is not None:
             hyperparameters = mldock_config.get("hyperparameters", {})
@@ -203,6 +213,12 @@ def init(obj, project_directory, **kwargs):
         stage_config_manager = StageConfigManager(
             config=mldock_config.get("stages", {})
         )
+
+        # create routine config
+        routine_config_manager = RoutinesConfigManager(
+            config=mldock_config.get("routines", {})
+        )
+
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get("data", []),
@@ -226,23 +242,31 @@ def init(obj, project_directory, **kwargs):
         )
 
         if not no_prompt:
+            # ask for stages
             stage_config_manager.ask_for_stages()
-            # update stages
             mldock_manager.update_stages(stages=stage_config_manager.get_config())
-            # update input data channels
+
+            # ask for routines
+            routine_config_manager.ask_for_routines()
+            mldock_manager.update_routines(stages=routine_config_manager.get_config())
+
+            # ask for input data channels
             input_data_channels.ask_for_input_data_channels()
             input_data_channels.write_gitignore()
             mldock_manager.update_data_channels(data=input_data_channels.get_config())
-            # update model channels
+
+            # ask for model channels
             model_channels.ask_for_model_channels()
             model_channels.write_gitignore()
             mldock_manager.update_model_channels(models=model_channels.get_config())
-            # update hyperparameters
+
+            # ask for hyperparameters
             hyperparameters.ask_for_hyperparameters()
             mldock_manager.update_hyperparameters(
                 hyperparameters=hyperparameters.get_config()
             )
-            # update environments
+
+            # ask for environments
             environment.ask_for_env_vars()
             mldock_manager.update_env_vars(environment=environment.get_config())
 
@@ -292,7 +316,7 @@ def init(obj, project_directory, **kwargs):
     "--project_directory",
     "--dir",
     "-d",
-    help="mldock container project.",
+    help="path to mldock container project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -308,7 +332,7 @@ def init(obj, project_directory, **kwargs):
 @click.pass_obj
 def update(obj, project_directory):
     """
-    Command to update mldock project.
+    Command to update a given mldock project.
     """
     reset_terminal()
     try:
@@ -326,6 +350,11 @@ def update(obj, project_directory):
         stage_config_manager = StageConfigManager(
             config=mldock_config.get("stages", {})
         )
+
+        routine_config_manager = RoutinesConfigManager(
+            config=mldock_config.get("routines", {})
+        )
+
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get("data", []),
@@ -348,22 +377,29 @@ def update(obj, project_directory):
         )
 
         stage_config_manager.ask_for_stages()
-        # update stages
         mldock_manager.update_stages(stages=stage_config_manager.get_config())
-        # update input data channels
+
+        # ask for routines
+        routine_config_manager.ask_for_routines()
+        mldock_manager.update_routines(stages=routine_config_manager.get_config())
+
+        # ask for input data channels
         input_data_channels.ask_for_input_data_channels()
         input_data_channels.write_gitignore()
         mldock_manager.update_data_channels(data=input_data_channels.get_config())
-        # update model channels
+
+        # ask for model channels
         model_channels.ask_for_model_channels()
         model_channels.write_gitignore()
         mldock_manager.update_model_channels(models=model_channels.get_config())
-        # update hyperparameters
+
+        # ask for hyperparameters
         hyperparameters.ask_for_hyperparameters()
         mldock_manager.update_hyperparameters(
             hyperparameters=hyperparameters.get_config()
         )
-        # update environments
+
+        # ask for environments
         environment.ask_for_env_vars()
         mldock_manager.update_env_vars(environment=environment.get_config())
 
@@ -388,7 +424,7 @@ def update(obj, project_directory):
     "--project_directory",
     "--dir",
     "-d",
-    help="mldock container project.",
+    help="path to mldock container project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -403,7 +439,7 @@ def update(obj, project_directory):
 )
 def summary(project_directory):
     """
-    Command to show summary for mldock container project
+    Command to show summary for a given mldock container project
     """
     try:
         mldock_manager = MLDockConfigManager(
@@ -432,4 +468,4 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(summary)
 
 
-add_commands(project)
+add_commands(projects)

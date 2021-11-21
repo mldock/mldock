@@ -7,7 +7,7 @@ from mldock.api.packages import build_wheels
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 
 @click.group()

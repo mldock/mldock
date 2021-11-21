@@ -6,6 +6,7 @@
 import sys
 import os
 import json
+import yaml
 import logging
 from pathlib import Path
 import click
@@ -93,7 +94,7 @@ class BaseConfigManager:
             path (str): path to file
         """
         with open(path, "a") as file_:
-            json.dump({}, file_)
+            yaml.dump({}, file_)
 
     @staticmethod
     def file_exists(filename: str) -> bool:
@@ -112,7 +113,7 @@ class BaseConfigManager:
         if not self.file_exists(file_name):
             if create:
                 # deal with possiblity of nested directory
-                utils._mkdir(Path(file_name).parents[0])
+                utils.mkdir(Path(file_name).parents[0])
                 # create file
                 self.touch(file_name)
             else:
@@ -136,7 +137,7 @@ class BaseConfigManager:
         self.check_if_exists_else_create(file_name=file_name, create=create)
 
         with open(file_name, "r") as file_:
-            config = json.load(file_)
+            config = yaml.safe_load(file_)
             return config
 
     def pretty_print(self):
@@ -154,7 +155,7 @@ class BaseConfigManager:
         :param image_name: [str], The name of the Docker image
         """
         with open(self.filepath, "w") as config_file:
-            json.dump(self.config, config_file, indent=4, sort_keys=True)
+            yaml.dump(self.config, config_file, indent=2, sort_keys=True)
 
     def get_config(self) -> dict:
         """get config object

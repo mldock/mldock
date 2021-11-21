@@ -32,7 +32,7 @@ class MLDockConfigManager(BaseConfigManager):
         "environment": {},
         "hyperparameters": {},
         "model": [],
-        "stages": {},
+        "stages": {}
     }
 
     available_templates = None
@@ -58,7 +58,7 @@ class MLDockConfigManager(BaseConfigManager):
         if not self.file_exists(file_name):
             if create:
                 # deal with possiblity of nested directory
-                utils._mkdir(Path(file_name).parents[0])
+                utils.mkdir(Path(file_name).parents[0])
                 # create file
                 self.touch(file_name)
             else:
@@ -170,6 +170,17 @@ class MLDockConfigManager(BaseConfigManager):
 
         return "\n".join(output)
 
+    def _format_routine_node(self):
+
+        output = []
+
+        for key_, value_ in self.config["routines"].items():
+            steps = "\n\t\t".join(value_)
+            steps = f"\n\t\t {steps}"
+            output.append("\t{}{}".format(key_, steps))
+
+        return "\n".join(output)
+
     @staticmethod
     def _format_nodes(config):
 
@@ -186,14 +197,21 @@ class MLDockConfigManager(BaseConfigManager):
 
         config.pop("stages")
         formatted_stages = self._format_stage_node()
+
+        config.pop("routines")
+        formatted_routines = self._format_routine_node()
+
         hyperparameters = config.pop("hyperparameters")
+
         config.pop("data")
         formatted_data_node = self._format_data_node()
+
         config.pop("model")
         formatted_model_node = self._format_model_node()
+
         environment = {}
         for key_, value_ in config.pop("environment").items():
-            mldock_key = mldock_utils._format_key_as_mldock_env_var(
+            mldock_key = mldock_utils.format_key_as_mldock_env_var(
                 key_, prefix="mldock"
             )
             environment.update({mldock_key: value_})
@@ -204,6 +222,7 @@ class MLDockConfigManager(BaseConfigManager):
         states.append({"name": "Data Channels", "message": formatted_data_node})
         states.append({"name": "Model Channels", "message": formatted_model_node})
         states.append({"name": "Stages", "message": formatted_stages})
+        states.append({"name": "Routines", "message": formatted_routines})
         states.append(
             {"name": "Hyperparameters", "message": self._format_nodes(hyperparameters)}
         )
@@ -228,6 +247,10 @@ class MLDockConfigManager(BaseConfigManager):
     def update_stages(self, stages: dict):
         """update stages node in .mldock config"""
         self.config.update({"stages": stages})
+
+    def update_routines(self, stages: dict):
+        """update stages node in .mldock config"""
+        self.config.update({"routines": stages})
 
     def update_env_vars(self, environment: dict):
         """

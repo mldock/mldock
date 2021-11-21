@@ -5,7 +5,7 @@ import os
 from google.auth import default
 from google.auth.transport.requests import Request
 
-from mldock.platform_helpers.utils import strip_scheme
+from mldock.platform_helpers import utils
 
 
 def get_gcp_gcr(region: str):
@@ -41,6 +41,6 @@ def get_gcp_gcr(region: str):
 
     registry = os.path.join(registry, project)
     # return docker credentials
-    cloud_repository = strip_scheme(registry)
+    cloud_repository = utils.strip_scheme(registry)
     # return docker credentials
     return username, password, registry, cloud_repository

@@ -9,13 +9,16 @@
 from pathlib import Path
 import pandas as pd
 from sklearn import datasets
-from mldock.platform_helpers.mldock.configuration.container import BaseServingContainer, BaseTrainingContainer
+from mldock.platform_helpers.mldock.configuration.container import (
+    BaseServingContainer,
+    BaseTrainingContainer,
+)
 
 # Training Container Assets Management
 class TrainingContainer(BaseTrainingContainer):
     """
-        Implements the base training container,
-        allow a user to override/add/extend any training container setup logic
+    Implements the base training container,
+    allow a user to override/add/extend any training container setup logic
     """
 
     def startup(self):
@@ -23,10 +26,15 @@ class TrainingContainer(BaseTrainingContainer):
         # (Optional) instantiate super startup to maintain bases functionality
         super(TrainingContainer, self).startup()
         # add dev stage specific asset management tasks
-        if self.container_environment.environment_variables('MLDOCK_STAGE', default=None) == "dev":
+        if (
+            self.container_environment.environment_variables(
+                "MLDOCK_STAGE", default=None
+            )
+            == "dev"
+        ):
             # create channel if it doesn't exist
-            data_channel = Path(self.container_environment.input_data_dir, 'iris')
-            data_channel.mkdir(parents=True, mkdir=True)
+            data_channel = Path(self.container_environment.input_data_dir, "iris")
+            data_channel.mkdir(parents=True, exist_ok=True)
 
             # download data
             iris = datasets.load_iris(as_frame=True)
@@ -34,18 +42,16 @@ class TrainingContainer(BaseTrainingContainer):
             y = iris.target
 
             # write data to iris input data channel
-            pd.concat(
-                [X, y],
-                axis=1
-            ).to_csv(
-                Path(data_channel, 'train.csv'),
-                index=False
+            pd.concat([X, y], axis=1).to_csv(
+                Path(data_channel, "train.csv"), index=False
             )
+
 
 # Serving Container Assets Management
 class ServingContainer(BaseServingContainer):
     """
-        Implements the base serving container,
-        allow a user to override/add/extend any training container setup logic.
+    Implements the base serving container,
+    allow a user to override/add/extend any training container setup logic.
     """
+
     pass

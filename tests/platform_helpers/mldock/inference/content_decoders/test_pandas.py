@@ -14,11 +14,14 @@
 # Disclaimer: This code can be found here: https://github.com/aws/sagemaker-training-toolkit/blob/master/test/unit/test_encoder.py
 #
 import json
+
 # import numpy as np
 import pandas as pd
 import pytest
 
-from mldock.platform_helpers.mldock.inference.content_decoders import pandas as pandas_decoders
+from mldock.platform_helpers.mldock.inference.content_decoders import (
+    pandas as pandas_decoders,
+)
 
 
 class TestPandasDecoders:
@@ -28,10 +31,19 @@ class TestPandasDecoders:
     @pytest.mark.parametrize(
         "target, expected",
         [
-            ({"col":[42, 6, 9]}, pd.DataFrame([42, 6, 9], columns=["col"])),
-            ({"col":[42.0, 6.0, 9.0]}, pd.DataFrame([42.0, 6.0, 9.0], columns=["col"])),
-            ({"col":["42", "6", "9"]}, pd.DataFrame(["42", "6", "9"], columns=["col"])),
-            ({"col":[u"42", u"6", u"9"]}, pd.DataFrame([u"42", u"6", u"9"], columns=["col"])),
+            ({"col": [42, 6, 9]}, pd.DataFrame([42, 6, 9], columns=["col"])),
+            (
+                {"col": [42.0, 6.0, 9.0]},
+                pd.DataFrame([42.0, 6.0, 9.0], columns=["col"]),
+            ),
+            (
+                {"col": ["42", "6", "9"]},
+                pd.DataFrame(["42", "6", "9"], columns=["col"]),
+            ),
+            (
+                {"col": [u"42", u"6", u"9"]},
+                pd.DataFrame([u"42", u"6", u"9"], columns=["col"]),
+            ),
         ],
     )
     def test_json_list_to_pandas(target, expected):
@@ -43,12 +55,18 @@ class TestPandasDecoders:
     @pytest.mark.parametrize(
         "target, expected",
         [
-            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=['col'])),
-            (b"col\n42.0\n6.0\n9.0\n", pd.DataFrame([42.0, 6.0, 9.0], columns=['col'])),
-            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=['col'])),
-            (b'col\n"False,"\n"True."\n"False,"\n', pd.DataFrame(["False,", "True.", "False,"], columns=['col'])),
-            (b'col\naaa\n"b""bb"\nccc\n', pd.DataFrame(["aaa", 'b"bb', "ccc"], columns=['col'])),
-            (b'col\n"a\nb"\nc\n', pd.DataFrame(["a\nb", "c"], columns=['col']))
+            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=["col"])),
+            (b"col\n42.0\n6.0\n9.0\n", pd.DataFrame([42.0, 6.0, 9.0], columns=["col"])),
+            (b"col\n42\n6\n9\n", pd.DataFrame([42, 6, 9], columns=["col"])),
+            (
+                b'col\n"False,"\n"True."\n"False,"\n',
+                pd.DataFrame(["False,", "True.", "False,"], columns=["col"]),
+            ),
+            (
+                b'col\naaa\n"b""bb"\nccc\n',
+                pd.DataFrame(["aaa", 'b"bb', "ccc"], columns=["col"]),
+            ),
+            (b'col\n"a\nb"\nc\n', pd.DataFrame(["a\nb", "c"], columns=["col"])),
         ],
     )
     def test_csv_to_pandas(target, expected):

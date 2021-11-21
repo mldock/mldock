@@ -15,7 +15,7 @@ from mldock.api.assets import infer_filesystem_type
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 
 @click.group()
@@ -101,17 +101,6 @@ def create(
             config=mldock_config.get("data", []),
             base_path=Path(project_directory, "data"),
         )
-
-        dataset = input_data_channels.get(
-            channel=channel,
-            filename=name,
-        )
-
-        if compression is None:
-            compression = dataset.get("compression", None)
-
-        if remote is None:
-            remote = dataset.get("remote", None)
 
         input_data_channels.add_asset(
             channel=channel,

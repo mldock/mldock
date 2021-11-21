@@ -38,7 +38,7 @@ class CliConfigureManager(BaseConfigManager):
         if not self.file_exists(file_name):
             if create:
                 # deal with possiblity of nested directory
-                utils._mkdir(Path(file_name).parents[0])
+                utils.mkdir(Path(file_name).parents[0])
                 # create file
                 self.touch(file_name)
             else:
@@ -327,6 +327,50 @@ class StageConfigManager(BaseConfigManager):
 
             self.config[stage_name].update({"tag": docker_tag})
 
+class RoutinesConfigManager(BaseConfigManager):
+    """Development Routines Config Manager for mldock"""
+
+    def __init__(self, config: dict):
+        self.config = config
+
+    def ask_for_routines(self):
+        """prompt user for routines"""
+        click.secho("Routines", bg="blue", nl=True)
+        while True:
+            echo_msg = (
+                click.style("Add a routine. ", fg="bright_blue")
+                + "(Follow the prompts)"
+            )
+
+            click.echo(echo_msg, nl=True)
+
+            routine_name = click.prompt(
+                text="Routine name: ", default="end", show_default=False, type=str
+            )
+            if routine_name == "end":
+                break
+
+            # format routine name
+            routine_name = routine_name.replace(" ", "_").replace("-", "_").replace(".", "_")
+
+            if routine_name not in self.config:
+                self.config[routine_name] = []
+
+            while True:
+                echo_msg = (
+                    click.style("Add a step to the routine. ", fg="bright_blue")
+                    + "(any terminal or bash command)"
+                )
+
+                click.echo(echo_msg, nl=True)
+
+                routine_step = click.prompt(
+                    text="add command: ", default="end", show_default=False, type=str
+                )
+                if routine_step == "end":
+                    break
+                # add
+                self.config[routine_name].append(routine_step)
 
 class HyperparameterConfigManager(BaseConfigManager):
     """Hyperparameter Config Manager for mldock"""

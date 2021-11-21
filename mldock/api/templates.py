@@ -91,13 +91,13 @@ def init_from_template(template_name, templates_root, src_directory, **kwargs):
 
     if kwargs.get("container_only", False):
         src_container_directory = os.path.join(src_directory, "container")
-        utils._copy_boilerplate_to_dst(
+        utils.copy_boilerplate_to_dst(
             os.path.join(template_dir, template_name, "src/container"),
             src_container_directory,
             remove_first=True,
         )
     else:
-        utils._copy_boilerplate_to_dst(
+        utils.copy_boilerplate_to_dst(
             os.path.join(template_dir, template_name, "src/"), src_directory
         )
 

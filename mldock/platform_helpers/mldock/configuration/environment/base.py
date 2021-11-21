@@ -76,7 +76,7 @@ class BaseEnvironment:
         self.input_config_dir.mkdir(parents=True, exist_ok=True)
         self.output_data_dir.mkdir(parents=True, exist_ok=True)
         if not self.hyperparameters_filepath.exists():
-            utils._write_json(obj={}, file_path=self.hyperparameters_filepath)
+            utils.write_json(obj={}, file_path=self.hyperparameters_filepath)
 
     @property
     def input_dir(self):
@@ -111,11 +111,11 @@ class BaseEnvironment:
     @property
     def hyperparameters(self):
         """Returns: Iterable of the input channels"""
-        return utils._read_json(self.hyperparameters_filepath)
+        return utils.read_json(self.hyperparameters_filepath)
 
     def setup_hyperparameters(self):
         """Retrieves the env vars matching hyperparameters regex and updates config"""
-        hyperparameters = utils._read_json(self.hyperparameters_filepath.as_posix())
+        hyperparameters = utils.read_json(self.hyperparameters_filepath.as_posix())
 
         updated_hparams = self.environment_variables.json(
             self.hyperparamters_env_variable, "{}"
@@ -123,7 +123,7 @@ class BaseEnvironment:
 
         hyperparameters.update(updated_hparams)
 
-        utils._write_json(
+        utils.write_json(
             obj=hyperparameters, file_path=self.hyperparameters_filepath.as_posix()
         )
 

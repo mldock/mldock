@@ -25,29 +25,11 @@ from mldock.api.local import (
     deploy_model,
 )
 
+from mldock.api.runner import run_script_as_interactive
+
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
-MLDOCK_CONFIG_NAME = "mldock.json"
-
-
-def run_script_interactively(cmd, **kwargs):
-    """Basic runner script for local interactive script execution"""
-    output = subprocess.check_output(cmd, **kwargs)
-    logger.info(output)
-
-
-def python_executable():
-    """Return the real path for the Python executable, if it exists.
-    Return RuntimeError otherwise.
-    Returns:
-        (str): The real path of the current Python executable.
-    """
-    if not sys.executable:
-        raise RuntimeError(
-            "Failed to retrieve the real path for the Python executable binary"
-        )
-    return sys.executable
-
+MLDOCK_CONFIG_NAME = "mldock.yaml"
 
 @click.group()
 def local():
@@ -300,6 +282,7 @@ def train(project_directory, **kwargs):
 
         if stage is not None:
             tag = stages[stage]["tag"]
+            routine = stages[stage].get("routine")
 
         if tag is None:
             raise Exception(
@@ -340,22 +323,21 @@ def train(project_directory, **kwargs):
         if interactive:
             spinner.info("Running interactively")
             spinner.start()
-            # just run python src/container/prediction/serve.py
-            base_ml_path = project_directory
-            # must update /opt/ml working directory before running
-            # perhaps setting from environment would be the best
-            env_vars.update(
-                {
-                    "MLDOCK_BASE_DIR": Path(base_ml_path).absolute().as_posix(),
-                    "MLDOCK_INPUT_DIR": ".",
-                }
-            )
 
-            # subprocess only supports 'ascii' supported str for environment variables
-            env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
-            script_path = "src/container/training/train.py"
-            run_script_interactively(
-                [python_executable(), script_path], cwd=base_ml_path, env=env_vars
+            routines = mldock_config.get("routines", None)
+
+            if routine is None:
+                routine_commands = routines.get("train")
+            else:
+                routine_commands = routines.get(routine)
+
+            if routine_commands is None:
+                raise KeyError("No routine was found. Please set up 'train' routine in mldock.json")
+
+            run_script_as_interactive(
+                routine_commands,
+                cwd=project_directory,
+                env=env_vars
             )
         else:
             spinner.info("Running docker container")
@@ -440,6 +422,7 @@ def deploy(obj, project_directory, **kwargs):
 
         if stage is not None:
             tag = stages[stage]["tag"]
+            routine = stages[stage].get("routine", None)
 
         if tag is None:
             raise Exception(
@@ -480,25 +463,21 @@ def deploy(obj, project_directory, **kwargs):
         if interactive:
             spinner.info("Running interactively")
             spinner.start()
-            # just run python src/container/prediction/serve.py
-            base_ml_path = project_directory
-            # must update /opt/ml working directory before running
-            # perhaps setting from environment would be the best
-            # check out the python runner from sagemaker_training
-            env_vars.update(
-                {
-                    "MLDOCK_BASE_DIR": Path(base_ml_path).absolute().as_posix(),
-                    "MLDOCK_INPUT_DIR": ".",
-                }
-            )
 
-            # subprocess only supports 'ascii' supported str for environment variables
-            env_vars = mldock_utils.format_dict_for_subprocess(env_vars)
+            routines = mldock_config.get("routines", None)
 
-            script_path = "src/container/prediction/serve.py"
+            if routine is None:
+                routine_commands = routines.get("deploy")
+            else:
+                routine_commands = routines.get(routine)
 
-            run_script_interactively(
-                [python_executable(), script_path], cwd=base_ml_path, env=env_vars
+            if routine_commands is None:
+                raise KeyError("No routine was found. Please set up 'deploy' routine in mldock.json")
+
+            run_script_as_interactive(
+                routine_commands,
+                cwd=project_directory,
+                env=env_vars
             )
         else:
             spinner.info("Running docker container")

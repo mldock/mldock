@@ -1,16 +1,22 @@
 """Serving entrypoint script"""
 from __future__ import print_function
-import sys;sys.path.insert(1, ".")  # Do not remove this
+import sys
+
+sys.path.insert(1, ".")  # Do not remove this
 import uvicorn
 import multiprocessing
 from src.container.lifecycle import environment
 
 cpu_count = multiprocessing.cpu_count()
 
-model_server_timeout = environment.environment_variables.int('MLDOCK_SERVER_TIMEOUT', default=60)
-model_server_workers = environment.environment_variables.int('MLDOCK_SERVER_WORKERS', default=cpu_count)
+model_server_timeout = environment.environment_variables.int(
+    "MLDOCK_SERVER_TIMEOUT", default=60
+)
+model_server_workers = environment.environment_variables.int(
+    "MLDOCK_SERVER_WORKERS", default=cpu_count
+)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # start server
     uvicorn.run(
@@ -19,5 +25,5 @@ if __name__ == '__main__':
         port=8080,
         log_level="debug",
         workers=model_server_workers,
-        timeout_keep_alive=model_server_timeout
+        timeout_keep_alive=model_server_timeout,
     )
