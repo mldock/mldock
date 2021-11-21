@@ -32,9 +32,9 @@ def reset_terminal():
 
 
 @click.group()
-def project():
+def projects():
     """
-    Commands to create, update and manage project projects and templates.
+    Commands to create, update and manage projects and templates.
     """
 
 
@@ -43,7 +43,7 @@ def project():
     "--project_directory",
     "--dir",
     "-d",
-    help="mldock project project.",
+    help="path to mldock project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -59,7 +59,7 @@ def project():
 @click.option(
     "--no-prompt",
     is_flag=True,
-    help="Do not prompt user, instead use the mldock config to initialize the project.",
+    help="Do not prompt user, instead use the default mldock config to initialize a new project.",
 )
 @click.option(
     "--container-only", is_flag=True, help="Only inject new container assets."
@@ -67,7 +67,7 @@ def project():
 @click.option(
     "--template",
     default=None,
-    help="Directory containing mldock supported project template to use to initialize the new project.",
+    help="Directory containing mldock supported project template to use to initialize a new project.",
 )
 @click.option("--requirements", default=None, help="path to requirements file.")
 @click.option(
@@ -117,7 +117,7 @@ def project():
 @click.pass_obj
 def init(obj, project_directory, **kwargs):
     """
-    Command to initialize mldock enabled container project
+    Command to initialize a new mldock enabled container project
     """
     no_prompt = kwargs.get("no_prompt", False)
     container_only = kwargs.get("container_only", False)
@@ -316,7 +316,7 @@ def init(obj, project_directory, **kwargs):
     "--project_directory",
     "--dir",
     "-d",
-    help="mldock container project.",
+    help="path to mldock container project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -332,7 +332,7 @@ def init(obj, project_directory, **kwargs):
 @click.pass_obj
 def update(obj, project_directory):
     """
-    Command to update mldock project.
+    Command to update a given mldock project.
     """
     reset_terminal()
     try:
@@ -424,7 +424,7 @@ def update(obj, project_directory):
     "--project_directory",
     "--dir",
     "-d",
-    help="mldock container project.",
+    help="path to mldock container project.",
     required=True,
     type=click.Path(
         exists=False,
@@ -439,7 +439,7 @@ def update(obj, project_directory):
 )
 def summary(project_directory):
     """
-    Command to show summary for mldock container project
+    Command to show summary for a given mldock container project
     """
     try:
         mldock_manager = MLDockConfigManager(
@@ -468,4 +468,4 @@ def add_commands(cli_group: click.group):
     cli_group.add_command(summary)
 
 
-add_commands(project)
+add_commands(projects)

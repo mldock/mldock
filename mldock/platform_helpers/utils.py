@@ -162,7 +162,7 @@ def _read_json(file_path):
         (dict[object, object]): A dictionary representation of the JSON file.
     """
     with open(file_path, "r") as file_:
-        return yaml.load(file_)
+        return yaml.safe_load(file_)
 
 
 def _write_json(obj, file_path):

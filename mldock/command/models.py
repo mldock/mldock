@@ -104,17 +104,6 @@ def create(
             base_path=Path(project_directory, "model"),
         )
 
-        model = model_channels.get(
-            channel=channel,
-            filename=name
-        )
-
-        if compression is None:
-            compression = model.get("compression", None)
-
-        if remote is None:
-            remote = model.get("remote", None)
-
         model_channels.add_asset(
             channel=channel,
             filename=name,

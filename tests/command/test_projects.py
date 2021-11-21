@@ -1,4 +1,4 @@
-"""Test Project commands"""
+"""Test Mldock Projects cli commands"""
 import os
 from pathlib import Path
 from mock import patch
@@ -28,7 +28,7 @@ def mldock_config_aws():
     }
 
 
-class TestProjectCommands:
+class TestProjectsCommands:
     @staticmethod
     def test_command_init_w_no_prompt_runs_successfully():
         """
@@ -50,7 +50,7 @@ class TestProjectCommands:
             result = runner.invoke(cli=cli, args=["configure", "local"], input="2\n\n")
             result = runner.invoke(
                 cli=cli,
-                args=["project", "init", "--dir", mldock_project, "--no-prompt"],
+                args=["projects", "init", "--dir", mldock_project, "--no-prompt"],
             )
 
         assert result.exit_code == 0, result.output
@@ -75,7 +75,7 @@ class TestProjectCommands:
             result = runner.invoke(cli=cli, args=["configure", "local"], input="2\n\n")
             result = runner.invoke(
                 cli=cli,
-                args=["project", "init", "--dir", mldock_project],
+                args=["projects", "init", "--dir", mldock_project],
                 input="my_app\ngeneric\nsrc\ncontainer\nrequirements.txt\n\n\n\n\n",
             )
 
@@ -100,7 +100,7 @@ class TestProjectCommands:
             result = runner.invoke(
                 cli=cli,
                 args=[
-                    "project",
+                    "projects",
                     "init",
                     "--dir",
                     mldock_project,
@@ -156,7 +156,7 @@ class TestProjectCommands:
             result = runner.invoke(
                 cli=cli,
                 args=[
-                    "project",
+                    "projects",
                     "init",
                     "--dir",
                     tmp_dir,
@@ -190,7 +190,7 @@ class TestProjectCommands:
             result = runner.invoke(
                 cli=cli,
                 args=[
-                    "project",
+                    "projects",
                     "init",
                     "--dir",
                     mldock_project,
