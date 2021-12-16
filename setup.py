@@ -58,7 +58,8 @@ setuptools.setup(
             'gcsfs',
             's3fs',
             'pyarrow',
-            'wheel'
+            'wheel',
+            'paramiko'
         ],
         'sagemaker': ['sagemaker-training'],
         'testing': ['pandas', 'numpy', 'protobuf>=3.1', 'pillow', 'responses', 'dataclasses'],

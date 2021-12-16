@@ -91,6 +91,7 @@ def zip_folder(dir_path, output_file, rm_original=True):
 
     with zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED) as zipf:
         for file in iter_nested_dir(dir_path):
+
             if file.name != Path(output_file).name and file.is_file():
                 zipf.write(os.path.join(file), arcname=file.relative_to(dir_path))
                 if rm_original:
