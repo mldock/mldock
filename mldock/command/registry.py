@@ -136,7 +136,7 @@ def push(obj, project_directory, provider, **kwargs):
                 spinner.start()
 
     elif image is not None:
-        print(f"tagging image: {image_repository}:{tag} => {local_image_name}:{tag}")
+        logger.info(f"tagging image: {image_repository}:{tag} => {local_image_name}:{tag}")
         tag_image(f"{image}:{tag}", local_image_name, tag)
 
     # Push image to cloud repository
@@ -257,8 +257,8 @@ def pull(obj, project_directory, provider, **kwargs):
         logger.info(obj["logo"])
         spinner.start()
 
-        # tag as new image
-    print(f"tagging image: {image_repository}:{tag} => {local_image_name}:{tag}")
+    # tag as new image
+    logger.info(f"tagging image: {image_repository}:{tag} => {local_image_name}:{tag}")
     tag_image(f"{image_repository}:{tag}", local_image_name, tag)
 
 
