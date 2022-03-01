@@ -130,6 +130,11 @@ def push_image_to_repository(image_repository: str, auth_config: dict, tag="late
         states = stateful_log_emitter(line=line, states=states, status_tag="Pushing")
     return states
 
+def tag_image(current_repository, new_repository, new_tag):
+    client = docker.from_env()
+    client.api.tag(current_repository, repository=new_repository, tag=new_tag, force=False)
+    return f"{new_repository}:{new_tag}"
+
 
 def pull_image_from_repository(image_repository: str, auth_config: dict, tag="latest"):
     """
@@ -150,4 +155,6 @@ def pull_image_from_repository(image_repository: str, auth_config: dict, tag="la
         states = stateful_log_emitter(
             line=line, states=states, status_tag="Downloading"
         )
+    
     return states
+
