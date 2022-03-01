@@ -2,7 +2,7 @@ from pathlib import Path
 from mldock.api.bash import execute_routine
 from mldock.platform_helpers.mldock import utils as mldock_utils
 
-def run_script_as_interactive(commands, cwd, env):
+def run_script_as_interactive(commands, cwd, env={}):
     """runs script in interactive mode"""
     # must update /opt/ml working directory before running
     # perhaps setting from environment would be the best

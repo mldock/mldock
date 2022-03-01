@@ -91,9 +91,11 @@ def build(project_directory, no_cache, tag, stage):
     ) as spinner:
         stages = mldock_config.get("stages", None)
 
+
         if stage is not None:
             tag = stages[stage]["tag"]
-
+            routine = stages[stage].get("routine", None).get('build')
+            print(routine)
         if tag is None:
             raise Exception(
                 "tag is not valid. Either choose a stage or set a tag manually"
@@ -101,33 +103,49 @@ def build(project_directory, no_cache, tag, stage):
 
     try:
         with ProgressLogger(group="Build", text="Building", spinner="dots") as spinner:
-            logs = docker_build(
-                image_name=image_name,
-                dockerfile_path=dockerfile_path,
-                module_path=module_path,
-                target_dir_name=mldock_config.get("mldock_module_dir", "src"),
-                requirements_file_path=requirements_file_path,
-                no_cache=no_cache,
-                docker_tag=tag,
-                container_platform=template_name,
-            )
-            for line in logs:
 
-                spinner.info(pretty_build_logs(line=line))
+            routines = mldock_config.get("routines", None)
 
-                spinner.start()
+            if routine is not None:
+
+                routine_commands = routines.get(routine)
+                print(routine_commands)
+                if routine_commands is None:
+                    raise KeyError("No routine was found. Please set up '{routine}' routine in mldock.json")
+
+                run_script_as_interactive(
+                    routine_commands,
+                    cwd=project_directory,
+                    env={}
+                )
+            else:
+                logs = docker_build(
+                    image_name=image_name,
+                    dockerfile_path=dockerfile_path,
+                    module_path=module_path,
+                    target_dir_name=mldock_config.get("mldock_module_dir", "src"),
+                    requirements_file_path=requirements_file_path,
+                    no_cache=no_cache,
+                    docker_tag=tag,
+                    container_platform=template_name,
+                )
+                for line in logs:
+
+                    spinner.info(pretty_build_logs(line=line))
+
+                    spinner.start()
 
     except Exception as exception:
         logger.error(exception)
         raise
 
 
-from enum import Enum
+# from enum import Enum
 
 
-class AuthType(Enum):
+# class AuthType(Enum):
 
-    BEARER = "bearer"
+#     BEARER = "bearer"
 
 
 @click.command()
@@ -282,7 +300,7 @@ def train(project_directory, **kwargs):
 
         if stage is not None:
             tag = stages[stage]["tag"]
-            routine = stages[stage].get("routine")
+            routine = stages[stage].get("routine").get('train')
 
         if tag is None:
             raise Exception(
@@ -332,7 +350,7 @@ def train(project_directory, **kwargs):
                 routine_commands = routines.get(routine)
 
             if routine_commands is None:
-                raise KeyError("No routine was found. Please set up 'train' routine in mldock.json")
+                raise KeyError("No routine was found. Please set up '{routine}' routine in mldock.json")
 
             run_script_as_interactive(
                 routine_commands,
@@ -422,7 +440,7 @@ def deploy(obj, project_directory, **kwargs):
 
         if stage is not None:
             tag = stages[stage]["tag"]
-            routine = stages[stage].get("routine", None)
+            routine = stages[stage].get("routine", None).get('deploy')
 
         if tag is None:
             raise Exception(
@@ -472,7 +490,7 @@ def deploy(obj, project_directory, **kwargs):
                 routine_commands = routines.get(routine)
 
             if routine_commands is None:
-                raise KeyError("No routine was found. Please set up 'deploy' routine in mldock.json")
+                raise KeyError("No routine was found. Please set up '{routine}' routine in mldock.json")
 
             run_script_as_interactive(
                 routine_commands,
