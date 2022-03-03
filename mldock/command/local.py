@@ -82,7 +82,7 @@ def build(project_directory, no_cache, tag, stage):
     requirements_file_path = os.path.join(
         project_directory, mldock_config.get("requirements_dir", "requirements.txt")
     )
-
+    routine = None
     with ProgressLogger(
         group="Stages",
         text="Retrieving Stages",
@@ -95,7 +95,7 @@ def build(project_directory, no_cache, tag, stage):
         if stage is not None:
             tag = stages[stage]["tag"]
             routine = stages[stage].get("routine", None).get('build')
-            print(routine)
+
         if tag is None:
             raise Exception(
                 "tag is not valid. Either choose a stage or set a tag manually"
@@ -109,7 +109,7 @@ def build(project_directory, no_cache, tag, stage):
             if routine is not None:
 
                 routine_commands = routines.get(routine)
-                print(routine_commands)
+
                 if routine_commands is None:
                     raise KeyError("No routine was found. Please set up '{routine}' routine in mldock.json")
 
@@ -289,7 +289,7 @@ def train(project_directory, **kwargs):
     # get mldock_module_path name
     mldock_config = mldock_manager.get_config()
     image_name = mldock_config.get("image_name", None)
-
+    routine = None
     with ProgressLogger(
         group="Stages",
         text="Retrieving Stages",
@@ -429,7 +429,7 @@ def deploy(obj, project_directory, **kwargs):
     # get mldock_module_path name
     mldock_config = mldock_manager.get_config()
     image_name = mldock_config.get("image_name", None)
-
+    routine = None
     with ProgressLogger(
         group="Stages",
         text="Retrieving Stages",
