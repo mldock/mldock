@@ -209,16 +209,6 @@ def init(obj, project_directory, **kwargs):
 
         _ = WorkingDirectoryManager(base_dir=project_directory)
 
-        # create stages config
-        stage_config_manager = StageConfigManager(
-            config=mldock_config.get("stages", {})
-        )
-
-        # create routine config
-        routine_config_manager = RoutinesConfigManager(
-            config=mldock_config.get("routines", {})
-        )
-
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get("data", []),
@@ -242,13 +232,6 @@ def init(obj, project_directory, **kwargs):
         )
 
         if not no_prompt:
-            # ask for stages
-            stage_config_manager.ask_for_stages()
-            mldock_manager.update_stages(stages=stage_config_manager.get_config())
-
-            # ask for routines
-            routine_config_manager.ask_for_routines()
-            mldock_manager.update_routines(stages=routine_config_manager.get_config())
 
             # ask for input data channels
             input_data_channels.ask_for_input_data_channels()
@@ -346,15 +329,6 @@ def update(obj, project_directory):
 
         _ = WorkingDirectoryManager(base_dir=project_directory)
 
-        # create stages config
-        stage_config_manager = StageConfigManager(
-            config=mldock_config.get("stages", {})
-        )
-
-        routine_config_manager = RoutinesConfigManager(
-            config=mldock_config.get("routines", {})
-        )
-
         # set input data channels
         input_data_channels = InputDataConfigManager(
             config=mldock_config.get("data", []),
@@ -375,13 +349,6 @@ def update(obj, project_directory):
         environment = EnvironmentConfigManager(
             config=mldock_config.get("environment", {})
         )
-
-        stage_config_manager.ask_for_stages()
-        mldock_manager.update_stages(stages=stage_config_manager.get_config())
-
-        # ask for routines
-        routine_config_manager.ask_for_routines()
-        mldock_manager.update_routines(stages=routine_config_manager.get_config())
 
         # ask for input data channels
         input_data_channels.ask_for_input_data_channels()

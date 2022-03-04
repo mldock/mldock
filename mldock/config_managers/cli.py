@@ -318,14 +318,27 @@ class StageConfigManager(BaseConfigManager):
             if stage_name == "end":
                 break
 
+            if stage_name not in self.config:
+                self.config[stage_name] = {}
+
             docker_tag = click.prompt(
                 text="Set docker image tag: ",
                 default=self.config.get(stage_name, {}).get("tag", None),
             )
-            if stage_name not in self.config:
-                self.config[stage_name] = {}
 
-            self.config[stage_name].update({"tag": docker_tag})
+            routine = self.config.get(stage_name, {}).get("routine", {})
+            for routine_type in ["build", "train", "deploy"]:
+
+                routine_name = click.prompt(
+                    text=f"Add routine for {routine_type}: ",
+                    default="end",
+                )
+
+                if routine_name != "end":
+                    # check if routine exists first
+                    routine.update({routine_type: routine_name})
+
+            self.config[stage_name].update({"tag": docker_tag, "routine": routine})
 
 class RoutinesConfigManager(BaseConfigManager):
     """Development Routines Config Manager for mldock"""
