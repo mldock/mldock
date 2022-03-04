@@ -47,7 +47,7 @@ def stages():
     ),
 )
 @click.pass_obj
-def create(obj, project_directory):
+def manage(obj, project_directory):
     """
     Command to update a given mldock project.
     """
@@ -102,7 +102,7 @@ def add_commands(cli_group: click.group):
     args:
         cli (click.group)
     """
-    cli_group.add_command(create)
+    cli_group.add_command(manage)
 
 
 add_commands(stages)
