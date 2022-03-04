@@ -106,12 +106,9 @@ def build(project_directory, no_cache, tag, stage):
 
             routines = mldock_config.get("routines", None)
 
-            if routine is not None:
+            routine_commands = routines.get(routine)
 
-                routine_commands = routines.get(routine)
-
-                if routine_commands is None:
-                    raise KeyError("No routine was found. Please set up '{routine}' routine in mldock.json")
+            if routine_commands is not None:
 
                 run_script_as_interactive(
                     routine_commands,
@@ -350,7 +347,7 @@ def train(project_directory, **kwargs):
                 routine_commands = routines.get(routine)
 
             if routine_commands is None:
-                raise KeyError("No routine was found. Please set up '{routine}' routine in mldock.json")
+                raise KeyError(f"No routine was found. Please set up '{routine}' routine in mldock.json")
 
             run_script_as_interactive(
                 routine_commands,
@@ -490,7 +487,7 @@ def deploy(obj, project_directory, **kwargs):
                 routine_commands = routines.get(routine)
 
             if routine_commands is None:
-                raise KeyError("No routine was found. Please set up '{routine}' routine in mldock.json")
+                raise KeyError(f"No routine was found. Please set up '{routine}' routine in mldock.json")
 
             run_script_as_interactive(
                 routine_commands,

@@ -9,6 +9,7 @@ from mldock.__version__ import __version__
 from mldock.__init__ import MLDOCK_LOGO
 from mldock.command.projects import projects
 from mldock.command.configure import configure
+from mldock.command.stages import stages
 from mldock.command.local import local
 from mldock.command.registry import registry
 from mldock.command.templates import templates
@@ -50,6 +51,7 @@ def add_commands(cli_group: click.group):
     """
     cli_group.add_command(configure)
     cli_group.add_command(projects)
+    cli_group.add_command(stages)
     cli_group.add_command(local)
     cli_group.add_command(registry)
     cli_group.add_command(templates)

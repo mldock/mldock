@@ -165,8 +165,20 @@ class MLDockConfigManager(BaseConfigManager):
         output = []
 
         for key_, value_ in self.config["stages"].items():
-            image_and_tag = "{}:{}".format(self.config["image_name"], value_["tag"])
-            output.append("\t{} : {}".format(key_, image_and_tag))
+
+            image_and_tag = "\n\t\t[image] {}:{}".format(self.config["image_name"], value_["tag"])
+
+            routines = "\n\t\t[routine]"
+            if value_.get("routine") is None:
+                routines = "\n"
+            else:
+
+                for r_key, r_value in value_["routine"].items():
+
+                    routines += "\n\t\t\t{} >> {}".format(r_key, r_value)
+
+            # format
+            output.append("\t{} : {}{}".format(key_, image_and_tag, routines))
 
         return "\n".join(output)
 
