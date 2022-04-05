@@ -1,4 +1,4 @@
 pandas
 scikit-learn
-protobuf>=3.1
 numpy
+protobuf>=3.1
