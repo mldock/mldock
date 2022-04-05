@@ -17,7 +17,7 @@ def get_dockerhub_credentials():
 
     username = env("DOCKERHUB_USERNAME")
     password = env("DOCKERHUB_PASSWORD")
-    registry = env("DOCKERHUB_REGISTRY")
+    registry = env("DOCKERHUB_REGISTRY", "https://index.docker.io/v1/")
     repo = env("DOCKERHUB_REPO")
     # return docker credentials
     return username, password, registry, repo

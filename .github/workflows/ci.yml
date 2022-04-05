@@ -22,7 +22,7 @@ jobs:
           python-version: 3.8
       - name: Run tests
         run: |
-          make test
+          make tests
   linting:
     runs-on: ubuntu-latest
     steps:

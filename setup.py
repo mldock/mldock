@@ -61,7 +61,8 @@ setuptools.setup(
             'wheel'
         ],
         'sagemaker': ['sagemaker-training'],
-        'testing': ['pandas', 'numpy', 'protobuf>=3.1', 'pillow', 'responses', 'dataclasses'],
+        'inference': ['pandas', 'numpy', 'protobuf>=3.1', 'Pillow'],
+        'testing': ['responses', 'dataclasses'],
         'pyarrow-gcs': [
             'gcsfs',
             'pyarrow',
