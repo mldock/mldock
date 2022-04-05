@@ -137,14 +137,6 @@ def build(project_directory, no_cache, tag, stage):
         raise
 
 
-# from enum import Enum
-
-
-# class AuthType(Enum):
-
-#     BEARER = "bearer"
-
-
 @click.command()
 @click.option(
     "--payload",
@@ -173,7 +165,7 @@ def build(project_directory, no_cache, tag, stage):
     "--response",
     help="Path to payload",
     type=click.Path(
-        exists=True,
+        exists=False,
         file_okay=True,
         dir_okay=False,
         writable=False,
