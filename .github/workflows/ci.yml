@@ -8,6 +8,7 @@ on:
       - '.gitignore'
       - 'README.md'
       - 'images/*'
+      - 'mldock/templates/*'
 
 jobs:
   tests:
