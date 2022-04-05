@@ -8,7 +8,7 @@ git-prune:
 
 install-requirements:
 	python -m pip install --upgrade pip;
-	pip install -e ".[aws, gcp, cli, testing]";
+	pip install -e ".[aws, gcp, cli, inference, testing]";
 
 install-cli:
 	python -m pip install --upgrade pip;
@@ -19,7 +19,7 @@ build:
 	make test;
 	make lint;
 
-test: install-requirements install-cli
+tests: install-requirements install-cli
 	pip install pytest mock pytest-mock coverage;
 	coverage run --source=mldock -m pytest tests;
 	coverage report --fail-under=${COVERAGE_THRESHOLD}
