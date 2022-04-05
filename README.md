@@ -91,7 +91,7 @@ mldock configure init
 You will see a some of prompts to set up container.
 
 ```bash
-mldock container init --dir my_ml_container
+mldock project init --dir my_ml_container
 ```
 note:
 - Just hit Return/Enter to accept all the defaults.
