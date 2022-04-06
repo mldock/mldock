@@ -362,7 +362,7 @@ def push(channel, name, project_directory):
             group="Upload",
             text="Uploading data artifacts",
             spinner="dots",
-            on_success="Successfully uploaded model artifacts",
+            on_success="Successfully uploaded data artifacts",
         ) as spinner:
             upload_assets(
                 file_system=file_system,
@@ -449,7 +449,7 @@ def pull(channel, name, project_directory):
             group="Download",
             text="Downloading data artifacts",
             spinner="dots",
-            on_success="Successfully downloaded model artifacts",
+            on_success="Successfully downloaded data artifacts",
         ) as spinner:
 
             download_assets(
