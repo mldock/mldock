@@ -12,7 +12,6 @@ from src.container.lifecycle import serving_container
 
 app = FastAPI()
 
-
 @app.on_event("startup")
 def startup_event():
     serving_container.startup()
@@ -57,7 +56,7 @@ async def transformation(request: Request):
         data = await request.body()
         print(data)
 
-        results = model_serving.handler(np.array(data))
+        results = handler(np.array(data))
         return content_encoders.array_to_json(results)
     else:
         raise HTTPException(

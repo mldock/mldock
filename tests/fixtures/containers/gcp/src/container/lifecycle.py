@@ -1,16 +1,17 @@
 """
-    CONTINAER LIFECYCLE MANAGEMENT
-
+    CONTAINER LIFECYCLE MANAGEMENT
     Provides a central place to instantiate container environment, loggers and container assets management objects.
     Call these instantiated objects in to other scripts using a simple import.
 """
 import logging
-from mldock.platform_helpers.mldock.configuration.environment.gcp import GCPEnvironment
+from mldock.platform_helpers.mldock.configuration.environment.base import (
+    BaseEnvironment,
+)
 
 from src.assets import TrainingContainer, ServingContainer
 
 # Init Environment
-environment = GCPEnvironment()
+environment = BaseEnvironment()
 
 # Set debug level
 if environment.environment_variables("MLDOCK_LOGS_LEVEL", None) == "debug":

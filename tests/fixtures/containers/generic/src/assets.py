@@ -21,6 +21,9 @@ class TrainingContainer(BaseTrainingContainer):
     allow a user to override/add/extend any training container setup logic
     """
 
+    def __init__(self, **kwargs):
+        super(TrainingContainer, self).__init__(**kwargs)
+
     def startup(self):
         """steps to execute when the machine starts up"""
         # (Optional) instantiate super startup to maintain bases functionality
@@ -32,6 +35,7 @@ class TrainingContainer(BaseTrainingContainer):
             )
             == "dev"
         ):
+
             # create channel if it doesn't exist
             data_channel = Path(self.container_environment.input_data_dir, "iris")
             data_channel.mkdir(parents=True, exist_ok=True)
@@ -53,5 +57,5 @@ class ServingContainer(BaseServingContainer):
     Implements the base serving container,
     allow a user to override/add/extend any training container setup logic.
     """
-
     pass
+
