@@ -12,7 +12,7 @@ install-requirements:
 
 install-cli:
 	python -m pip install --upgrade pip;
-	pip install -e ".[cli, pyarrow, gcsfs, s3fs]";
+	pip install -e ".[cli, gcp, aws]";
 
 build:
 	make install-requirements;
