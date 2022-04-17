@@ -21,7 +21,7 @@ class TestPyarrow:
 
     # tests
 
-    def test_local_upload_assets_successfully_upload_assets(self):
+    def test_local_upload_assets_successfully_upload_assets_when_directory(self):
         """test local upload assets workflow"""
         local_file_system = fs.LocalFileSystem()
 
@@ -34,7 +34,6 @@ class TestPyarrow:
                     fs_base_path=tmp_dir2,
                     local_path=tmp_dir1,
                     storage_location="example",
-                    zip_artifacts=False,
                 )
 
                 files = [f.name for f in Path(tmp_dir2).glob("**/*") if f.is_file()]
@@ -42,32 +41,28 @@ class TestPyarrow:
                     f.name for f in Path(tmp_dir2).glob("**/*") if f.is_dir()
                 ]
 
-        assert "data.txt" in files, "Failure"
-        assert "example" in directories, "Failure"
+                assert "artifacts.zip" in files, "Failure"
+                assert "example" in directories, "Failure"
 
-    def test_local_upload_assets_successfully_upload_assets_to_zip(self):
-        """test local upload assets zip workflow"""
+    def test_local_upload_assets_successfully_upload_assets_when_file(self):
+        """test local upload assets workflow"""
         local_file_system = fs.LocalFileSystem()
 
         with tempfile.TemporaryDirectory(suffix="data") as tmp_dir1:
             with tempfile.TemporaryDirectory() as tmp_dir2:
                 txtfile = Path(tmp_dir1, "data.txt").as_posix()
                 _ = self.__create_textfile(txtfile)
+
+                result_path = Path(tmp_dir2, "data.txt").as_posix()
                 upload_assets(
                     file_system=local_file_system,
-                    fs_base_path=tmp_dir2,
-                    local_path=tmp_dir1,
-                    storage_location="example",
-                    zip_artifacts=True,
+                    fs_base_path=result_path,
+                    local_path=txtfile,
+                    storage_location=".",
                 )
 
-                files = [f.name for f in Path(tmp_dir2).glob("**/*") if f.is_file()]
-                directories = [
-                    f.name for f in Path(tmp_dir2).glob("**/*") if f.is_dir()
-                ]
-
-        assert "artifacts.zip" in files, "Failure"
-        assert "example" in directories, "Failure"
+                files = [f.name for f in Path(tmp_dir2).glob("*/*") if f.is_file()]
+                assert "data.txt" in files, "Failure"
 
     def test_local_download_assets_successfully_download_assets(self):
         """test local download assets workflow"""

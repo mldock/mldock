@@ -4,10 +4,9 @@
     Call these instantiated objects in to other scripts using a simple import.
 """
 import logging
-from mldock.platform_helpers.mldock.configuration.environment.base import (
+from mldock.platform_helpers.mldock.configuration.environment import (
     BaseEnvironment,
 )
-
 from src.assets import TrainingContainer, ServingContainer
 
 # Init Environment

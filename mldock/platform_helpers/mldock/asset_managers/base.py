@@ -1,17 +1,13 @@
+import abc
 from pathlib import Path
 import logging
-from pyarrow import fs
 
-from mldock.platform_helpers.mldock.configuration.environment import base
-from mldock.platform_helpers.mldock.storage.pyarrow import (
-    download_assets,
-    upload_assets,
-)
+from mldock.platform_helpers.mldock.configuration import environment
 from mldock.platform_helpers import utils
 
 logger = logging.getLogger("mldock")
 
-class BaseEnvArtifactManager:
+class BaseEnvArtifactManager(abc.ABC):
     """
     base interface with must implement methods. (no default behaviour)
 
@@ -23,14 +19,16 @@ class BaseEnvArtifactManager:
 
     def __init__(self):
 
-        self.custom_environment = base.BaseEnvironment()
+        self.custom_environment = environment.BaseEnvironment()
 
     @staticmethod
-    def download_assets(fs_base_path, local_path, storage_location):
+    @abc.abstractmethod
+    def download_assets(**kwargs):
         raise NotImplementedError("Must implement a download assets functionality")
 
     @staticmethod
-    def upload_assets(fs_base_path, local_path, storage_location):
+    @abc.abstractmethod
+    def upload_assets(**kwargs):
         raise NotImplementedError("Must implement a upload assets functionality")
 
 
@@ -89,8 +87,7 @@ class BaseEnvArtifactManager:
                 self.upload_assets(
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
-                    storage_location=".",
-                    zip_artifacts=True,
+                    storage_location="."
                 )
 
             except AssertionError:
@@ -120,7 +117,7 @@ class BaseEnvArtifactManager:
                 self.download_assets(
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
-                    storage_location=".",
+                    storage_location="."
                 )
 
             except FileExistsError:
@@ -155,8 +152,7 @@ class BaseEnvArtifactManager:
                 self.upload_assets(
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
-                    storage_location=".",
-                    zip_artifacts=True,
+                    storage_location="."
                 )
 
             except AssertionError:

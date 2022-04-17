@@ -10,36 +10,35 @@ logger = logging.getLogger("mldock")
 
 
 def upload_assets(
-    file_system, fs_base_path, local_path, storage_location, zip_artifacts: bool = False
+    file_system, fs_base_path, local_path, storage_location
 ):
     """Uploads logs to specified file-system"""
 
-    if zip_artifacts:
+    is_directory = Path(local_path).is_dir()
+    if is_directory:
+        # if is a directory, zip
         # pylint: disable=consider-using-with
         tmp_dir = tempfile.TemporaryDirectory()
+        new_local_path = Path(tmp_dir.name, "artifacts.zip")
         utils.zip_folder(
-            local_path, Path(tmp_dir.name, "artifacts.zip"), rm_original=False
+            local_path, new_local_path, rm_original=False
         )
-        local_path = tmp_dir.name
+        local_path = new_local_path
 
     # create full artifacts base path
     artifacts_base_path = Path(fs_base_path, storage_location)
 
-    local = fs.LocalFileSystem()
+    src_path = Path(local_path)
+    file_name = src_path.name
+    dst_path = Path(artifacts_base_path, file_name)
 
-    file_selector = fs.FileSelector(local_path, recursive=True)
-    for file in local.get_file_info(file_selector):
-        src_path = Path(file.path)
-        file_name = src_path.name
-        dst_path = Path(artifacts_base_path, file_name)
+    if isinstance(file_system, fs.LocalFileSystem):
+        artifacts_base_path.mkdir(parents=True, exist_ok=True)
+        file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
+    else:
+        file_system.upload(src_path.as_posix(), dst_path.as_posix())
 
-        if isinstance(file_system, fs.LocalFileSystem):
-            artifacts_base_path.mkdir(parents=True, exist_ok=True)
-            file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
-        else:
-            file_system.upload(src_path.as_posix(), dst_path.as_posix())
-
-    if zip_artifacts:
+    if is_directory:
         tmp_dir.cleanup()
 
 
