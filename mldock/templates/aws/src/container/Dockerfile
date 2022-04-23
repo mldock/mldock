@@ -13,3 +13,4 @@ RUN apt-get -y purge --auto-remove git
 COPY ${module_path}/trainer.py /opt/program/${target_dir_name}/trainer.py
 COPY ${module_path}/prediction.py /opt/program/${target_dir_name}/prediction.py
 COPY ${module_path}/assets.py /opt/program/${target_dir_name}/assets.py
+COPY ${module_path}/container/lifecycle.py /opt/program/${target_dir_name}/container/lifecycle.py

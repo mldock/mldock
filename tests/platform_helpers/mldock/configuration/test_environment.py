@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 from mldock.platform_helpers import utils
-from mldock.platform_helpers.mldock.configuration.environment.base import (
+from mldock.platform_helpers.mldock.configuration.environment import (
     BaseEnvironment,
 )
 
