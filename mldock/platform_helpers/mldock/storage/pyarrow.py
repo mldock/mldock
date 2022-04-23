@@ -8,11 +8,47 @@ from mldock.platform_helpers import utils
 
 logger = logging.getLogger("mldock")
 
+def get_file_info(file_system: fs.FileSystem, artifacts_base_path: str):
+    """Get file(s) info for download from pyarrow.fs.FileSystem
+
+    Args:
+        file_system (fs.FileSystem): a pyarrow supported file system object
+        artifacts_base_path (str): full path including bucket name if remote filesystem
+
+    Returns:
+        List[str | pyarrow.fs.FileInfo]: file paths
+    """
+    if isinstance(file_system, fs.LocalFileSystem):
+        file_selector = file_system.get_file_info(artifacts_base_path)
+
+        if file_selector.is_file:
+            files = [file_selector.path]
+        else:
+            file_selector = fs.FileSelector(artifacts_base_path, recursive=True)
+
+            files = [file_.path for file_ in file_system.get_file_info(file_selector)]
+
+    else:
+
+        if file_system.isfile(artifacts_base_path):
+            file_selector = file_system.info(artifacts_base_path)
+            files = [file_selector["name"]]
+        else:
+
+            files = file_system.glob(Path(artifacts_base_path, "**").as_posix())
+
+    return files
 
 def upload_assets(
-    file_system, fs_base_path, local_path, storage_location
+    file_system: fs.FileSystem, fs_base_path: str, storage_location: str, local_path: str
 ):
-    """Uploads logs to specified file-system"""
+    """
+        Uploads logs to specified file-system
+        Args:
+            file_system (fs.FileSystem): a pyarrow supported file system object
+            fs_base_path (str): base path including bucket name if remote filesystem
+            storage_location (str): relative location to base path
+    """
 
     is_directory = Path(local_path).is_dir()
     if is_directory:
@@ -42,38 +78,39 @@ def upload_assets(
         tmp_dir.cleanup()
 
 
-def download_assets(file_system, fs_base_path, local_path, storage_location):
-    """Uploads logs to specified file-system"""
-
-    # create full artifacts base path
+def download_assets(file_system: fs.FileSystem, fs_base_path: str, storage_location: str, local_path: str):
+    """
+        Uploads logs to specified file-system
+        Args:
+            file_system (fs.FileSystem): a pyarrow supported file system object
+            fs_base_path (str): base path including bucket name if remote filesystem
+            storage_location (str): relative location to base path
+    """
     artifacts_base_path = Path(fs_base_path, storage_location)
+    files = get_file_info(file_system=file_system, artifacts_base_path=artifacts_base_path.as_posix())
 
-    if isinstance(file_system, fs.LocalFileSystem):
-        file_selector = fs.FileSelector(fs_base_path, recursive=True)
+    for file in files:
 
-        file_selector = file_system.get_file_info(file_selector)
-    else:
-        file_selector = file_system.glob(Path(artifacts_base_path, "**").as_posix())
-
-    for file in file_selector:
-        if isinstance(file, fs.FileInfo):
-            file = file.path
         src_path = Path(file)
         file_name = src_path.name
         dst_path = Path(local_path, file_name)
         dst_path.parents[0].mkdir(parents=True, exist_ok=True)
 
+        logger.info(f"downloading {src_path.as_posix()}")
+
         if isinstance(file_system, fs.LocalFileSystem):
             artifacts_base_path.mkdir(parents=True, exist_ok=True)
             file_system.copy_file(src_path.as_posix(), dst_path.as_posix())
         else:
-            logger.info(src_path.as_posix())
+
             file_system.download(src_path.as_posix(), dst_path.as_posix())
 
-            if Path(file).suffix == ".zip":
+        if dst_path.suffix == ".zip":
 
-                utils.unzip_file(dst_path, local_path, rm_zipped=True)
+            utils.unzip_file(dst_path, local_path, rm_zipped=True)
 
-            elif Path(file).suffix == ".gz":
+        elif dst_path.suffix == ".gz":
 
-                utils.unzip_file_from_tarfile(dst_path, local_path, rm_zipped=True)
+            utils.unzip_file_from_tarfile(dst_path, local_path, rm_zipped=True)
+        else:
+            logger.info(f"skipping: {dst_path} is not a compressed file or compression format is not supported.")
