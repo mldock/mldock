@@ -12,6 +12,7 @@ from sklearn.svm import SVC
 
 from src.container.lifecycle import training_container
 
+
 @training_container.wrap
 def run_training(environment, logger):
     """Run training worflow"""

@@ -41,8 +41,8 @@ class TestPandasDecoders:
                 pd.DataFrame(["42", "6", "9"], columns=["col"]),
             ),
             (
-                {"col": [u"42", u"6", u"9"]},
-                pd.DataFrame([u"42", u"6", u"9"], columns=["col"]),
+                {"col": ["42", "6", "9"]},
+                pd.DataFrame(["42", "6", "9"], columns=["col"]),
             ),
         ],
     )

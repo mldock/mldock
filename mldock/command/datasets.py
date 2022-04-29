@@ -199,7 +199,7 @@ def update(
 
         if compression is None:
             compression = dataset.get("compression", None)
-        
+
         if remote_path is None:
             remote_path = dataset.get("remote_path", None)
 

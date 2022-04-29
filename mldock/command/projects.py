@@ -16,7 +16,7 @@ from mldock.config_managers.cli import (
     ModelConfigManager,
     EnvironmentConfigManager,
     CliConfigureManager,
-    RoutinesConfigManager
+    RoutinesConfigManager,
 )
 
 from mldock.api.templates import init_from_template, check_available_templates
@@ -170,14 +170,12 @@ def init(obj, project_directory, **kwargs):
         mldock_config = mldock_manager.get_config()
 
         if template is not None:
-            mldock_manager.update_config(
-                template=template
-            )
+            mldock_manager.update_config(template=template)
 
         mldock_manager.update_config(
             routines={
                 "train": ["python src/container/training/train.py"],
-                "deploy": ["python src/container/prediction/serve.py"]
+                "deploy": ["python src/container/prediction/serve.py"],
             }
         )
 

@@ -201,17 +201,14 @@ def update(
             base_path=Path(project_directory, "model"),
         )
 
-        model = model_channels.get(
-            channel=channel,
-            filename=name
-        )
+        model = model_channels.get(channel=channel, filename=name)
 
         if mime_type is None:
             mime_type = model.get("type", None)
 
         if compression is None:
             compression = model.get("compression", None)
-        
+
         if remote_path is None:
             remote_path = model.get("remote_path", None)
 

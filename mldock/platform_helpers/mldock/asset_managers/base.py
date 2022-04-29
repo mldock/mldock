@@ -7,6 +7,7 @@ from mldock.platform_helpers import utils
 
 logger = logging.getLogger("mldock")
 
+
 class BaseEnvArtifactManager(abc.ABC):
     """
     base interface with must implement methods. (no default behaviour)
@@ -31,7 +32,6 @@ class BaseEnvArtifactManager(abc.ABC):
     def upload_assets(**kwargs):
         raise NotImplementedError("Must implement a upload assets functionality")
 
-
     def setup_inputs(self):
         """Iterates and downloads assets remoate -> input channels"""
         logger.debug(
@@ -49,7 +49,9 @@ class BaseEnvArtifactManager(abc.ABC):
 
         for channel in channels:
             channel_path = channel["key"].replace("MLDOCK_INPUT_CHANNEL_", "").lower()
-            local_channel_path = Path(self.custom_environment.input_data_dir, channel_path)
+            local_channel_path = Path(
+                self.custom_environment.input_data_dir, channel_path
+            )
             try:
                 path_without_scheme = utils.strip_scheme(channel["value"])
 
@@ -70,7 +72,9 @@ class BaseEnvArtifactManager(abc.ABC):
 
     def cleanup_outputs(self):
         """Iterates and uploads output channel -> remote"""
-        logger.debug("Cleanup assets in {}".format(self.custom_environment.output_data_dir))
+        logger.debug(
+            "Cleanup assets in {}".format(self.custom_environment.output_data_dir)
+        )
         # only fetch channels of environment prefix MLDOCK_OUTPUT_CHANNEL_
         channels = self.custom_environment.get_output_channel_iter()
 
@@ -80,14 +84,16 @@ class BaseEnvArtifactManager(abc.ABC):
         for channel in channels:
             # only fetch channels with output
             channel_path = channel["key"].replace("MLDOCK_OUTPUT_CHANNEL_", "").lower()
-            local_channel_path = Path(self.custom_environment.output_data_dir, channel_path)
+            local_channel_path = Path(
+                self.custom_environment.output_data_dir, channel_path
+            )
             try:
                 path_without_scheme = utils.strip_scheme(channel["value"])
 
                 self.upload_assets(
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
-                    storage_location="."
+                    storage_location=".",
                 )
 
             except AssertionError:
@@ -100,7 +106,9 @@ class BaseEnvArtifactManager(abc.ABC):
 
     def setup_model_artifacts(self):
         """Iterates and downloads assets remoate -> model channel"""
-        logger.debug("Setup model assets in {}".format(self.custom_environment.model_dir))
+        logger.debug(
+            "Setup model assets in {}".format(self.custom_environment.model_dir)
+        )
         # only fetch channels of environment prefix MLDOCK_MODEL_INPUT_CHANNEL_
         channels = self.custom_environment.get_model_input_channel_iter()
 
@@ -117,7 +125,7 @@ class BaseEnvArtifactManager(abc.ABC):
                 self.download_assets(
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
-                    storage_location="."
+                    storage_location=".",
                 )
 
             except FileExistsError:
@@ -131,7 +139,9 @@ class BaseEnvArtifactManager(abc.ABC):
 
     def cleanup_model_artifacts(self):
         """Iterates and uploads from model channel -> remote"""
-        logger.debug("Cleanup model assets in {}".format(self.custom_environment.model_dir))
+        logger.debug(
+            "Cleanup model assets in {}".format(self.custom_environment.model_dir)
+        )
 
         # only fetch channels of environment prefix MLDOCK_MODEL_OUTPUT_CHANNEL_
         channels = self.custom_environment.get_model_output_channel_iter()
@@ -148,11 +158,11 @@ class BaseEnvArtifactManager(abc.ABC):
             try:
 
                 path_without_scheme = utils.strip_scheme(channel["value"])
-                
+
                 self.upload_assets(
                     fs_base_path=path_without_scheme,
                     local_path=local_channel_path,
-                    storage_location="."
+                    storage_location=".",
                 )
 
             except AssertionError:

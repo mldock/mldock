@@ -8,6 +8,7 @@ from mldock.platform_helpers import utils
 
 logger = logging.getLogger("mldock")
 
+
 def get_file_info(file_system: fs.FileSystem, artifacts_base_path: str):
     """Get file(s) info for download from pyarrow.fs.FileSystem
 
@@ -39,15 +40,19 @@ def get_file_info(file_system: fs.FileSystem, artifacts_base_path: str):
 
     return files
 
+
 def upload_assets(
-    file_system: fs.FileSystem, fs_base_path: str, storage_location: str, local_path: str
+    file_system: fs.FileSystem,
+    fs_base_path: str,
+    storage_location: str,
+    local_path: str,
 ):
     """
-        Uploads logs to specified file-system
-        Args:
-            file_system (fs.FileSystem): a pyarrow supported file system object
-            fs_base_path (str): base path including bucket name if remote filesystem
-            storage_location (str): relative location to base path
+    Uploads logs to specified file-system
+    Args:
+        file_system (fs.FileSystem): a pyarrow supported file system object
+        fs_base_path (str): base path including bucket name if remote filesystem
+        storage_location (str): relative location to base path
     """
 
     is_directory = Path(local_path).is_dir()
@@ -56,9 +61,7 @@ def upload_assets(
         # pylint: disable=consider-using-with
         tmp_dir = tempfile.TemporaryDirectory()
         new_local_path = Path(tmp_dir.name, "artifacts.zip")
-        utils.zip_folder(
-            local_path, new_local_path, rm_original=False
-        )
+        utils.zip_folder(local_path, new_local_path, rm_original=False)
         local_path = new_local_path
 
     # create full artifacts base path
@@ -78,16 +81,23 @@ def upload_assets(
         tmp_dir.cleanup()
 
 
-def download_assets(file_system: fs.FileSystem, fs_base_path: str, storage_location: str, local_path: str):
+def download_assets(
+    file_system: fs.FileSystem,
+    fs_base_path: str,
+    storage_location: str,
+    local_path: str,
+):
     """
-        Uploads logs to specified file-system
-        Args:
-            file_system (fs.FileSystem): a pyarrow supported file system object
-            fs_base_path (str): base path including bucket name if remote filesystem
-            storage_location (str): relative location to base path
+    Uploads logs to specified file-system
+    Args:
+        file_system (fs.FileSystem): a pyarrow supported file system object
+        fs_base_path (str): base path including bucket name if remote filesystem
+        storage_location (str): relative location to base path
     """
     artifacts_base_path = Path(fs_base_path, storage_location)
-    files = get_file_info(file_system=file_system, artifacts_base_path=artifacts_base_path.as_posix())
+    files = get_file_info(
+        file_system=file_system, artifacts_base_path=artifacts_base_path.as_posix()
+    )
 
     for file in files:
 
@@ -113,4 +123,6 @@ def download_assets(file_system: fs.FileSystem, fs_base_path: str, storage_locat
 
             utils.unzip_file_from_tarfile(dst_path, local_path, rm_zipped=True)
         else:
-            logger.info(f"skipping: {dst_path} is not a compressed file or compression format is not supported.")
+            logger.info(
+                f"skipping: {dst_path} is not a compressed file or compression format is not supported."
+            )

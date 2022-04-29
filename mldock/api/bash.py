@@ -4,14 +4,16 @@ import logging
 
 logger = logging.getLogger("mldock")
 
+
 def run_script_interactively(cmd, **kwargs):
     """
-        Basic runner script for local interactive script execution.
+    Basic runner script for local interactive script execution.
 
-        Supports shell like commands, incl. multiple commands
+    Supports shell like commands, incl. multiple commands
     """
     output = subprocess.check_output(cmd, shell=True, **kwargs)
     logger.info(output.decode())
+
 
 def python_executable():
     """Return the real path for the Python executable, if it exists.
@@ -25,14 +27,15 @@ def python_executable():
         )
     return sys.executable
 
+
 def execute_commands(commands, cwd=".", env=None):
-    run_script_interactively(
-        commands, cwd=cwd, env=env
-    )
+    run_script_interactively(commands, cwd=cwd, env=env)
+
 
 def find_and_replace_python_executables(command: str):
 
     return command.replace("python ", f"{python_executable()} ")
+
 
 def format_commands(commands: list, delimiter: str = ";"):
     """format list of terminal commands as a shell friendly string delimitered as required"""
@@ -41,14 +44,13 @@ def format_commands(commands: list, delimiter: str = ";"):
     # shell expects single semi-colon
     # as a safety measure, find and replace doubled semi-colon instances
     command = command.replace(";;", ";")
-    
+
     command = find_and_replace_python_executables(command)
 
     return command
 
+
 def execute_routine(commands, cwd=".", env=None):
     """format and execute routine or set of commands"""
     command = format_commands(commands=commands)
-    execute_commands(
-        command, cwd=cwd, env=env
-    )
+    execute_commands(command, cwd=cwd, env=env)

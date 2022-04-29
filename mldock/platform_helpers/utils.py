@@ -171,6 +171,7 @@ def write_json(obj, file_path):
         yaml.dump(obj, file_, indent=4)
         file_.write("\n")
 
+
 def write_file(file_path: str, parents: bool = True):
     """write a file"""
     if parents is True:
