@@ -10,12 +10,13 @@ from mldock.config_managers.project import MLDockConfigManager
 from mldock.config_managers.cli import (
     StageConfigManager,
     CliConfigureManager,
-    RoutinesConfigManager
+    RoutinesConfigManager,
 )
 
 click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
 MLDOCK_CONFIG_NAME = "mldock.yaml"
+
 
 def reset_terminal():
     """clears the terminal view frame"""
@@ -27,6 +28,7 @@ def stages():
     """
     Commands to create, update and manage projects and templates.
     """
+
 
 @click.command()
 @click.option(
@@ -106,4 +108,3 @@ def add_commands(cli_group: click.group):
 
 
 add_commands(stages)
-

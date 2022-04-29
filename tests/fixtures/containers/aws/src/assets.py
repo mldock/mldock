@@ -40,7 +40,6 @@ class TrainingContainer(BaseTrainingContainer):
 
             self.artifact_manager.setup_inputs()
             self.artifact_manager.setup_model_artifacts()
-    
 
             # create channel if it doesn't exist
             data_channel = Path(self.container_environment.input_data_dir, "iris")
@@ -95,4 +94,3 @@ class ServingContainer(BaseServingContainer):
         ):
 
             self.artifact_manager.setup_model_artifacts()
-

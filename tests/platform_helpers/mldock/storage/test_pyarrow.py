@@ -78,7 +78,7 @@ class TestPyarrow:
                     file_system=local_file_system,
                     fs_base_path=tmp_dir2,
                     local_path=tmp_dir1,
-                    storage_location="example"
+                    storage_location="example",
                 )
 
                 files = [f.name for f in Path(tmp_dir2).glob("**/*") if f.is_file()]
@@ -89,7 +89,9 @@ class TestPyarrow:
         assert "data.txt" in files, "Failure"
         assert "example" in directories, "Failure"
 
-    def test_local_download_assets_successfully_log_msg_for_non_compressed_file(self, capsys):
+    def test_local_download_assets_successfully_log_msg_for_non_compressed_file(
+        self, capsys
+    ):
         """test local download assets workflow log message for non compressed file"""
         local_file_system = fs.LocalFileSystem()
 
@@ -102,7 +104,7 @@ class TestPyarrow:
                     file_system=local_file_system,
                     fs_base_path=tmp_dir2,
                     local_path=tmp_dir1,
-                    storage_location="example"
+                    storage_location="example",
                 )
 
         result_txtfile = Path(tmp_dir1, "data.txt").as_posix()

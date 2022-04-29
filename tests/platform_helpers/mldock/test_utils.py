@@ -1,5 +1,5 @@
-
 from mldock.platform_helpers.mldock import utils
+
 
 class TestUtils:
 
@@ -35,7 +35,9 @@ class TestUtils:
     def test_format_key_as_mldock_env_var_skips_where_already_prefixed():
         """test format key for environment vars"""
 
-        result = utils.format_key_as_mldock_env_var(key="mldock_run_id", prefix="mldock")
+        result = utils.format_key_as_mldock_env_var(
+            key="mldock_run_id", prefix="mldock"
+        )
 
         assert result == "MLDOCK_RUN_ID", "Failed, Keys were not in MLDOCK format"
 

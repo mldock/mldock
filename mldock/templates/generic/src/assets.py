@@ -57,5 +57,5 @@ class ServingContainer(BaseServingContainer):
     Implements the base serving container,
     allow a user to override/add/extend any training container setup logic.
     """
-    pass
 
+    pass

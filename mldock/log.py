@@ -8,6 +8,7 @@ import click
 
 PY2 = sys.version_info[0] == 2
 
+
 class ColorFormatter(logging.Formatter):
     """ColorFormatter for logging.Logger"""
 

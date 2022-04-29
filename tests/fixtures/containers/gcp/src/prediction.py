@@ -12,6 +12,7 @@ from src.container.lifecycle import serving_container
 
 app = FastAPI()
 
+
 @app.on_event("startup")
 def startup_event():
     serving_container.startup()

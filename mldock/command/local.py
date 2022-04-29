@@ -31,6 +31,7 @@ click.disable_unicode_literals_warning = True
 logger = logging.getLogger("mldock")
 MLDOCK_CONFIG_NAME = "mldock.yaml"
 
+
 @click.group()
 def local():
     """
@@ -91,10 +92,9 @@ def build(project_directory, no_cache, tag, stage):
     ) as spinner:
         stages = mldock_config.get("stages", None)
 
-
         if stage is not None:
             tag = stages[stage]["tag"]
-            routine = stages[stage].get("routine", None).get('build')
+            routine = stages[stage].get("routine", None).get("build")
 
         if tag is None:
             raise Exception(
@@ -111,9 +111,7 @@ def build(project_directory, no_cache, tag, stage):
             if routine_commands is not None:
 
                 run_script_as_interactive(
-                    routine_commands,
-                    cwd=project_directory,
-                    env={}
+                    routine_commands, cwd=project_directory, env={}
                 )
             else:
                 logs = docker_build(
@@ -289,7 +287,7 @@ def train(project_directory, **kwargs):
 
         if stage is not None:
             tag = stages[stage]["tag"]
-            routine = stages[stage].get("routine").get('train')
+            routine = stages[stage].get("routine").get("train")
 
         if tag is None:
             raise Exception(
@@ -339,12 +337,12 @@ def train(project_directory, **kwargs):
                 routine_commands = routines.get(routine)
 
             if routine_commands is None:
-                raise KeyError(f"No routine was found. Please set up '{routine}' routine in mldock.json")
+                raise KeyError(
+                    f"No routine was found. Please set up '{routine}' routine in mldock.json"
+                )
 
             run_script_as_interactive(
-                routine_commands,
-                cwd=project_directory,
-                env=env_vars
+                routine_commands, cwd=project_directory, env=env_vars
             )
         else:
             spinner.info("Running docker container")
@@ -429,7 +427,7 @@ def deploy(obj, project_directory, **kwargs):
 
         if stage is not None:
             tag = stages[stage]["tag"]
-            routine = stages[stage].get("routine", None).get('deploy')
+            routine = stages[stage].get("routine", None).get("deploy")
 
         if tag is None:
             raise Exception(
@@ -454,7 +452,7 @@ def deploy(obj, project_directory, **kwargs):
     env_vars = mldock_utils.collect_mldock_environment_variables(
         stage=stage,
         hyperparameters=mldock_config.get("hyperparameters", {}),
-        **project_env_vars
+        **project_env_vars,
     )
 
     config_manager = CliConfigureManager()
@@ -479,12 +477,12 @@ def deploy(obj, project_directory, **kwargs):
                 routine_commands = routines.get(routine)
 
             if routine_commands is None:
-                raise KeyError(f"No routine was found. Please set up '{routine}' routine in mldock.json")
+                raise KeyError(
+                    f"No routine was found. Please set up '{routine}' routine in mldock.json"
+                )
 
             run_script_as_interactive(
-                routine_commands,
-                cwd=project_directory,
-                env=env_vars
+                routine_commands, cwd=project_directory, env=env_vars
             )
         else:
             spinner.info("Running docker container")

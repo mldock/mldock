@@ -32,7 +32,7 @@ class MLDockConfigManager(BaseConfigManager):
         "environment": {},
         "hyperparameters": {},
         "model": [],
-        "stages": {}
+        "stages": {},
     }
 
     available_templates = None
@@ -166,7 +166,9 @@ class MLDockConfigManager(BaseConfigManager):
 
         for key_, value_ in self.config["stages"].items():
 
-            image_and_tag = "\n\t\t[image] {}:{}".format(self.config["image_name"], value_["tag"])
+            image_and_tag = "\n\t\t[image] {}:{}".format(
+                self.config["image_name"], value_["tag"]
+            )
 
             routines = "\n\t\t[routine]"
             if value_.get("routine") is None:

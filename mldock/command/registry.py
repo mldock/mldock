@@ -5,7 +5,11 @@ import click
 
 from mldock.platform_helpers.docker.auth import login_and_authenticate
 from mldock.api.local import docker_build
-from mldock.api.registry import push_image_to_repository, pull_image_from_repository, tag_image
+from mldock.api.registry import (
+    push_image_to_repository,
+    pull_image_from_repository,
+    tag_image,
+)
 from mldock.config_managers.project import MLDockConfigManager
 from mldock.terminal import ProgressLogger, pretty_build_logs
 
@@ -55,7 +59,12 @@ def registry():
     type=click.Choice(["ecr", "gcr", "dockerhub"], case_sensitive=False),
 )
 @click.option("--region", help="Set the registry region", default=None, type=str)
-@click.option("--image", help="prebuilt image name to push to remote registry", type=str, default=None)
+@click.option(
+    "--image",
+    help="prebuilt image name to push to remote registry",
+    type=str,
+    default=None,
+)
 @click.option("--tag", help="docker tag", type=str, default="latest")
 @click.option("--stage", help="environment to stage.")
 @click.pass_obj
@@ -74,7 +83,7 @@ def push(obj, project_directory, provider, **kwargs):
     )
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
-    local_image_name = mldock_config.get('image_name', None)
+    local_image_name = mldock_config.get("image_name", None)
     module_path = os.path.join(
         project_directory,
         mldock_config.get("mldock_module_dir", "src"),
@@ -113,9 +122,7 @@ def push(obj, project_directory, provider, **kwargs):
         spinner="dots",
     ) as spinner:
         _, metadata = login_and_authenticate(provider=provider, region=region)
-        image_repository = (
-            f"{metadata['repository']}/{local_image_name}"
-        )
+        image_repository = f"{metadata['repository']}/{local_image_name}"
 
     if build:
         # build image for cloud repository
@@ -136,7 +143,9 @@ def push(obj, project_directory, provider, **kwargs):
                 spinner.start()
 
     elif image is not None:
-        logger.info(f"tagging image: {image_repository}:{tag} => {local_image_name}:{tag}")
+        logger.info(
+            f"tagging image: {image_repository}:{tag} => {local_image_name}:{tag}"
+        )
         tag_image(f"{image}:{tag}", local_image_name, tag)
 
     # Push image to cloud repository
@@ -204,7 +213,7 @@ def pull(obj, project_directory, provider, **kwargs):
 
     # get mldock_module_dir name
     mldock_config = mldock_manager.get_config()
-    local_image_name = mldock_config.get('image_name', None)
+    local_image_name = mldock_config.get("image_name", None)
 
     # retrieve stages
     with ProgressLogger(
@@ -231,9 +240,7 @@ def pull(obj, project_directory, provider, **kwargs):
     ) as spinner:
         _, metadata = login_and_authenticate(provider=provider, region=region)
 
-        image_repository = (
-            f"{metadata['repository']}/{local_image_name}"
-        )
+        image_repository = f"{metadata['repository']}/{local_image_name}"
 
     # Push image to cloud repository
     with ProgressLogger(

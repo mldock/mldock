@@ -340,6 +340,7 @@ class StageConfigManager(BaseConfigManager):
 
             self.config[stage_name].update({"tag": docker_tag, "routine": routine})
 
+
 class RoutinesConfigManager(BaseConfigManager):
     """Development Routines Config Manager for mldock"""
 
@@ -364,7 +365,9 @@ class RoutinesConfigManager(BaseConfigManager):
                 break
 
             # format routine name
-            routine_name = routine_name.replace(" ", "_").replace("-", "_").replace(".", "_")
+            routine_name = (
+                routine_name.replace(" ", "_").replace("-", "_").replace(".", "_")
+            )
 
             if routine_name not in self.config:
                 self.config[routine_name] = []
@@ -384,6 +387,7 @@ class RoutinesConfigManager(BaseConfigManager):
                     break
                 # add
                 self.config[routine_name].append(routine_step)
+
 
 class HyperparameterConfigManager(BaseConfigManager):
     """Hyperparameter Config Manager for mldock"""
@@ -524,7 +528,7 @@ class InputDataConfigManager(BaseConfigManager):
         for i in range(len(self.config)):
             tmp_config = self.config[i]
 
-            if (tmp_config["channel"] == channel):
+            if tmp_config["channel"] == channel:
 
                 datasets.append(tmp_config)
 
@@ -579,9 +583,7 @@ class InputDataConfigManager(BaseConfigManager):
             exit(0)
 
     def get_all(self, **data_config):
-        datasets = self.find_all_for_given_channel(
-            channel=data_config["channel"]
-        )
+        datasets = self.find_all_for_given_channel(channel=data_config["channel"])
 
         if len(datasets) > 0:
             return datasets
@@ -679,7 +681,7 @@ class ModelConfigManager(BaseConfigManager):
         for i in range(len(self.config)):
             tmp_config = self.config[i]
 
-            if (tmp_config["channel"] == channel):
+            if tmp_config["channel"] == channel:
 
                 datasets.append(tmp_config)
 
@@ -734,9 +736,7 @@ class ModelConfigManager(BaseConfigManager):
             exit(0)
 
     def get_all(self, **model_config):
-        models = self.find_all_for_given_channel(
-            channel=model_config["channel"]
-        )
+        models = self.find_all_for_given_channel(channel=model_config["channel"])
 
         if len(models) > 0:
             return models
